@@ -447,7 +447,7 @@ function viewBalanceCard(m) {
       <button type="button" class="info-btn" aria-label="Information" aria-describedby="radar-tip">?</button>
       <span class="info-tip" id="radar-tip" role="tooltip">L'anneau clair est ta juste mesure. Le but n'est pas de remplir, c'est de rester dedans.</span>
     </span></div>
-    <svg id="radar" viewBox="-135 -130 270 260" role="img" aria-label="Équilibre entre tes domaines"></svg>
+    <svg id="radar" viewBox="-155 -158 310 316" role="img" aria-label="Équilibre entre tes domaines"></svg>
     ${read}
     <p class="cap cap-help">Plus la forme touche la zone jaune, plus tu es dans ta mesure. Touche un domaine pour voir ses chiffres.</p></div>`;
 }
@@ -554,7 +554,8 @@ function viewFocusCta(m) {
     <p class="cta-eyebrow">À regarder</p>
     <h3 class="cta-title">${daysActive() < 4 ? `On observe tes premiers jours` : `Tu es dans ta mesure`}</h3>
     <p class="cta-sub">${daysActive() < 4 ? `Coche ce que tu fais, sans te juger. Metrön s'adapte.` : `Rien à corriger. Continue sans en faire plus.`}</p>
-    <div class="cta-row"><button class="cta-btn" data-act="slide-name" data-v="Équilibre">Voir l'équilibre</button></div></div>`;
+    <div class="cta-row"><button class="cta-btn" data-act="slide-name" data-v="Équilibre">Voir l'équilibre</button></div>
+    ${daysActive() < 4 ? `<div class="cta-char obs">${chick({ acc: ['loupe'], look: [0, 0], deco: true })}</div>` : ``}</div>`;
   const low = off.s === 'low' || off.s === 'low2';
   return `<div class="card slide-card cta-card cta-focus sl" ${slStyle('focus')}>
     <p class="cta-eyebrow">À regarder</p>
@@ -690,6 +691,11 @@ function viewDashboard() {
     </ul>
   </section>`;
 }
+// Un mini-poussin par domaine, avec son accessoire, au-dessus du nom (en dessous pour les domaines du bas)
+function radarMini(id, lx, ly) {
+  const w = 30, h = w * 810 / 860, y = ly < 0 ? ly - 8 - h : ly + 8;
+  return miniChick({ acc: [DOM_ACC[id]], pal: id }).replace('<svg class="mc"', `<svg class="mc rmini" x="${(lx - w / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h.toFixed(1)}"`);
+}
 let raf = 0, prevShape = [], prevMark = {};
 function drawRadar(m) {
   // Les repères glissent depuis leur position précédente
@@ -716,7 +722,7 @@ function drawRadar(m) {
     ${m.map((x, i) => {
       const hot = x.id === focus, dim = focus && !hot, [a, b] = pt(i, 1), [lx, ly] = pt(i, 1.18);
       return `<line class="axis${hot ? ' hot' : ''}" x1="0" y1="0" x2="${a}" y2="${b}" style="${hot ? `stroke:${col(x.id, 1)}` : ''}"/>
-        <g class="rhit${dim ? ' dim' : ''}${hot ? ' hot' : ''}" data-act="filter" data-v="${hot ? 'all' : x.id}"><circle class="hit" cx="${lx}" cy="${ly}" r="20"/><text x="${lx}" y="${ly}" ${hot ? `style="fill:${col(x.id, 1)}"` : ``}>${esc(x.name)}</text></g>`;
+        <g class="rhit${dim ? ' dim' : ''}${hot ? ' hot' : ''}" data-act="filter" data-v="${hot ? 'all' : x.id}"><circle class="hit" cx="${lx}" cy="${ly}" r="20"/>${radarMini(x.id, lx, ly)}<text x="${lx}" y="${ly}" ${hot ? `style="fill:${col(x.id, 1)}"` : ``}>${esc(x.name)}</text></g>`;
     }).join('')}
     <polygon class="shape${balanced ? ' balanced' : ''}" id="shape"/>
     ${m.map((x, i) => {

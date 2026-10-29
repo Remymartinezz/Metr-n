@@ -95,6 +95,8 @@ const ACC = {
 
   // Fêtes
   boite:     { name: 'Boîte en carton', dom: 'fete', note: 'Il regarde par-dessus.', mood: 'wide', front: () => `<path d="M0 345H700L650 650H50Z" fill="#C9A06C"/><path d="M0 345L-40 280L110 315Z M700 345L740 280L590 315Z" fill="#D9B27C"/><path d="M0 345H700" stroke="#A5804F" stroke-width="14"/><rect x="270" y="420" width="160" height="54" rx="10" fill="#E5C894"/>` },
+  // Il observe : une loupe qu'il promène devant lui (animée par .scan dans style.css)
+  loupe:     { name: 'Loupe', dom: 'fete', note: 'Il observe tes premiers jours.', front: () => `<g class="scan"><path d="M650 520L745 615" stroke="#8D6E63" stroke-width="40" stroke-linecap="round"/><path d="M650 520L690 560" stroke="${INK}" stroke-width="44" stroke-linecap="round"/><circle cx="590" cy="460" r="92" fill="#E3F2FD" fill-opacity=".55" stroke="${INK}" stroke-width="22"/><path d="M540 420Q560 392 596 388" stroke="#fff" stroke-width="14" fill="none" stroke-linecap="round" opacity=".9"/></g>` },
   confetti:  { name: 'Confettis', dom: 'fete', note: 'Tout est fait.', mood: 'happy', front: () => { const cs = ['#E53935', '#FDD835', '#1E88E5', '#43A047', '#9333EA', '#EA580C']; let s = ''; for (let i = 0; i < 26; i++) { const x = (i * 211) % 800 - 60, y = (i * 137) % 760 - 130; if (x > 20 && x < 680 && y > 80 && y < 560) continue; s += i % 3 ? `<rect x="${x}" y="${y}" width="22" height="12" rx="3" fill="${cs[i % 6]}" transform="rotate(${i * 37} ${x} ${y})"/>` : `<circle cx="${x}" cy="${y}" r="9" fill="${cs[i % 6]}"/>`; } return s; } },
 };
 

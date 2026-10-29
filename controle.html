@@ -115,6 +115,10 @@
   .gate button { flex: 1; border: 0; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; }
   .gate .ok { background: var(--ink); color: var(--surface); }
   .gate .no { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
+  .gate .nf { width: min(380px, 100%); background: var(--surface); color: var(--ink); border-radius: 26px; padding: 24px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .gate .links { display: grid; gap: 8px; width: 100%; }
+  .gate .links a, .gate .links button { display: flex; align-items: center; justify-content: center; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; text-decoration: none; font-size: 15px; }
+  .gate .links a.ok { background: var(--ink); color: var(--surface); border: 0; }
 
   /* Mode tour de contrôle : le fichier ouvert dans la tour */
   .viewer { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; background: var(--stage); }
@@ -183,6 +187,14 @@
   </div>
 </section>
 
+<div class="gate" id="nofull" hidden>
+  <div class="nf" role="dialog" aria-modal="true" aria-labelledby="nf-h">
+    <span class="gm" id="nf-m" aria-hidden="true"></span>
+    <h3 id="nf-h">Pas de plein écran ici</h3>
+    <p id="nf-text"></p>
+    <div class="links" id="nf-links"></div>
+  </div>
+</div>
 <div class="gate" id="gate" hidden>
   <form id="gate-form">
     <span class="gm" id="gate-m" aria-hidden="true"></span>
@@ -233,6 +245,7 @@ const $ = id => document.getElementById(id);
 const pic = (x, o = {}) => chick({ acc: [x.acc], pal: x.pal, mood: x.mood || 'auto', deco: true, ...o });
 
 $('av').innerHTML = chick({ acc: ['loupe'], deco: true });
+$('nf-m').innerHTML = chick({ acc: ['lunettes'], mood: 'wide', deco: true });
 $('fback').querySelector('i').innerHTML = chick({ acc: ['loupe'], look: [0, 0], deco: true });
 // Sur téléphone : le bouton de retour se montre quand on fait défiler la page ouverte, puis s'efface après 2 s
 let backTimer = 0;
@@ -274,9 +287,23 @@ function drawFull(msg = '') {
   $('full-btn').querySelector('span').textContent = fullPref ? 'Activé' : 'Désactivé';
   $('full-msg').textContent = msg; $('full-msg').hidden = !msg;
 }
-const NO_FULL = /iPhone|iPod/.test(navigator.userAgent)
-  ? `Sur iPhone, le navigateur ne permet pas le plein écran. À la place : ouvre le lien dans Safari, touche Partager, puis « Sur l’écran d’accueil ».`
-  : `Ici, le navigateur bloque le plein écran (par exemple dans l’app Claude). Ouvre le lien dans Chrome ou Edge pour l’avoir.`;
+// Plein écran refusé : on propose d'ouvrir la tour dans un navigateur qui le permet.
+// Sur iPhone, tous les navigateurs (Safari, Chrome, Firefox, Edge) utilisent le moteur d'Apple, qui ne permet pas
+// le plein écran d'une page : changer de navigateur n'y change rien, on le dit plutôt que de promettre.
+const IOS = /iPhone|iPod/.test(navigator.userAgent), ANDROID = /Android/.test(navigator.userAgent);
+const here = () => location.href.split('#')[0];
+const intent = pkg => { const u = new URL(here()); return `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(u.href)};end`; };
+function showNoFull() {
+  const links = ANDROID
+    ? [['Chrome', 'com.android.chrome'], ['Firefox', 'org.mozilla.firefox'], ['Edge', 'com.microsoft.emmx'], ['Samsung Internet', 'com.sec.android.app.sbrowser']].map(([n, p]) => `<a class="ok" href="${intent(p)}">Ouvrir dans ${n}</a>`).join('')
+    : IOS ? '' : `<a class="ok" href="${here()}" target="_blank" rel="noopener">Ouvrir dans un nouvel onglet ↗</a>`;
+  $('nf-text').textContent = IOS
+    ? `Sur iPhone, aucun navigateur ne permet le plein écran d’une page : Safari, Chrome, Firefox et Edge utilisent tous le même moteur d’Apple. En ouvrant le lien dans Safari, la barre se cache quand tu fais défiler vers le bas.`
+    : ANDROID ? `Ici, le plein écran est bloqué (souvent dans une app comme Claude). Ouvre la tour dans un navigateur : le plein écran y marche.`
+    : `Ici, le plein écran est bloqué. Ouvre la tour dans un onglet à part : il y marchera.`;
+  $('nf-links').innerHTML = links + `<button class="no" data-nf-copy>Copier le lien</button><button class="no" data-nf-close>Fermer</button>`;
+  $('nofull').hidden = false;
+}
 // Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
 /* Code d'accès des fichiers bruts. Simple verrou d'affichage : il cache, il ne chiffre rien
    (les fichiers restent lisibles par qui connaît leur adresse). */
@@ -346,17 +373,20 @@ function close(push = true) {
 document.addEventListener('click', e => {
   const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
   const sd = e.target.closest('[data-slide]'); if (sd) { const ex = $('exp'); return ex.scrollTo({ left: +sd.dataset.slide * (ex.firstElementChild.offsetWidth + 12), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+  if (e.target.closest('[data-nf-close]') || e.target === $('nofull')) { $('nofull').hidden = true; return; }
+  const nc = e.target.closest('[data-nf-copy]');
+  if (nc) { (navigator.clipboard ? navigator.clipboard.writeText(here()) : Promise.reject()).then(() => { nc.textContent = 'Copié ✓'; }, () => { nc.textContent = here(); }); return; }
   if (e.target.closest('#ffull')) {
     // Directement depuis la page ouverte : bascule le plein écran, et le garde pour la suite
-    if (isFull()) { exitFull(); fullPref = false; } else { fullPref = true; if (!canFull()) { peekBack(4000); return alert(NO_FULL); } reqFull().then(ok => { if (!ok) alert(NO_FULL); }); }
+    if (isFull()) { exitFull(); fullPref = false; } else { fullPref = true; if (!canFull()) { peekBack(4000); return showNoFull(); } reqFull().then(ok => { if (!ok) showNoFull(); }); }
     try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
     drawFull(); return peekBack();
   }
   if (e.target.closest('#full-btn')) {
     fullPref = !fullPref; try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
     if (!fullPref) { exitFull(); return drawFull(); }
-    drawFull(); if (!canFull()) return drawFull(NO_FULL);
-    return reqFull().then(ok => drawFull(ok ? '' : NO_FULL));
+    drawFull(); if (!canFull()) return showNoFull();
+    return reqFull().then(ok => { if (!ok) showNoFull(); });
   }
   if (e.target.closest('[data-gate-no]') || e.target === $('gate')) return closeGate();
   const o = e.target.closest('[data-open]');

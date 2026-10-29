@@ -820,3 +820,4 @@ html[data-motion="off"] .cta-char.obs .scan, html[data-motion="off"] .cta-char.o
 .slide-card .curve-head { flex-wrap: wrap; column-gap: 10px; }
 .slide-card .curve-head b { white-space: nowrap; }
 .slide-card .curve-head small { flex: 1 1 100%; order: 3; margin-top: 2px; }
+.more-doms { display: block; margin: 14px auto 0; }

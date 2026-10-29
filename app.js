@@ -616,7 +616,10 @@ function viewDashboard() {
   const list = inDom.filter(h => ui.show === 'all' || (ui.show === 'done') === doneOn(h.id, ui.day))
     .sort((a, b) => doneOn(a.id, ui.day) - doneOn(b.id, ui.day));   // les faites descendent en bas
   const dayLabel = ui.day === today() ? `Aujourd'hui` : new Date(ui.day + 'T12:00').toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long' });
-  const rows = ui.filter === 'all' ? m : m.filter(x => x.id === ui.filter);
+  // Détail par domaine : seulement les domaines pratiqués (au moins une case sur la période), les autres sur demande
+  const practiced = m.filter(x => x.v > 0);
+  const hiddenN = ui.filter === 'all' && practiced.length && practiced.length < m.length ? m.length - practiced.length : 0;
+  const rows = ui.filter !== 'all' ? m.filter(x => x.id === ui.filter) : hiddenN && !ui.allDoms ? practiced : m;
   const banner = S.profile.starter && !S.profile.dismissed;
   const slides = slidesList(m);
   if (ui.slideName) { const k = slides.findIndex(s => s[0] === ui.slideName); if (k >= 0) ui.slide = k; ui.slideName = null; }
@@ -689,6 +692,7 @@ function viewDashboard() {
         <div class="row-foot"><span class="row-num"><b>${fmt1(x.v)} h</b> sur ${fmt1(x.t.min)} à ${fmt1(x.t.max)} h</span>${x.s === 'low' || x.s === 'low2' || x.s === 'high' ? `<button class="row-act" data-act="focus" data-v="${x.id}">${x.s === 'high' ? `Voir ses habitudes` : `Une petite habitude ?`} ›</button>` : ``}</div>
       </li>`).join('')}
     </ul>
+    ${hiddenN ? `<button class="row-act more-doms" data-act="all-doms">${ui.allDoms ? `Masquer les domaines non pratiqués` : `Voir les ${hiddenN} autre${plural(hiddenN)} domaine${plural(hiddenN)}`} ›</button>` : ``}
   </section>`;
 }
 // Un mini-poussin par domaine, avec son accessoire, au-dessus du nom (en dessous pour les domaines du bas)
@@ -902,6 +906,7 @@ document.addEventListener('click', e => {
 
     // Filtres et jour
     case 'filter': ui.filter = v; if (el.closest('.chip') || el.closest('.cta-card') || el.closest('.afil')) ui.slide = 0; redraw(); if (ui.sheet === 'filters') renderSheet(); break;
+    case 'all-doms': ui.allDoms = !ui.allDoms; redraw(); break;
     case 'show': ui.show = v; redraw(); if (ui.sheet === 'filters') renderSheet(); break;
     case 'open-filters': openSheet('filters'); break;
     case 'goto': { const el = $('#habits-blk'); if (el) scrollScreen(topOf(el)); break; }

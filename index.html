@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Metrön">
-<link rel="stylesheet" href="tokens.css?v=20261029135842">
+<link rel="stylesheet" href="tokens.css?v=20261029140359">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -125,6 +125,7 @@
   .gate .row { display: flex; gap: 8px; width: 100%; }
   .gate button { flex: 1; border: 0; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; }
   .gate .ok { background: var(--ink); color: var(--surface); }
+  .gate.full-lock { background: var(--stage); }
   .gate .no { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
   .gate .nf { width: min(380px, 100%); background: var(--surface); color: var(--ink); border-radius: 26px; padding: 24px; display: grid; gap: 12px; justify-items: center; text-align: center; }
   .gate .links { display: grid; gap: 8px; width: 100%; }
@@ -213,15 +214,15 @@
 <div class="gate" id="gate" hidden>
   <form id="gate-form">
     <span class="gm" id="gate-m" aria-hidden="true"></span>
-    <h3>Code d'accès</h3>
-    <p>Les fichiers de code sont protégés. Entre le code pour les voir.</p>
+    <h3 id="gate-h">Code d'accès</h3>
+    <p id="gate-p">Les fichiers de code sont protégés. Entre le code pour les voir.</p>
     <input id="gate-in" type="password" autocomplete="off" aria-label="Code d'accès">
     <span class="err" id="gate-err" role="status"></span>
     <div class="row"><button type="button" class="no" data-gate-no>Annuler</button><button class="ok">Ouvrir</button></div>
   </form>
 </div>
 
-<script src="mascot.js?v=20261029135842"></script>
+<script src="mascot.js?v=20261029140359"></script>
 <script>
 /* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
 const FILES = [
@@ -346,7 +347,18 @@ function askCode(f) {
   pending = f; $('gate-m').innerHTML = chick({ acc: ['loupe'], deco: true }); $('gate-err').textContent = ''; $('gate-in').value = '';
   $('gate').hidden = false; setTimeout(() => $('gate-in').focus(), 30);
 }
-function closeGate() { $('gate').hidden = true; pending = null; }
+function closeGate() { if (LOCKED_SITE && !unlocked) return; $('gate').hidden = true; pending = null; }
+// Avant-première (lien Claude) : tout le site demande le code, pas seulement le code source.
+// Sur le site GitHub, seule la partie Code est protégée.
+const LOCKED_SITE = /claudeusercontent\.com$/.test(location.hostname) || new URLSearchParams(location.search).has('verrou');
+function lockSite() {
+  $('home').hidden = true;
+  $('gate-h').textContent = 'Avant-première Metrön';
+  $('gate-p').textContent = 'Cette version de travail est réservée. Entre le code pour entrer.';
+  $('gate').querySelector('[data-gate-no]').hidden = true;
+  $('gate').classList.add('full-lock');
+  askCode(null);
+}
 const GROUP_NAMES = { Exp: 'Expérience finale', Labs: 'Labs et ressources', Code: 'Code' };
 // Expérience finale : 3 grandes cartes côte à côte (carrousel sur téléphone)
 const tile = x => `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
@@ -435,15 +447,17 @@ $('gate-form').addEventListener('submit', e => {
   e.preventDefault();
   if ($('gate-in').value.trim().toLowerCase().normalize('NFC') === CODE) {
     unlocked = true; try { sessionStorage.setItem(CODE_KEY, '1'); } catch (er) {}
-    document.body.classList.add('unlocked'); const f = pending; closeGate(); goFull(); open(f);
+    document.body.classList.add('unlocked'); const f = pending; $('gate').classList.remove('full-lock'); closeGate(); $('home').hidden = false;
+    if (f) { goFull(); open(f); }
   } else { $('gate-err').textContent = 'Ce n’est pas le bon code.'; $('gate-in').select(); }
 });
 if (unlocked) document.body.classList.add('unlocked');
+if (LOCKED_SITE && !unlocked) lockSite();
 if (STANDALONE) { document.body.classList.add('standalone'); fullPref = false; }
 drawFull();
 addEventListener('popstate', () => { const f = location.hash.slice(1); f ? open(f, false) : close(false); });
 addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('gate').hidden) closeGate(); else if (!$('viewer').hidden) close(); });
-if (location.hash.length > 1) { const f = decodeURIComponent(location.hash.slice(1)); isCode(f) && !unlocked ? askCode(f) : open(f, false); }
+if (location.hash.length > 1) { const f = decodeURIComponent(location.hash.slice(1)); if (LOCKED_SITE && !unlocked) pending = f; else isCode(f) && !unlocked ? askCode(f) : open(f, false); }
 </script>
 </body>
 </html>

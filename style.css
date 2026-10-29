@@ -826,3 +826,29 @@ html[data-motion="off"] .cta-char.obs .scan, html[data-motion="off"] .cta-char.o
 :root[data-theme="dark"] .uml, :root[data-theme="black"] .uml { --u-color: var(--brand-yellow); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme]) .uml { --u-color: var(--brand-yellow); } }
 :root .phone.ob-mode .uml { --u-color: color-mix(in srgb, var(--obink) 30%, #000); }
+
+/* ---------- L'île Metrön (comme la Dynamic Island) ---------- */
+.island { width: auto; min-width: 110px; max-width: calc(100% - 120px); height: auto; min-height: 30px; margin-left: 0; transform: translateX(-50%); display: flex; align-items: center; gap: 7px; padding: 3px 10px 3px 3px; color: #FFFDF2; font-size: 12px; line-height: 1.15; overflow: hidden; transition: border-radius 450ms var(--ease), padding 450ms var(--ease), max-width 450ms var(--ease); }
+.island.isl-off { padding: 0; min-width: 110px; }
+.island .isl-hit { position: absolute; inset: 0; border: 0; background: transparent; padding: 0; cursor: pointer; border-radius: inherit; }
+.island .isl-face { width: 24px; height: 24px; flex: none; border-radius: 50%; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; }
+.island .isl-face svg { width: 125%; height: auto; display: block; }
+.island .isl-txt { min-width: 0; display: grid; }
+.island .isl-txt b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.island .isl-txt small { font-size: 11px; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.island .isl-ring { width: 18px; height: 18px; flex: none; margin-left: auto; }
+.island[data-mode="mini"] .isl-txt b { max-width: 150px; }
+.island[data-mode="open"] { top: 8px; border-radius: 26px; padding: 12px 12px 12px 12px; gap: 12px; max-width: calc(100% - 28px); width: calc(100% - 28px); }
+.island[data-mode="open"] .isl-face { width: 44px; height: 44px; }
+.island[data-mode="open"] .isl-txt b { font-size: 15px; white-space: normal; }
+.island[data-mode="open"] .isl-btn { position: relative; z-index: 1; margin-left: auto; flex: none; border: 0; border-radius: 999px; padding: 10px 14px; min-height: 40px; background: var(--brand-yellow); color: #2B1D17; font-weight: 700; font-size: 13px; }
+.island[data-mode="flash"] { padding: 4px 14px 4px 4px; border-radius: 22px; max-width: calc(100% - 60px); }
+.island[data-mode="flash"] .isl-face { width: 30px; height: 30px; }
+.island .isl-ok { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; background: var(--dom-balance); display: grid; place-items: center; font-size: 13px; font-weight: 800; }
+/* Sur un vrai téléphone (hors iPhone) : l'île se pose en haut de l'écran, sous la barre d'état */
+@media (max-width: 500px) {
+  .island { display: flex !important; position: fixed; top: calc(6px + env(safe-area-inset-top)); z-index: 40; }
+  .island.isl-off { display: none !important; }
+  .screen { padding-top: calc(48px + env(safe-area-inset-top)); }
+}
+@media (prefers-reduced-motion: reduce) { .island { transition: none; } }

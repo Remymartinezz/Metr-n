@@ -3,7 +3,7 @@
   "short_name": "Metrön",
   "description": "Trouver ta juste mesure entre études, sport, sommeil, social, repos et projets.",
   "lang": "fr",
-  "start_url": "controle.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F8F7F0",
@@ -43,11 +43,11 @@
   "shortcuts": [
     {
       "name": "Cocher la prochaine habitude",
-      "url": "index.html?quick=check"
+      "url": "app.html?quick=check"
     },
     {
       "name": "Voir mon équilibre",
-      "url": "index.html?quick=balance"
+      "url": "app.html?quick=balance"
     }
   ]
 }

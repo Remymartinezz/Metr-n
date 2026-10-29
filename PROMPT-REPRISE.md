@@ -36,7 +36,8 @@ Lancement de test : un serveur statique local sur http://localhost:8791 (sert le
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | L'app. Contient le cadre téléphone, le panneau Démo (3 boutons : Tout réinitialiser, Après 1 mois, Tableau de bord vierge), la feuille, le toast, un `<input type=file>` pour l'import. Charge `tokens.css`, `style.css`, `mascot.js`, `app.js`. |
+| `index.html` | La tour de contrôle : page d'entrée du site, toutes les pages et fichiers du projet (expérience, labs, code protégé par le code « metrön »), thèmes Auto/Clair/Sombre/Ultra-sombre, plein écran. |
+| `app.html` | L'app. Contient le cadre téléphone, le panneau Démo (3 boutons : Tout réinitialiser, Après 1 mois, Tableau de bord vierge), la feuille, le toast, un `<input type=file>` pour l'import. Charge `tokens.css`, `style.css`, `mascot.js`, `app.js`. |
 | `app.js` | Toute la logique : état `S` (sauvegardé en localStorage sous la clé `metron.v2`), `ui` (état d'écran), calcul de la mesure (`measure`, `history`), rendu (`render`, `viewDashboard`, cartes du carrousel, radar `drawRadar`, courbe `viewCurve`, régularité `viewRegularity`, répartition `viewShare`), questionnaire (`viewOnboarding`, `STEPS`), feuilles (`renderSheet` : filtres, pause, réglages, édition d'habitude), événements (un seul `click` délégué via `data-act`), aperçus du labo (`previewScreen`, paramètre `?screen=…`), rappel, export/import, raccourcis d'icône (`?quick=check`…). *(texte d'origine coupé ici)* |
 | `mascot.js` | Le poussin, partagé par l'app et `mascotte.html`. Dessin, yeux, humeurs, accessoires (`ACC`, 30 variantes), palettes par domaine (`PALS`, `palOf`), `chick()` (le poussin complet), `chickInner()`, `miniChick()` (petit décoratif fixe), `DOM_ACC` (accessoire par défaut de chaque domaine), `standaloneSvg()`. |
 | `style.css` | Tous les styles de l'app. Sections : base, cartes, habitudes, détail, feuilles, questionnaire, poussin, accessibilité, « respiration » (espace). Beaucoup de surcharges successives : l'ordre compte, les dernières règles gagnent. |
@@ -112,8 +113,8 @@ La mesure (`measure(at, n)`) : pour chaque domaine, prévu = Σ(h × w) × facte
 ## 9. Comment tester
 
 - Démarrer le serveur statique sur le dossier du projet, port 8791 (un petit HttpListener PowerShell sert les fichiers ; il faut ajouter `.svg` et `.webmanifest` aux types MIME). Ailleurs que sur Windows : `python3 -m http.server 8791`.
-- Ouvrir http://localhost:8791/index.html. Le panneau Démo (sur grand écran) permet de passer d'un état à l'autre.
-- Aperçus ciblés : `index.html?screen=<id>` (ids dans `previewScreen` : welcome, explain, status, domains, rythme, habits, generating, start, month, focus-cta, radar-focus, radar-ok, courbe-ok, evolution, equilibre, regularite, repartition, domaine-*, filtre, edit, settings, envers, envers-domaine, semaine, nuit, pause).
+- Ouvrir http://localhost:8791/ (tour de contrôle) ou http://localhost:8791/app.html (l'app). En ligne : https://remymartinezz.github.io/Metr-n/ (GitHub Pages, branche claude/wizardly-lamport-5gj4ul). Le panneau Démo (sur grand écran) permet de passer d'un état à l'autre.
+- Aperçus ciblés : `app.html?screen=<id>` (ids dans `previewScreen` : welcome, explain, status, domains, rythme, habits, generating, start, month, focus-cta, radar-focus, radar-ok, courbe-ok, evolution, equilibre, regularite, repartition, domaine-*, filtre, edit, settings, envers, envers-domaine, semaine, nuit, pause).
 - Vérification de collisions des accessoires : raster en canvas, comparer aux masques des yeux (marge 12 px), du bec, et du bord du cadre (clipPath).
 - Ne pas oublier de redimensionner la fenêtre (mobile puis desktop) pour voir le rendu téléphone, puis remettre en desktop.
 

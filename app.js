@@ -226,6 +226,7 @@ function render() {
   const screen = $('#screen');
   const phone = $('#phone');
   applyFocusTheme(phone);
+  renderIsland();
   $('#tabbar').hidden = true;                      // une seule page : le tableau de bord
   if (ui.onboarding) {
     const bg = ui.generating ? GEN_COLOR : OB_COLORS[ui.step];
@@ -862,6 +863,41 @@ function closeSheet() {
 
 /* ---------- Toast ---------- */
 let toastT;
+/* =====================================================
+   L'île Metrön : une pilule en haut de l'écran, comme la Dynamic Island.
+   Repliée : le poussin et la prochaine habitude. Touchée : elle s'ouvre (prochaine habitude + « C'est fait »).
+   Quand on coche : elle s'élargit un instant pour fêter. Pas sur iPhone, qui a déjà la sienne.
+   ===================================================== */
+const IPHONE = /iPhone|iPod/.test(navigator.userAgent);
+let islandTimer = 0, islandMsg = null;
+function islandFlash(h) {
+  islandMsg = h; ui.islandOpen = false; clearTimeout(islandTimer);
+  islandTimer = setTimeout(() => { islandMsg = null; renderIsland(); }, 2200);
+}
+function renderIsland() {
+  const el = $('#island'); if (!el) return;
+  const off = ui.onboarding || (IPHONE && matchMedia('(max-width: 500px)').matches);   // sur un vrai iPhone : on laisse la sienne
+  el.classList.toggle('isl-off', off);
+  if (off) { el.innerHTML = ''; return; }
+  const left = S.habits.filter(h => !doneOn(h.id, today())), nxt = left[0];
+  const total = S.habits.length, frac = total ? (total - left.length) / total : 0, C = 2 * Math.PI * 9;
+  const ring = `<svg class="isl-ring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/><circle cx="12" cy="12" r="9" fill="none" stroke="var(--brand-yellow)" stroke-width="3" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 12 12)"/></svg>`;
+  const face = `<span class="isl-face">${miniChick({ mood: islandMsg || !nxt ? 'happy' : 'open' })}</span>`;
+  let mode, html;
+  if (islandMsg) {
+    mode = 'flash';
+    html = `${face}<span class="isl-txt"><b>C’est fait</b><small>${esc(islandMsg.name)}</small></span><span class="isl-ok" aria-hidden="true">✓</span>`;
+  } else if (ui.islandOpen) {
+    mode = 'open';
+    html = `<button class="isl-hit" data-act="island" aria-label="Replier"></button>${face}<span class="isl-txt"><small>${nxt ? 'Prochaine' : 'Aujourd’hui'}</small><b>${nxt ? esc(nxt.name) : 'Tout est fait.'}</b>${nxt ? `<small>${fmtDur(nxt.h)} · ${esc(dname(nxt.domain))}</small>` : `<small>Profite de ta journée.</small>`}</span>
+      ${nxt ? `<button class="isl-btn" data-act="toggle" data-v="${nxt.id}">C’est fait</button>` : ``}`;
+  } else {
+    mode = 'mini';
+    html = `<button class="isl-hit" data-act="island" aria-label="Ouvrir l’île Metrön"></button>${face}<span class="isl-txt"><b>${nxt ? esc(nxt.name) : 'Tout est fait'}</b></span>${ring}`;
+  }
+  el.dataset.mode = mode; el.innerHTML = html;
+}
+
 function toast(msg, ms = 2400) {
   const t = $('#toast'); t.textContent = msg; t.hidden = false;
   clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms);
@@ -922,7 +958,7 @@ document.addEventListener('click', e => {
       const h = S.habits.find(x => x.id === v), d = ui.day;
       const i = S.logs.findIndex(l => l.habit === v && l.day === d);
       if (i >= 0) { S.logs.splice(i, 1); ui.pop = null; }
-      else { S.logs.push({ habit: v, day: d, h: h.h, domain: h.domain }); ui.pop = v; }
+      else { S.logs.push({ habit: v, day: d, h: h.h, domain: h.domain }); ui.pop = v; if (d === today()) islandFlash(h); }
       // Les cases faites descendent : on anime le déplacement (FLIP)
       const before = {};
       document.querySelectorAll('.hrow').forEach(r => before[r.querySelector('.habit').dataset.v] = r.getBoundingClientRect().top);
@@ -935,6 +971,7 @@ document.addEventListener('click', e => {
     }
 
     // Modifier
+    case 'island': ui.islandOpen = !ui.islandOpen; renderIsland(); break;
     case 'edit': openSheet(v); break;
     case 'add': {
       const dom = ui.filter !== 'all' ? ui.filter : (S.habits.length ? S.habits[S.habits.length - 1].domain : 'etudes');
@@ -1169,7 +1206,7 @@ function seedBalanced() {
   });
 }
 
-/* ---------- Aperçus pour le labo des couleurs (index.html?screen=…) ---------- */
+/* ---------- Aperçus pour le labo des couleurs (app.html?screen=…) ---------- */
 // Le labo charge l'app dans des cadres, chacun sur un écran précis, sans rien enregistrer,
 // et lui envoie les couleurs par message : tout se met à jour partout, en direct.
 function previewScreen(n) {
@@ -1281,7 +1318,7 @@ document.addEventListener('change', e => {
 async function notify(title, body) {
   try {
     const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
-    if (reg) return reg.showNotification(title, { body, icon: 'icon.svg', badge: 'icon.svg', tag: 'metron-rappel', data: { url: 'index.html?quick=today' } });
+    if (reg) return reg.showNotification(title, { body, icon: 'icon.svg', badge: 'icon.svg', tag: 'metron-rappel', data: { url: 'app.html?quick=today' } });
     new Notification(title, { body, icon: 'icon.svg' });
   } catch (e) {}
 }

@@ -81,8 +81,7 @@ const SETS = [
 ];
 const SLOTS = [0, 1, 2];
 const KEY = 'metron.lab-themes';
-// En ligne, l'app est publiée sous app.html (index.html y est la tour de contrôle) ; en local, c'est index.html
-let APP = 'index.html';
+const APP = 'app.html';
 let st = { screen: 'a', modes: JSON.parse(JSON.stringify(DEF)), vision: '' };
 try { const sv = JSON.parse(localStorage.getItem(KEY)); if (sv) { st.screen = SETS.some(x => x[0] === sv.screen) ? sv.screen : st.screen; st.vision = sv.vision || ''; for (const k in DEF) Object.assign(st.modes[k].v, (sv.modes || {})[k] || {}); } } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ screen: st.screen, vision: st.vision, modes: Object.fromEntries(Object.keys(DEF).map(k => [k, st.modes[k].v])) })); } catch (e) {} };
@@ -114,7 +113,7 @@ $('vision').value = st.vision;
 Object.keys(DEF).forEach(k => SLOTS.forEach(i => $(`f-${k}-${i}`).addEventListener('load', () => { paint(k); fit(); })));
 Object.keys(DEF).forEach(paint);
 const loadAll = () => { const set = SETS.find(x => x[0] === st.screen)[2]; Object.keys(DEF).forEach(k => SLOTS.forEach(i => { $(`f-${k}-${i}`).src = `${APP}?screen=${set[i]}`; })); };
-fetch('app.html', { method: 'HEAD' }).then(r => { if (r.ok) APP = 'app.html'; }).catch(() => {}).finally(loadAll);
+loadAll();
 
 document.addEventListener('input', e => {
   const t = e.target;

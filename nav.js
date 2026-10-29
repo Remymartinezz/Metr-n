@@ -5,10 +5,10 @@
   if (window.self !== window.top || new URLSearchParams(location.search).has('screen')) return;   // dans la tour ou un aperçu : rien
 
   const PAGES = [
-    ['Expérience', [['index.html', 'L’app'], ['widgets.html', 'Widgets'], ['notifications.html', 'Notifications']]],
+    ['Expérience', [['app.html', 'L’app'], ['widgets.html', 'Widgets'], ['notifications.html', 'Notifications']]],
     ['Labs', [['mascotte.html', 'Mascotte'], ['identite.html', 'Identité visuelle'], ['lab-themes.html', 'Labo des thèmes'], ['lab-o.html', 'Labo du ö']]],
   ];
-  const here = location.pathname.split('/').pop() || 'index.html';
+  const here = location.pathname.split('/').pop() || 'index.html';   // index.html = la tour de contrôle
 
   const css = `
   .mn-btn { position: fixed; z-index: 2147483000; top: 14px; right: 14px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 6px 16px 6px 6px; min-height: 44px; background: #2B1D17; color: #FFFDF2; font: 700 14px/1 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / .25); cursor: pointer; transition: opacity 350ms cubic-bezier(.2,.8,.2,1), transform 350ms cubic-bezier(.2,.8,.2,1); }
@@ -35,7 +35,7 @@
   const bg = document.createElement('div');
   bg.className = 'mn-bg'; bg.hidden = true;
   bg.innerHTML = `<nav class="mn-panel" role="dialog" aria-modal="true" aria-label="Pages de Metrön">
-    <a class="mn-tour" href="controle.html">‹ Revenir au centre de contrôle</a>
+    <a class="mn-tour" href="./">‹ Revenir au centre de contrôle</a>
     ${PAGES.map(([g, list]) => `<p>${g}</p>${list.map(([f, n]) => `<a href="${f}"${f === here ? ' aria-current="page"' : ''}>${n}</a>`).join('')}`).join('')}
   </nav>`;
   document.body.append(btn, bg);

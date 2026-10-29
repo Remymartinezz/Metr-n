@@ -3,51 +3,447 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F8F7F0">
+<title>Metrön · Tour de contrôle</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="favicon-16.png" type="image/png" sizes="16x16">
 <link rel="alternate icon" href="favicon.ico" sizes="48x48">
-<link rel="manifest" href="manifest.webmanifest">
+<!-- Ajoutée à l'écran d'accueil (iPhone : Partager → Sur l'écran d'accueil), la tour s'ouvre en plein écran comme une app -->
+<link rel="manifest" href="manifest-tour.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Metrön">
-<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="stylesheet" href="tokens.css">
-<title>Metrön</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--stage); color: var(--ink); font: 15px/1.5 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  /* Le ö (mêmes règles que l'app) */
+  .uml { position: relative; display: inline-block; line-height: 1; }
+  .uml::before, .uml::after { content: ""; position: absolute; top: .18em; width: .155em; height: .14em; background: var(--brand-brown); }
+  .uml::before { left: .055em; border-radius: 4% 1% 100% 1%; }
+  .uml::after { right: .055em; border-radius: 1% 4% 1% 100%; }
+
+  /* Thème : clair, sombre, ou comme l'appareil (data-theme sur <html>, couleurs dans tokens.css) */
+  :root { color-scheme: light; }
+  :root[data-theme="dark"], :root[data-theme="black"] { color-scheme: dark; }
+  :root[data-theme="dark"] .uml::before, :root[data-theme="dark"] .uml::after, :root[data-theme="black"] .uml::before, :root[data-theme="black"] .uml::after { background: var(--brand-yellow); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) { color-scheme: dark; }
+    :root:not([data-theme]) .uml::before, :root:not([data-theme]) .uml::after { background: var(--brand-yellow); }
+  }
+  .tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-self: flex-start; }
+  .full { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; min-height: 48px; }
+  .standalone .full, .standalone .float-full { display: none !important; }
+  .full[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .full-msg { margin: 14px 0 0; padding: 12px 16px; border-radius: 16px; background: var(--sl-focus); color: var(--sl-focus-ink); max-width: 60ch; font-size: 14px; }
+  .theme { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); align-self: flex-start; }
+  .theme button { border: 0; background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; min-height: 40px; }
+  .theme button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  @media (max-width: 640px) { .top { flex-wrap: wrap; } .tools { margin-left: 0; order: 3; justify-content: flex-start; } }
+
+  /* Accueil de la tour */
+  .home { max-width: 1100px; margin: 0 auto; padding: max(36px, calc(env(safe-area-inset-top) + 16px)) 16px 80px; }
+  .top { display: flex; align-items: center; gap: 16px; }
+  .top .av { width: 76px; flex: none; border-radius: 22px; overflow: hidden; background: var(--brand-blue); }
+  .top .av svg { display: block; width: 100%; height: auto; }
+  .eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  h1 { margin: 2px 0 0; font-size: clamp(30px, 6vw, 46px); letter-spacing: -.03em; line-height: 1.05; }
+  .lead { color: var(--muted); max-width: 60ch; margin: 18px 0 0; }
+  h2 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 48px 0 14px; font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .tile { position: relative; overflow: hidden; border: 0; text-align: left; border-radius: 26px; padding: 22px 22px 20px; min-height: 196px; background: var(--sl); color: var(--sl-i); display: flex; flex-direction: column; transition: transform 300ms var(--ease), box-shadow 300ms var(--ease); }
+  .tile:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(43 29 23 / .45); }
+  .tile:active { transform: scale(.98); }
+  .tile .kind { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; opacity: var(--sl-o); }
+  .tile b { font-size: 24px; letter-spacing: -.03em; line-height: 1.1; margin-top: 8px; max-width: 11ch; }
+  .tile small { font-size: 14px; margin-top: 6px; opacity: var(--sl-o); max-width: 22ch; line-height: 1.4; }
+  .tile .file { margin-top: auto; padding-top: 16px; font: 12.5px ui-monospace, Consolas, monospace; opacity: var(--sl-o); }
+  .tile .m { position: absolute; right: -18px; bottom: -22px; width: 44%; pointer-events: none; }
+  .tile .m svg { display: block; width: 100%; height: auto; }
+
+  /* Expérience finale : 3 colonnes sur ordi, carrousel aimanté sur téléphone (la suivante dépasse) */
+  .exp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .exp .tile { min-height: 330px; padding: 26px; }
+  .exp .tile b { font-size: 30px; }
+  .exp .tile .m { width: 58%; right: -22px; bottom: -30px; }
+  .edots { display: none; }
+  @media (max-width: 760px) {
+    .exp { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scroll-padding: 0 16px; scrollbar-width: none; }
+    .exp::-webkit-scrollbar { display: none; }
+    .exp .tile { flex: 0 0 84%; scroll-snap-align: start; min-height: 360px; }
+    .edots { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+    .edots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: var(--line); transition: width 300ms var(--ease), background-color 300ms var(--ease); position: relative; }
+    .edots button::after { content: ""; position: absolute; inset: -12px -6px; }
+    .edots button[aria-selected="true"] { width: 26px; background: var(--ink); }
+  }
+
+  /* Labs et ressources : une liste basse */
+  .list { display: grid; gap: 8px; }
+  .lrow { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto 20px; align-items: center; gap: 14px; border: 0; text-align: left; background: var(--sl); color: var(--sl-i); border-radius: 18px; padding: 10px 16px 10px 10px; min-height: 72px; transition: background-color 250ms var(--ease); }
+  .lrow:hover { background: color-mix(in srgb, var(--sl-i) 8%, var(--sl)); }
+  .lrow:active { transform: scale(.99); }
+  .lrow .li { width: 52px; height: 52px; border-radius: 14px; background: color-mix(in srgb, var(--sl-i) 12%, var(--sl)); overflow: hidden; display: grid; place-items: center; }
+  .lrow .li svg { width: 120%; height: auto; display: block; }
+  .lrow b { display: block; font-size: 16px; letter-spacing: -.01em; }
+  .lrow small { display: block; opacity: var(--sl-o); font-size: 13.5px; }
+  .lrow code { font-size: 12.5px; opacity: var(--sl-o); }
+  .lrow .chev { font-size: 22px; opacity: var(--sl-o); }
+  @media (max-width: 560px) { .lrow { grid-template-columns: 52px minmax(0, 1fr) 16px; } .lrow code { display: none; } }
+
+  /* Fichiers : une icône de document (coin plié), son extension, son poussin qui dépasse, le nom en dessous */
+  .files { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 22px 14px; }
+  .fic { border: 0; background: transparent; color: var(--ink); display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: 18px; text-align: center; transition: background-color 250ms var(--ease); }
+  .fic:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .fic:active { transform: scale(.97); }
+  .fic .doc { position: relative; width: 84px; height: 104px; background: var(--sl); color: var(--sl-i); border-radius: 12px; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); }
+  .fic .doc::before { content: ""; position: absolute; right: 0; top: 0; width: 26px; height: 26px; background: color-mix(in srgb, var(--sl-i) 22%, var(--sl)); border-bottom-left-radius: 8px; }
+  .fic .ext { position: absolute; left: 10px; top: 12px; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+  .fic .m { position: absolute; left: 10px; right: -14px; bottom: -16px; }
+  .fic .m svg { display: block; width: 100%; height: auto; }
+  .fic b { font: 600 13.5px ui-monospace, Consolas, monospace; word-break: break-all; }
+  .fic small { font-size: 12.5px; color: var(--muted); }
+  .fic .lock { position: absolute; right: 6px; bottom: 6px; z-index: 2; width: 26px; height: 26px; border-radius: 50%; background: var(--sl-i); color: var(--sl); display: grid; place-items: center; font-size: 13px; }
+  .unlocked .fic .lock { display: none; }
+
+  /* Code d'accès pour les fichiers bruts */
+  .gate { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / .45); }
+  .gate[hidden] { display: none; }
+  .gate form { width: min(360px, 100%); background: var(--surface); color: var(--ink); border-radius: 26px; padding: 24px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .gate .gm { width: 110px; } .gate .gm svg { display: block; width: 100%; height: auto; }
+  .gate h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+  .gate p { margin: 0; color: var(--muted); font-size: 14px; }
+  .gate input { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); }
+  .gate .err { color: var(--high); font-weight: 600; min-height: 1.4em; }
+  .gate .row { display: flex; gap: 8px; width: 100%; }
+  .gate button { flex: 1; border: 0; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; }
+  .gate .ok { background: var(--ink); color: var(--surface); }
+  .gate .no { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
+  .gate .nf { width: min(380px, 100%); background: var(--surface); color: var(--ink); border-radius: 26px; padding: 24px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .gate .links { display: grid; gap: 8px; width: 100%; }
+  .gate .links a, .gate .links button { display: flex; align-items: center; justify-content: center; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; text-decoration: none; font-size: 15px; }
+  .gate .links a.ok, .gate .links button.ok { background: var(--ink); color: var(--surface); border: 0; }
+  .gate .steps { list-style: none; counter-reset: s; margin: 0 0 6px; padding: 0; display: grid; gap: 10px; text-align: left; }
+  .gate .steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; column-gap: 10px; }
+  .gate .steps li::before { content: counter(s); grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; background: var(--sl-today); color: var(--sl-today-ink); display: grid; place-items: center; font-weight: 800; }
+  .gate .steps b { font-size: 15px; } .gate .steps small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+  /* Mode tour de contrôle : le fichier ouvert dans la tour */
+  .viewer { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; background: var(--stage); }
+  .viewer[hidden] { display: none; }
+  .bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--sl); color: var(--sl-i); flex-wrap: wrap; }
+  .bar .back { border: 0; border-radius: 999px; padding: 10px 16px; background: var(--sl-i); color: var(--sl); font-weight: 700; min-height: 44px; }
+  .bar .who { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 200px; }
+  .bar .who i { width: 40px; flex: none; display: block; }
+  .bar .who svg { display: block; width: 100%; height: auto; }
+  .bar .who b { font-size: 17px; letter-spacing: -.02em; display: block; line-height: 1.15; }
+  .bar .who code { font-size: 12px; opacity: var(--sl-o); word-break: break-all; }
+  .bar .act { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bar .act a, .bar .act button { border: 1.5px solid currentColor; background: transparent; color: inherit; border-radius: 999px; padding: 9px 14px; font-weight: 700; font-size: 14px; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+  .viewer iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+  .nav { display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--line); scrollbar-width: none; grid-row: 2; }
+  .viewer.has-nav { grid-template-rows: auto auto 1fr; }
+  .nav button { flex: none; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 11px; font-weight: 600; font-size: 13px; }
+  .nav { align-items: center; }
+  .nav .ncat { flex: none; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; color: var(--muted); padding: 0 2px 0 4px; }
+  .nav .ntheme { margin-left: auto; flex: none; position: sticky; right: 0; box-shadow: -14px 0 12px var(--bg); display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+  .nav .ntheme button { border: 0; background: transparent; padding: 5px 11px; }
+  .nav .ntheme button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  .nav .nsep { flex: none; width: 1px; height: 22px; background: var(--line); margin: 0 8px; }
+  .nav button[aria-current="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .viewer iframe { grid-row: 3; }
+
+  /* Sur téléphone : le fichier ouvert prend tout l'écran (expérience complète), un seul petit bouton pour revenir */
+  .float { display: none; }
+  @media (max-width: 640px) {
+    .viewer, .viewer.has-nav { grid-template-rows: 1fr; }
+    .viewer .bar, .viewer .nav { display: none; }
+    .viewer iframe { grid-row: 1; }
+    /* Le bouton n'apparaît que quand on fait défiler (vers le haut ou le bas), puis s'efface : l'écran reste à l'app */
+    .float { display: flex; gap: 8px; position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 5; transform: translate(-50%, 0); opacity: 1; transition: opacity 350ms var(--ease), transform 350ms var(--ease); }
+    .float.off { opacity: 0; transform: translate(-50%, 24px); pointer-events: none; }
+    .float button { border: 0; border-radius: 999px; min-height: 48px; background: var(--ink); color: var(--surface); font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3); white-space: nowrap; }
+    .float-back { display: flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; }
+    .float-full { width: 48px; font-size: 20px; padding: 0; }
+    .float-full[aria-pressed="true"] { background: var(--surface); color: var(--ink); }
+    .float-back i { width: 36px; height: 36px; border-radius: 50%; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; flex: none; }
+    .float-back svg { width: 118%; height: auto; display: block; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } }
+</style>
 </head>
 <body>
-<div class="phone" id="phone">
-  <div class="island"></div>
-  <div class="statusbar"><span id="clock">9:41</span><span class="sb-right">●●● ▮</span></div>
 
-  <div class="screen" id="screen"></div>
-  <nav class="tabbar" id="tabbar" hidden></nav>
-
-  <div class="sheet" id="sheet" hidden>
-    <div class="sheet-bg" data-act="close-sheet"></div>
-    <div class="sheet-panel" id="sheet-panel" role="dialog" aria-modal="true" aria-label="Fenêtre"></div>
+<main class="home" id="home">
+  <div class="top">
+    <span class="av" id="av"></span>
+    <div><p class="eyebrow">Metr<span class="uml">o</span>n</p><h1>Tour de contrôle</h1></div>
+    <div class="tools"><button class="full" id="full-btn" aria-pressed="false">⤢ Plein écran · <span>Désactivé</span></button><div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button><button data-theme-set="black">Ultra-sombre</button></div></div>
   </div>
-  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <p class="full-msg" id="full-msg" role="status" hidden></p>
+  <p class="lead">Tout le projet au même endroit. Touche une carte : elle s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
+  <div id="groups"></div>
+</main>
+
+<section class="viewer has-nav" id="viewer" hidden aria-label="Fichier ouvert">
+  <div class="bar" id="bar"></div>
+  <nav class="nav" id="nav" aria-label="Changer de fichier"></nav>
+  <iframe id="frame" title="Fichier ouvert" allow="fullscreen"></iframe>
+  <div class="float off" id="float">
+    <button class="float-full" id="ffull" aria-pressed="false" aria-label="Plein écran">⤢</button>
+    <button class="float-back" data-close id="fback"><i aria-hidden="true"></i>Revenir au centre de contrôle</button>
+  </div>
+</section>
+
+<div class="gate" id="nofull" hidden>
+  <div class="nf" role="dialog" aria-modal="true" aria-labelledby="nf-h">
+    <span class="gm" id="nf-m" aria-hidden="true"></span>
+    <h3 id="nf-h">Pas de plein écran ici</h3>
+    <p id="nf-text"></p>
+    <div class="links" id="nf-links"></div>
+  </div>
 </div>
-<aside class="stage-tools" aria-label="Outils de démo">
-  <p>Démo</p>
-  <button data-act="demo-onboarding">↺ Tout réinitialiser<small>Efface tout et rejoue le questionnaire d'accueil</small></button>
-  <button data-act="demo-month">⏩ Après 1 mois<small>Remplit un mois d'historique pour voir la vraie courbe</small></button>
-  <button data-act="demo-reset">↺ Tableau de bord vierge<small>Efface tout et revient sur le tracker de départ</small></button>
-  <p>Pages</p>
-  <a class="page-link" href="widgets.html">Widgets<small>Aperçu des widgets d'écran d'accueil</small></a>
-  <a class="page-link" href="mascotte.html">Mascotte<small>Le poussin, ses accessoires et ses humeurs</small></a>
-  <a class="page-link" href="identite.html">Identité visuelle<small>Signe, mot, couleurs, typo</small></a>
-  <a class="page-link" href="lab-o.html">Labo du ö<small>Régler les deux points du ö</small></a>
-</aside>
-<input type="file" id="import-file" accept=".json,application/json" hidden>
+<div class="gate" id="gate" hidden>
+  <form id="gate-form">
+    <span class="gm" id="gate-m" aria-hidden="true"></span>
+    <h3>Code d'accès</h3>
+    <p>Les fichiers de code sont protégés. Entre le code pour les voir.</p>
+    <input id="gate-in" type="password" autocomplete="off" aria-label="Code d'accès">
+    <span class="err" id="gate-err" role="status"></span>
+    <div class="row"><button type="button" class="no" data-gate-no>Annuler</button><button class="ok">Ouvrir</button></div>
+  </form>
+</div>
+
 <script src="mascot.js"></script>
-<script src="app.js"></script>
-<script src="nav.js"></script>
+<script>
+/* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
+const FILES = [
+  { g: 'Exp', f: 'app.html', n: 'L’app', s: 'Le tableau de bord dans son téléphone, avec le panneau Démo.', sl: 'today', acc: 'none', pal: 'original', mood: 'happy' },
+  { g: 'Exp', f: 'widgets.html', n: 'Widgets', s: 'Les widgets d’écran d’accueil, en aperçu.', sl: 'balance', acc: 'lunettes', pal: 'repos' },
+  { g: 'Exp', f: 'notifications.html', n: 'Notifications', s: 'Le rappel doux, sur l’écran verrouillé et en bannière.', sl: 'focus', acc: 'bulles', pal: 'social', mood: 'happy' },
+  { g: 'Labs', f: 'mascotte.html', n: 'Mascotte', s: 'Le poussin, ses accessoires, ses humeurs.', sl: 'share', acc: 'fete', pal: 'social' },
+  { g: 'Labs', f: 'identite.html', n: 'Identité visuelle', s: 'Signe, mot, couleurs, typo, mouvement.', sl: 'start', acc: 'pinceau', pal: 'projets' },
+  { g: 'Labs', f: 'lab-themes.html', n: 'Labo des thèmes', s: 'Clair, sombre, ultra-sombre côte à côte.', sl: 'balance', acc: 'lune', pal: 'sommeil' },
+  { g: 'Labs', f: 'lab-o.html', n: 'Labo du ö', s: 'Régler les deux points du ö.', sl: 'curve', acc: 'loupe', pal: 'original' },
+  { g: 'Code', f: 'app.js', n: 'La logique', s: 'Mesure, écrans, cartes, questionnaire.', sl: 'regular', acc: 'chantier', pal: 'projets', mood: 'focus' },
+  { g: 'Code', f: 'mascot.js', n: 'Le poussin', s: 'Dessin, yeux, humeurs, accessoires.', sl: 'curve', acc: 'crayon', pal: 'sommeil' },
+  { g: 'Code', f: 'style.css', n: 'Les styles', s: 'Tout ce qui met en forme l’app.', sl: 'week', acc: 'pousse', pal: 'repos' },
+  { g: 'Code', f: 'tokens.css', n: 'Les couleurs', s: 'Toutes les couleurs et le mouvement.', sl: 'share', acc: 'pinceau', pal: 'social' },
+  { g: 'Code', f: 'sw.js', n: 'Hors ligne', s: 'Le service worker : cache et rappels.', sl: 'curve', acc: 'the', pal: 'sommeil' },
+];
+// Thème choisi, gardé sur cet appareil
+const THEME_KEY = 'metron.tour.theme';
+// Le thème choisi s'applique aussi à la page ouverte dans la tour
+function themeFrame() {
+  try { const r = document.getElementById('frame').contentDocument.documentElement, t = document.documentElement.dataset.theme; t ? r.dataset.theme = t : r.removeAttribute('data-theme'); } catch (e) {}
+}
+function setTheme(t) {
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t;
+  themeFrame();
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.themeSet === t));
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+}
+let savedTheme = 'auto'; try { savedTheme = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) {}
+setTheme(savedTheme);
+const slStyle = k => `--sl:var(--sl-${k});--sl-i:var(--sl-${k}-ink);--sl-o:var(--sl-${k}-op)`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+const pic = (x, o = {}) => chick({ acc: [x.acc], pal: x.pal, mood: x.mood || 'auto', deco: true, ...o });
+
+$('av').innerHTML = chick({ acc: ['loupe'], deco: true });
+$('nf-m').innerHTML = chick({ acc: ['lunettes'], mood: 'wide', deco: true });
+$('fback').querySelector('i').innerHTML = chick({ acc: ['loupe'], look: [0, 0], deco: true });
+// Sur téléphone : le bouton de retour se montre quand on fait défiler la page ouverte, puis s'efface après 2 s
+let backTimer = 0;
+function peekBack(ms = 2000) {
+  const b = $('float'); b.classList.remove('off');
+  clearTimeout(backTimer); backTimer = setTimeout(() => b.classList.add('off'), ms);
+}
+$('frame').addEventListener('load', () => {
+  themeFrame();
+  try {
+    const d = $('frame').contentDocument; let lastY = null;
+    const onMove = () => peekBack();
+    d.addEventListener('scroll', onMove, { capture: true, passive: true });     // capte aussi le défilement des zones internes (l'écran de l'app)
+    d.addEventListener('wheel', onMove, { passive: true });
+    d.addEventListener('touchstart', e => { lastY = e.touches[0].clientY; }, { passive: true });
+    d.addEventListener('touchmove', e => { if (lastY != null && Math.abs(e.touches[0].clientY - lastY) > 12) { lastY = e.touches[0].clientY; peekBack(); } }, { passive: true });
+  } catch (e) {}
+  if (!$('viewer').hidden) peekBack(2600);                                         // à l'ouverture : on le montre une fois, pour qu'on sache qu'il existe
+});
+// Sur téléphone, on demande aussi le vrai plein écran (marche sur Android ; iPhone et certains cadres l'ignorent)
+const mobile = () => matchMedia('(max-width: 640px)').matches;
+// Plein écran : seulement si tu l'as autorisé (bouton « Plein écran »). Le navigateur exige un toucher pour l'activer,
+// donc on le relance à chaque fichier ouvert. Gardé sur cet appareil.
+const FULL_KEY = 'metron.tour.full';
+let fullPref = false; try { fullPref = localStorage.getItem(FULL_KEY) === '1'; } catch (e) {}
+const canFull = () => !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+function reqFull() {
+  const d = document.documentElement, r = d.requestFullscreen || d.webkitRequestFullscreen;
+  if (!r || document.fullscreenElement || document.webkitFullscreenElement) return Promise.resolve(!!r);
+  try { return Promise.resolve(r.call(d)).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+}
+const goFull = () => { if (fullPref && !/iPhone|iPod/.test(navigator.userAgent)) reqFull(); };
+const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function drawFloatFull() { const on = isFull(); $('ffull').setAttribute('aria-pressed', on); $('ffull').textContent = on ? '⤡' : '⤢'; $('ffull').setAttribute('aria-label', on ? 'Quitter le plein écran' : 'Plein écran'); }
+document.addEventListener('fullscreenchange', drawFloatFull); document.addEventListener('webkitfullscreenchange', drawFloatFull);
+function drawFull(msg = '') {
+  $('full-btn').setAttribute('aria-pressed', fullPref);
+  $('full-btn').querySelector('span').textContent = fullPref ? 'Activé' : 'Désactivé';
+  $('full-msg').textContent = msg; $('full-msg').hidden = !msg;
+}
+// Plein écran refusé : on propose d'ouvrir la tour dans un navigateur qui le permet.
+// Sur iPhone, tous les navigateurs (Safari, Chrome, Firefox, Edge) utilisent le moteur d'Apple, qui ne permet pas
+// le plein écran d'une page : changer de navigateur n'y change rien, on le dit plutôt que de promettre.
+const IOS = /iPhone|iPod/.test(navigator.userAgent), ANDROID = /Android/.test(navigator.userAgent);
+const here = () => location.href.split('#')[0];
+const intent = pkg => { const u = new URL(here()); return `intent://${u.host}${u.pathname}${u.search}#Intent;scheme=https;package=${pkg};S.browser_fallback_url=${encodeURIComponent(u.href)};end`; };
+// Déjà lancée depuis l'icône de l'écran d'accueil : elle est en plein écran d'office
+const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const SHARE = `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="vertical-align:-3px"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function showNoFull() {
+  if (IOS) {
+    // iPhone : le seul vrai plein écran, c'est l'icône sur l'écran d'accueil
+    $('nf-h').textContent = 'Plein écran sur iPhone';
+    $('nf-text').textContent = 'Sur iPhone, aucun navigateur ne permet le plein écran d’une page. La solution : mettre Metrön sur ton écran d’accueil. Ouverte depuis son icône, elle prend tout l’écran, comme une app.';
+    const inSafari = /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|GSA/.test(navigator.userAgent);
+    $('nf-links').innerHTML = `<ol class="steps">
+        ${inSafari ? `` : `<li><b>Ouvre la tour dans Safari</b><small>Copie le lien et colle-le dans Safari : c’est là que l’ajout à l’écran d’accueil marche le plus sûrement.</small></li>`}
+        <li><b>Touche Partager ${SHARE}</b><small>En bas de Safari, le carré avec la flèche.</small></li>
+        <li><b>« Sur l’écran d’accueil »</b><small>Fais défiler la liste si tu ne le vois pas, puis « Ajouter ».</small></li>
+        <li><b>Ouvre Metrön depuis l’icône</b><small>Le poussin sur ton écran d’accueil : plein écran, sans barre.</small></li>
+      </ol>
+      <button class="${inSafari ? 'no' : 'ok'}" data-nf-copy>Copier le lien</button><button class="no" data-nf-close>J’ai compris</button>`;
+    $('nofull').hidden = false; return;
+  }
+  $('nf-h').textContent = 'Pas de plein écran ici';
+  const links = ANDROID
+    ? [['Chrome', 'com.android.chrome'], ['Firefox', 'org.mozilla.firefox'], ['Edge', 'com.microsoft.emmx'], ['Samsung Internet', 'com.sec.android.app.sbrowser']].map(([n, p]) => `<a class="ok" href="${intent(p)}">Ouvrir dans ${n}</a>`).join('')
+    : IOS ? '' : `<a class="ok" href="${here()}" target="_blank" rel="noopener">Ouvrir dans un nouvel onglet ↗</a>`;
+  $('nf-text').textContent = IOS
+    ? `Sur iPhone, aucun navigateur ne permet le plein écran d’une page : Safari, Chrome, Firefox et Edge utilisent tous le même moteur d’Apple. En ouvrant le lien dans Safari, la barre se cache quand tu fais défiler vers le bas.`
+    : ANDROID ? `Ici, le plein écran est bloqué (souvent dans une app comme Claude). Ouvre la tour dans un navigateur : le plein écran y marche.`
+    : `Ici, le plein écran est bloqué. Ouvre la tour dans un onglet à part : il y marchera.`;
+  $('nf-links').innerHTML = links + `<button class="no" data-nf-copy>Copier le lien</button><button class="no" data-nf-close>Fermer</button>`;
+  $('nofull').hidden = false;
+}
+// Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
+/* Code d'accès des fichiers bruts. Simple verrou d'affichage : il cache, il ne chiffre rien
+   (les fichiers restent lisibles par qui connaît leur adresse). */
+const CODE = 'metrön', CODE_KEY = 'metron.tour.code';
+let unlocked = false; try { unlocked = sessionStorage.getItem(CODE_KEY) === '1'; } catch (e) {}
+let pending = null;
+const isCode = f => (FILES.find(x => x.f === f) || {}).g === 'Code';
+function askCode(f) {
+  pending = f; $('gate-m').innerHTML = chick({ acc: ['loupe'], deco: true }); $('gate-err').textContent = ''; $('gate-in').value = '';
+  $('gate').hidden = false; setTimeout(() => $('gate-in').focus(), 30);
+}
+function closeGate() { $('gate').hidden = true; pending = null; }
+const GROUP_NAMES = { Exp: 'Expérience finale', Labs: 'Labs et ressources', Code: 'Code' };
+// Expérience finale : 3 grandes cartes côte à côte (carrousel sur téléphone)
+const tile = x => `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
+     <span class="kind">Expérience</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
+     <span class="m" aria-hidden="true">${pic(x)}</span></button>`;
+// Labs et ressources : une liste, plus basse, pour qu'on les distingue de l'expérience
+const row = x => `<button class="lrow" style="${slStyle(x.sl)}" data-open="${x.f}">
+     <span class="li" aria-hidden="true">${pic(x, { look: [0, 0] })}</span>
+     <span class="lt"><b>${esc(x.n)}</b><small>${esc(x.s)}</small></span><code>${x.f}</code><span class="chev" aria-hidden="true">›</span></button>`;
+// Code : des icônes de fichiers, comme dans l'explorateur
+const fileIcon = x => `<button class="fic" style="${slStyle(x.sl)}" data-open="${x.f}" title="${esc(x.s)}">
+     <span class="doc"><span class="ext">${x.f.split('.').pop().toUpperCase()}</span><span class="lock" aria-label="Protégé par un code">🔒</span><span class="m" aria-hidden="true">${pic(x)}</span></span>
+     <b>${x.f}</b><small>${esc(x.n)}</small></button>`;
+const drawTiles = () => {
+  const of = g => FILES.filter(x => x.g === g);
+  $('groups').innerHTML = `<h2>${GROUP_NAMES.Exp}</h2>
+    <div class="exp" id="exp">${of('Exp').map(tile).join('')}</div>
+    <div class="edots" role="tablist" aria-label="Choisir une carte">${of('Exp').map((x, i) => `<button role="tab" data-slide="${i}" aria-label="${esc(x.n)}" aria-selected="${i === 0}"></button>`).join('')}</div>
+    <h2>${GROUP_NAMES.Labs}</h2><div class="list">${of('Labs').map(row).join('')}</div>
+    <h2>${GROUP_NAMES.Code}</h2><div class="files">${of('Code').map(fileIcon).join('')}</div>`;
+  const ex = $('exp');
+  ex.addEventListener('scroll', () => { const i = Math.round(ex.scrollLeft / (ex.firstElementChild.offsetWidth + 12)); document.querySelectorAll('.edots button').forEach((b, k) => b.setAttribute('aria-selected', k === i)); }, { passive: true });
+};
+drawTiles();
+
+// Lien complet d'un fichier, à copier ou à ouvrir seul
+const linkOf = f => new URL(f, location.href).href;
+
+function open(f, push = true) {
+  if (isCode(f) && !unlocked) return askCode(f);
+  const x = FILES.find(y => y.f === f);
+  if (!x) return close(false);
+  const v = $('viewer');
+  v.setAttribute('style', slStyle(x.sl));
+  $('bar').innerHTML = `<button class="back" data-close>‹ Tour</button>
+    <div class="who"><i aria-hidden="true">${pic(x, { look: [0, 0] })}</i><div><b>${esc(x.n)}</b><code>${esc(linkOf(f))}</code></div></div>
+    <div class="act"><button data-copy="${f}">Copier le lien</button><a href="${f}" target="_blank" rel="noopener">Ouvrir seul ↗</a></div>`;
+  // La barre est rangée par catégorie : Expérience, Labs, Code
+  $('nav').innerHTML = Object.keys(GROUP_NAMES).map(g => `<span class="ncat">${{ Exp: 'Expérience', Labs: 'Labs', Code: 'Code' }[g]}</span>${FILES.filter(y => y.g === g).map(y =>
+    `<button data-open="${y.f}" aria-current="${y.f === f}">${esc(y.n)}</button>`).join('')}`).join('<i class="nsep" aria-hidden="true"></i>')
+    // Le choix du thème, à droite de la barre : il s'applique à la page ouverte
+    + `<span class="ntheme" role="group" aria-label="Thème">${[['auto', 'Auto'], ['light', 'Clair'], ['dark', 'Sombre'], ['black', 'Ultra-sombre']].map(([k, n]) =>
+      `<button data-theme-set="${k}" aria-pressed="${(document.documentElement.dataset.theme || 'auto') === k}">${n}</button>`).join('')}</span>`;
+  // replace() : changer de fichier n'ajoute pas d'étape à « retour » (seule la tour en ajoute)
+  const fr = $('frame'), url = linkOf(f);
+  if (fr.dataset.f !== f) { fr.dataset.f = f; try { fr.contentWindow.location.replace(url); } catch (e) { fr.src = url; } }
+  v.hidden = false; $('home').hidden = true; document.title = `Metrön · ${x.n}`;
+  if (push) try { history.pushState({ f }, '', '#' + f); } catch (e) { location.hash = f; }
+}
+function close(push = true) {
+  $('viewer').hidden = true; $('home').hidden = false; document.title = 'Metrön · Tour de contrôle';
+  if (push) try { history.pushState({}, '', location.pathname + location.search); } catch (e) {}
+}
+
+document.addEventListener('click', e => {
+  const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
+  const sd = e.target.closest('[data-slide]'); if (sd) { const ex = $('exp'); return ex.scrollTo({ left: +sd.dataset.slide * (ex.firstElementChild.offsetWidth + 12), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+  if (e.target.closest('[data-nf-close]') || e.target === $('nofull')) { $('nofull').hidden = true; return; }
+  const nc = e.target.closest('[data-nf-copy]');
+  if (nc) { (navigator.clipboard ? navigator.clipboard.writeText(here()) : Promise.reject()).then(() => { nc.textContent = 'Copié ✓'; }, () => { nc.textContent = here(); }); return; }
+  if (e.target.closest('#ffull')) {
+    // Directement depuis la page ouverte : bascule le plein écran, et le garde pour la suite
+    if (isFull()) { exitFull(); fullPref = false; } else { fullPref = true; if (IOS || !canFull()) { peekBack(4000); return showNoFull(); } reqFull().then(ok => { if (!ok) showNoFull(); }); }
+    try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
+    drawFull(); return peekBack();
+  }
+  if (e.target.closest('#full-btn')) {
+    fullPref = !fullPref; try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
+    if (!fullPref) { exitFull(); return drawFull(); }
+    drawFull(); if (IOS || !canFull()) return showNoFull();     // iPhone : on explique l'écran d'accueil, sans essayer
+    return reqFull().then(ok => { if (!ok) showNoFull(); });
+  }
+  if (e.target.closest('[data-gate-no]') || e.target === $('gate')) return closeGate();
+  const o = e.target.closest('[data-open]');
+  if (o && isCode(o.dataset.open) && !unlocked) { e.preventDefault(); return askCode(o.dataset.open); }
+  const t = e.target.closest('[data-open],[data-close],[data-copy]'); if (!t) return;
+  if (t.dataset.open) { goFull(); open(t.dataset.open); }
+  else if (t.hasAttribute('data-close')) close();
+  else if (t.dataset.copy) {
+    const url = linkOf(t.dataset.copy);
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { t.textContent = 'Copié ✓'; }, () => { t.textContent = url; });
+    setTimeout(() => { t.textContent = 'Copier le lien'; }, 1600);
+  }
+});
+$('gate-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if ($('gate-in').value.trim().toLowerCase().normalize('NFC') === CODE) {
+    unlocked = true; try { sessionStorage.setItem(CODE_KEY, '1'); } catch (er) {}
+    document.body.classList.add('unlocked'); const f = pending; closeGate(); goFull(); open(f);
+  } else { $('gate-err').textContent = 'Ce n’est pas le bon code.'; $('gate-in').select(); }
+});
+if (unlocked) document.body.classList.add('unlocked');
+if (STANDALONE) { document.body.classList.add('standalone'); fullPref = false; }
+drawFull();
+addEventListener('popstate', () => { const f = location.hash.slice(1); f ? open(f, false) : close(false); });
+addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('gate').hidden) closeGate(); else if (!$('viewer').hidden) close(); });
+if (location.hash.length > 1) { const f = decodeURIComponent(location.hash.slice(1)); isCode(f) && !unlocked ? askCode(f) : open(f, false); }
+</script>
 </body>
 </html>

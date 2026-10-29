@@ -68,6 +68,8 @@ const DEF = {
 };
 const SCREENS = [['month', 'Tableau de bord'], ['equilibre', 'Équilibre'], ['regularite', 'Régularité'], ['welcome', 'Accueil'], ['settings', 'Réglages']];
 const KEY = 'metron.lab-themes';
+// En ligne, l'app est publiée sous app.html (index.html y est la tour de contrôle) ; en local, c'est index.html
+let APP = 'index.html';
 let st = { screen: 'month', modes: JSON.parse(JSON.stringify(DEF)), vision: '' };
 try { const sv = JSON.parse(localStorage.getItem(KEY)); if (sv) { st.screen = sv.screen || st.screen; st.vision = sv.vision || ''; for (const k in DEF) Object.assign(st.modes[k].v, (sv.modes || {})[k] || {}); } } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ screen: st.screen, vision: st.vision, modes: Object.fromEntries(Object.keys(DEF).map(k => [k, st.modes[k].v])) })); } catch (e) {} };
@@ -91,7 +93,7 @@ function fit() { document.querySelectorAll('.shot').forEach(s => { const i = s.q
 $('screens').insertAdjacentHTML('beforeend', SCREENS.map(([id, n]) => `<button class="chip" data-screen="${id}" aria-pressed="${st.screen === id}">${n}</button>`).join(''));
 $('modes').innerHTML = Object.entries(st.modes).map(([k, m]) => `<section class="mode">
   <h2>${m.name}</h2><p>${m.note}</p>
-  <div class="shot"><iframe id="f-${k}" title="Aperçu ${m.name}" src="index.html?screen=${st.screen}"></iframe></div>
+  <div class="shot"><iframe id="f-${k}" title="Aperçu ${m.name}" src="about:blank"></iframe></div>
   <div class="ctl">${TOKENS.map(([t, n]) => `<label for="i-${k}${t}">${n}</label><code id="h-${k}${t}">${m.v[t]}</code><input type="color" id="i-${k}${t}" data-k="${k}" data-t="${t}" value="${m.v[t]}">`).join('')}</div>
   <div class="checks" id="c-${k}"></div>
   <button class="chip reset" data-reset="${k}">Revenir à l'actuel</button>
@@ -99,6 +101,8 @@ $('modes').innerHTML = Object.entries(st.modes).map(([k, m]) => `<section class=
 $('vision').value = st.vision;
 Object.keys(DEF).forEach(k => $('f-' + k).addEventListener('load', () => paint(k)));
 Object.keys(DEF).forEach(paint);
+const loadAll = () => Object.keys(DEF).forEach(k => $('f-' + k).src = `${APP}?screen=${st.screen}`);
+fetch('app.html', { method: 'HEAD' }).then(r => { if (r.ok) APP = 'app.html'; }).catch(() => {}).finally(loadAll);
 
 document.addEventListener('input', e => {
   const t = e.target;
@@ -107,7 +111,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.screen) { st.screen = b.dataset.screen; document.querySelectorAll('[data-screen]').forEach(x => x.setAttribute('aria-pressed', x === b)); Object.keys(DEF).forEach(k => $('f-' + k).src = `index.html?screen=${st.screen}`); save(); }
+  if (b.dataset.screen) { st.screen = b.dataset.screen; document.querySelectorAll('[data-screen]').forEach(x => x.setAttribute('aria-pressed', x === b)); loadAll(); save(); }
   if (b.dataset.reset) { const k = b.dataset.reset; st.modes[k].v = { ...DEF[k].v }; TOKENS.forEach(([t]) => { $('i-' + k + t).value = st.modes[k].v[t]; $('h-' + k + t).textContent = st.modes[k].v[t]; }); paint(k); }
   if (b.id === 'copy') { const o = $('css'); (navigator.clipboard ? navigator.clipboard.writeText(o.value) : Promise.reject()).catch(() => { o.select(); document.execCommand('copy'); }); b.textContent = 'Copié ✓'; setTimeout(() => b.textContent = 'Copier pour Claude', 1500); }
 });

@@ -821,3 +821,8 @@ html[data-motion="off"] .cta-char.obs .scan, html[data-motion="off"] .cta-char.o
 .slide-card .curve-head b { white-space: nowrap; }
 .slide-card .curve-head small { flex: 1 1 100%; order: 3; margin-top: 2px; }
 .more-doms { display: block; margin: 14px auto 0; }
+
+/* Thèmes foncés : les points du ö passent en jaune pour rester visibles (sauf sur les pages d'accueil, qui ont leur couleur) */
+:root[data-theme="dark"] .uml, :root[data-theme="black"] .uml { --u-color: var(--brand-yellow); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .uml { --u-color: var(--brand-yellow); } }
+:root .phone.ob-mode .uml { --u-color: color-mix(in srgb, var(--obink) 30%, #000); }

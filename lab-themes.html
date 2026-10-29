@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Labo des thèmes</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #E4E1D3; color: #2B1D17; font: 15px/1.5 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1320px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 30px; letter-spacing: -.03em; margin: 0; }
+  .lead { color: #6C635A; max-width: 66ch; margin: 6px 0 0; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 18px; }
+  .bar span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #6C635A; font-weight: 700; margin-right: 4px; }
+  .chip { border: 1.5px solid #DDD8C8; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; color: inherit; min-height: 40px; }
+  .chip[aria-pressed="true"] { background: #2B1D17; color: #fff; border-color: #2B1D17; }
+
+  .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 22px; align-items: start; }
+  @media (max-width: 1100px) { .modes { grid-template-columns: minmax(0, 420px); justify-content: center; } }
+  .mode { background: #FBFAF5; border-radius: 26px; padding: 16px; }
+  .mode h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+  .mode > p { margin: 2px 0 12px; color: #6C635A; font-size: 14px; }
+  .shot { width: 100%; aspect-ratio: 390 / 760; border-radius: 28px; overflow: hidden; border: 8px solid #0e0e0d; position: relative; background: #000; }
+  .shot iframe { position: absolute; left: 0; top: 0; width: 390px; height: 760px; border: 0; transform-origin: 0 0; }
+  .ctl { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 10px; align-items: center; margin-top: 14px; font-size: 14px; }
+  .ctl label { font-weight: 600; }
+  .ctl input[type=color] { width: 40px; height: 32px; border: 0; padding: 0; background: none; cursor: pointer; }
+  .ctl code { font-size: 12px; color: #6C635A; width: 64px; }
+  .checks { margin-top: 12px; display: grid; gap: 4px; font-size: 13px; }
+  .checks div { display: flex; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #F1EFE6; }
+  .checks b { font-variant-numeric: tabular-nums; }
+  .checks .ok b { color: #1F5A22; } .checks .ko b { color: #8A5A00; }
+  .reset { margin-top: 10px; }
+
+  .out { margin-top: 26px; background: #FBFAF5; border-radius: 26px; padding: 20px; display: grid; gap: 10px; }
+  .out h2 { margin: 0; font-size: 18px; }
+  textarea { width: 100%; border: 1px solid #DDD8C8; border-radius: 14px; padding: 12px; background: #fff; color: inherit; resize: vertical; }
+  #vision { height: 90px; font: inherit; }
+  #css { height: 180px; font: 12.5px/1.5 ui-monospace, Consolas, monospace; }
+  .solid { border: 0; background: #2B1D17; color: #fff; border-radius: 999px; padding: 12px 20px; font: inherit; font-weight: 700; cursor: pointer; justify-self: start; min-height: 44px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Labo des thèmes</h1>
+  <p class="lead">Les trois modes côte à côte, sur le vrai tableau de bord. Change une couleur, l'aperçu suit. Écris ta vision en bas, puis « Copier pour Claude » et colle-le-moi : je l'applique à l'app.</p>
+  <div class="bar" id="screens"><span>Écran</span></div>
+  <div class="modes" id="modes"></div>
+
+  <section class="out">
+    <h2>Ta vision</h2>
+    <textarea id="vision" placeholder="Ex. : en sombre, le fond doit rester chaud, presque brun-jaune ; les cartes un peu moins saturées…"></textarea>
+    <textarea id="css" readonly aria-label="Réglages à me donner"></textarea>
+    <button class="solid" id="copy">Copier pour Claude</button>
+  </section>
+</main>
+
+<script>
+/* Les couleurs de base de chaque mode (mêmes valeurs que tokens.css) */
+const TOKENS = [['--bg', 'Fond'], ['--surface', 'Cartes et listes'], ['--stage', 'Autour du téléphone'], ['--ink', 'Texte'], ['--muted', 'Texte discret'], ['--line', 'Traits'], ['--band', 'Zone « dans ta mesure »'], ['--band-ink', 'Texte de la zone']];
+const DEF = {
+  light: { name: 'Clair', note: 'Le mode de jour.', v: { '--bg': '#F8F7F0', '--surface': '#FFFFFF', '--stage': '#E4E1D3', '--ink': '#2B1D17', '--muted': '#6C635A', '--line': '#DDD8C8', '--band': '#E6DF74', '--band-ink': '#6E4A12' } },
+  dark:  { name: 'Sombre', note: 'Pas de noir : le jaune du poussin, très assombri.', v: { '--bg': '#29261A', '--surface': '#35311F', '--stage': '#1F1C12', '--ink': '#F6F2D6', '--muted': '#B9B18C', '--line': '#4A4529', '--band': '#6A6224', '--band-ink': '#F4EC91' } },
+  black: { name: 'Ultra-sombre', note: 'Presque noir, pour la nuit.', v: { '--bg': '#17110E', '--surface': '#231A16', '--stage': '#0C0807', '--ink': '#F4EFDD', '--muted': '#A09384', '--line': '#3A2C25', '--band': '#4B4724', '--band-ink': '#EDE58A' } },
+};
+const SCREENS = [['month', 'Tableau de bord'], ['equilibre', 'Équilibre'], ['regularite', 'Régularité'], ['welcome', 'Accueil'], ['settings', 'Réglages']];
+const KEY = 'metron.lab-themes';
+let st = { screen: 'month', modes: JSON.parse(JSON.stringify(DEF)), vision: '' };
+try { const sv = JSON.parse(localStorage.getItem(KEY)); if (sv) { st.screen = sv.screen || st.screen; st.vision = sv.vision || ''; for (const k in DEF) Object.assign(st.modes[k].v, (sv.modes || {})[k] || {}); } } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ screen: st.screen, vision: st.vision, modes: Object.fromEntries(Object.keys(DEF).map(k => [k, st.modes[k].v])) })); } catch (e) {} };
+const $ = id => document.getElementById(id);
+
+// Contraste WCAG entre deux couleurs
+const lum = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4)).reduce((a, c, i) => a + c * [.2126, .7152, .0722][i], 0);
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
+
+const css = k => `:root[data-theme="${k}"] { ${TOKENS.map(([t]) => `${t}: ${st.modes[k].v[t]};`).join(' ')} }`;
+function paint(k) {
+  const f = $('f-' + k);
+  try { const d = f.contentDocument; d.documentElement.dataset.theme = k; let s = d.getElementById('labt'); if (!s) { s = d.createElement('style'); s.id = 'labt'; d.head.appendChild(s); } s.textContent = css(k); } catch (e) {}
+  const v = st.modes[k].v, c = [['Texte sur fond', v['--ink'], v['--bg']], ['Texte discret sur fond', v['--muted'], v['--bg']], ['Texte sur carte', v['--ink'], v['--surface']], ['Texte de la zone', v['--band-ink'], v['--band']]];
+  $('c-' + k).innerHTML = c.map(([n, a, b]) => { const r = ratio(a, b); return `<div class="${r >= 4.5 ? 'ok' : 'ko'}"><span>${n}</span><b>${r.toFixed(1)}:1 ${r >= 4.5 ? '✓' : '· trop faible'}</b></div>`; }).join('');
+  $('css').value = (st.vision.trim() ? `/* Vision de Rémy :\n${st.vision.trim()}\n*/\n` : '') + Object.keys(DEF).map(css).join('\n');
+  save();
+}
+function fit() { document.querySelectorAll('.shot').forEach(s => { const i = s.querySelector('iframe'); i.style.transform = `scale(${s.clientWidth / 390})`; }); }
+
+$('screens').insertAdjacentHTML('beforeend', SCREENS.map(([id, n]) => `<button class="chip" data-screen="${id}" aria-pressed="${st.screen === id}">${n}</button>`).join(''));
+$('modes').innerHTML = Object.entries(st.modes).map(([k, m]) => `<section class="mode">
+  <h2>${m.name}</h2><p>${m.note}</p>
+  <div class="shot"><iframe id="f-${k}" title="Aperçu ${m.name}" src="index.html?screen=${st.screen}"></iframe></div>
+  <div class="ctl">${TOKENS.map(([t, n]) => `<label for="i-${k}${t}">${n}</label><code id="h-${k}${t}">${m.v[t]}</code><input type="color" id="i-${k}${t}" data-k="${k}" data-t="${t}" value="${m.v[t]}">`).join('')}</div>
+  <div class="checks" id="c-${k}"></div>
+  <button class="chip reset" data-reset="${k}">Revenir à l'actuel</button>
+</section>`).join('');
+$('vision').value = st.vision;
+Object.keys(DEF).forEach(k => $('f-' + k).addEventListener('load', () => paint(k)));
+Object.keys(DEF).forEach(paint);
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.t) { st.modes[t.dataset.k].v[t.dataset.t] = t.value; $('h-' + t.dataset.k + t.dataset.t).textContent = t.value; paint(t.dataset.k); }
+  if (t.id === 'vision') { st.vision = t.value; paint('light'); }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.screen) { st.screen = b.dataset.screen; document.querySelectorAll('[data-screen]').forEach(x => x.setAttribute('aria-pressed', x === b)); Object.keys(DEF).forEach(k => $('f-' + k).src = `index.html?screen=${st.screen}`); save(); }
+  if (b.dataset.reset) { const k = b.dataset.reset; st.modes[k].v = { ...DEF[k].v }; TOKENS.forEach(([t]) => { $('i-' + k + t).value = st.modes[k].v[t]; $('h-' + k + t).textContent = st.modes[k].v[t]; }); paint(k); }
+  if (b.id === 'copy') { const o = $('css'); (navigator.clipboard ? navigator.clipboard.writeText(o.value) : Promise.reject()).catch(() => { o.select(); document.execCommand('copy'); }); b.textContent = 'Copié ✓'; setTimeout(() => b.textContent = 'Copier pour Claude', 1500); }
+});
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

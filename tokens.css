@@ -80,13 +80,36 @@
   --r: 20px;
 }
 
-/* Mode sombre : suit le téléphone, ou se force avec data-theme="dark" / "light" (utilisé par le labo) */
+/* =====================================================
+   Trois thèmes : clair (ci-dessus), sombre, ultra-sombre.
+   data-theme="light" | "dark" | "black" sur <html> ; sans data-theme, on suit le téléphone (sombre si le téléphone est en sombre).
+   Réglables dans lab-themes.html.
+   ===================================================== */
+
+/* Sombre : pas de noir, le jaune du poussin passé en jaune très sombre */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
-    --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
-    --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
-    /* Cartes du carrousel en sombre : les couleurs s'inversent (le fond prend l'encre, le texte prend le pastel) */
+  :root:not([data-theme]) {
+    --bg: #29261A; --surface: #35311F; --ink: #F6F2D6; --muted: #B9B18C;
+    --line: #4A4529; --track: #3E3A22; --band: #6A6224; --band-ink: #F4EC91;
+    --low: #93B6D2; --high: #E6B95C; --stage: #1F1C12;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #29261A; --surface: #35311F; --ink: #F6F2D6; --muted: #B9B18C;
+  --line: #4A4529; --track: #3E3A22; --band: #6A6224; --band-ink: #F4EC91;
+  --low: #93B6D2; --high: #E6B95C; --stage: #1F1C12;
+}
+
+/* Ultra-sombre : presque noir */
+:root[data-theme="black"] {
+  --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
+  --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
+  --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
+}
+
+/* Dans les deux thèmes foncés, les cartes du carrousel s'inversent (le fond prend l'encre, le texte prend le pastel) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
     --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
     --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
     --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;
@@ -97,11 +120,7 @@
     --sl-week:    #24480F;  --sl-week-ink:    #E6F3D3;
   }
 }
-:root[data-theme="dark"] {
-  --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
-  --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
-  --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
-  /* Cartes du carrousel en sombre : les couleurs s'inversent (le fond prend l'encre, le texte prend le pastel) */
+:root[data-theme="dark"], :root[data-theme="black"] {
   --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
   --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
   --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;

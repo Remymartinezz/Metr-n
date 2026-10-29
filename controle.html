@@ -22,11 +22,11 @@
 
   /* Thème : clair, sombre, ou comme l'appareil (data-theme sur <html>, couleurs dans tokens.css) */
   :root { color-scheme: light; }
-  :root[data-theme="dark"] { color-scheme: dark; }
-  :root[data-theme="dark"] .uml::before, :root[data-theme="dark"] .uml::after { background: var(--brand-yellow); }
+  :root[data-theme="dark"], :root[data-theme="black"] { color-scheme: dark; }
+  :root[data-theme="dark"] .uml::before, :root[data-theme="dark"] .uml::after, :root[data-theme="black"] .uml::before, :root[data-theme="black"] .uml::after { background: var(--brand-yellow); }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { color-scheme: dark; }
-    :root:not([data-theme="light"]) .uml::before, :root:not([data-theme="light"]) .uml::after { background: var(--brand-yellow); }
+    :root:not([data-theme]) { color-scheme: dark; }
+    :root:not([data-theme]) .uml::before, :root:not([data-theme]) .uml::after { background: var(--brand-yellow); }
   }
   .tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-self: flex-start; }
   .full { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; min-height: 48px; }
@@ -163,7 +163,7 @@
   <div class="top">
     <span class="av" id="av"></span>
     <div><p class="eyebrow">Metr<span class="uml">o</span>n</p><h1>Tour de contrôle</h1></div>
-    <div class="tools"><button class="full" id="full-btn" aria-pressed="false">⤢ Plein écran · <span>Désactivé</span></button><div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div></div>
+    <div class="tools"><button class="full" id="full-btn" aria-pressed="false">⤢ Plein écran · <span>Désactivé</span></button><div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button><button data-theme-set="black">Ultra-sombre</button></div></div>
   </div>
   <p class="full-msg" id="full-msg" role="status" hidden></p>
   <p class="lead">Tout le projet au même endroit. Touche une carte : elle s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
@@ -200,6 +200,7 @@ const FILES = [
   { g: 'Exp', f: 'notifications.html', n: 'Notifications', s: 'Le rappel doux, sur l’écran verrouillé et en bannière.', sl: 'focus', acc: 'bulles', pal: 'social', mood: 'happy' },
   { g: 'Labs', f: 'mascotte.html', n: 'Mascotte', s: 'Le poussin, ses accessoires, ses humeurs.', sl: 'share', acc: 'fete', pal: 'social' },
   { g: 'Labs', f: 'identite.html', n: 'Identité visuelle', s: 'Signe, mot, couleurs, typo, mouvement.', sl: 'start', acc: 'pinceau', pal: 'projets' },
+  { g: 'Labs', f: 'lab-themes.html', n: 'Labo des thèmes', s: 'Clair, sombre, ultra-sombre côte à côte.', sl: 'balance', acc: 'lune', pal: 'sommeil' },
   { g: 'Labs', f: 'lab-o.html', n: 'Labo du ö', s: 'Régler les deux points du ö.', sl: 'curve', acc: 'loupe', pal: 'original' },
   { g: 'Code', f: 'app.js', n: 'La logique', s: 'Mesure, écrans, cartes, questionnaire.', sl: 'regular', acc: 'chantier', pal: 'projets', mood: 'focus' },
   { g: 'Code', f: 'mascot.js', n: 'Le poussin', s: 'Dessin, yeux, humeurs, accessoires.', sl: 'curve', acc: 'crayon', pal: 'sommeil' },

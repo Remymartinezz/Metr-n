@@ -1373,6 +1373,11 @@ function updateIcon() {
   if (f === iconKey) return;
   iconKey = f;
   const link = document.querySelector('link[rel="icon"]'), meta = document.querySelector('meta[name="theme-color"]');
+  // Les icônes PNG de secours (onglet) se mettent de côté pendant qu'un domaine a son icône, pour que le navigateur prenne celle-ci
+  document.querySelectorAll('link[data-png-icon], link[rel="icon"][type="image/png"], link[rel="alternate icon"]').forEach(l => {
+    if (!l.dataset.pngIcon) l.dataset.pngIcon = l.rel;
+    l.rel = f === 'all' ? l.dataset.pngIcon : 'x-icon-off';
+  });
   if (f === 'all') { link.href = 'icon.svg'; meta.content = '#F8F7F0'; return; }
   try {
     const bg = resolveColor(`var(--dom-${f}-focus)`);

@@ -11,12 +11,12 @@
   const here = location.pathname.split('/').pop() || 'index.html';   // index.html = la tour de contrôle
 
   const css = `
-  .mn-btn { position: fixed; z-index: 2147483000; top: 14px; right: 14px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 6px 16px 6px 6px; min-height: 44px; background: #2B1D17; color: #FFFDF2; font: 700 14px/1 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / .25); cursor: pointer; transition: opacity 350ms cubic-bezier(.2,.8,.2,1), transform 350ms cubic-bezier(.2,.8,.2,1); }
+  .mn-btn { position: fixed; z-index: 2147483000; top: 14px; left: 14px; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 6px 16px 6px 6px; min-height: 44px; background: #2B1D17; color: #FFFDF2; font: 700 14px/1 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; box-shadow: 0 8px 24px rgb(0 0 0 / .25); cursor: pointer; transition: opacity 350ms cubic-bezier(.2,.8,.2,1), transform 350ms cubic-bezier(.2,.8,.2,1); }
   .mn-btn i { width: 32px; height: 32px; border-radius: 50%; background: #2D7BB4; overflow: hidden; display: block; flex: none; }
   .mn-btn i svg { width: 100%; height: 100%; display: block; }
   .mn-btn.off { opacity: 0; transform: translateY(16px); pointer-events: none; }
-  @media (max-width: 640px) { .mn-btn { top: auto; right: auto; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); } .mn-btn.off { transform: translate(-50%, 16px); } }
-  .mn-bg { position: fixed; inset: 0; z-index: 2147483001; background: rgb(0 0 0 / .4); display: flex; justify-content: flex-end; align-items: flex-start; padding: 14px; }
+  @media (max-width: 640px) { .mn-btn { top: auto; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); } .mn-btn.off { transform: translate(-50%, 16px); } }
+  .mn-bg { position: fixed; inset: 0; z-index: 2147483001; background: rgb(0 0 0 / .4); display: flex; justify-content: flex-start; align-items: flex-start; padding: 14px; }
   .mn-bg[hidden] { display: none; }
   .mn-panel { width: min(320px, 100%); background: #FFFDF2; color: #2B1D17; border-radius: 24px; padding: 14px; font: 15px/1.4 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; box-shadow: 0 20px 50px rgb(0 0 0 / .3); max-height: calc(100vh - 28px); overflow: auto; }
   @media (max-width: 640px) { .mn-bg { align-items: flex-end; justify-content: center; padding: 10px; } .mn-panel { width: 100%; } }

@@ -58,6 +58,35 @@
   .tile .m { position: absolute; right: -18px; bottom: -22px; width: 44%; pointer-events: none; }
   .tile .m svg { display: block; width: 100%; height: auto; }
 
+  /* Expérience finale : 3 colonnes sur ordi, carrousel aimanté sur téléphone (la suivante dépasse) */
+  .exp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .exp .tile { min-height: 330px; padding: 26px; }
+  .exp .tile b { font-size: 30px; }
+  .exp .tile .m { width: 58%; right: -22px; bottom: -30px; }
+  .edots { display: none; }
+  @media (max-width: 760px) {
+    .exp { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scroll-padding: 0 16px; scrollbar-width: none; }
+    .exp::-webkit-scrollbar { display: none; }
+    .exp .tile { flex: 0 0 84%; scroll-snap-align: start; min-height: 360px; }
+    .edots { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+    .edots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: var(--line); transition: width 300ms var(--ease), background-color 300ms var(--ease); position: relative; }
+    .edots button::after { content: ""; position: absolute; inset: -12px -6px; }
+    .edots button[aria-selected="true"] { width: 26px; background: var(--ink); }
+  }
+
+  /* Labs et ressources : une liste basse */
+  .list { display: grid; gap: 8px; }
+  .lrow { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto 20px; align-items: center; gap: 14px; border: 0; text-align: left; background: var(--surface); color: var(--ink); border-radius: 18px; padding: 10px 16px 10px 10px; min-height: 72px; transition: background-color 250ms var(--ease); }
+  .lrow:hover { background: color-mix(in srgb, var(--sl) 45%, var(--surface)); }
+  .lrow:active { transform: scale(.99); }
+  .lrow .li { width: 52px; height: 52px; border-radius: 14px; background: var(--sl); overflow: hidden; display: grid; place-items: center; }
+  .lrow .li svg { width: 120%; height: auto; display: block; }
+  .lrow b { display: block; font-size: 16px; letter-spacing: -.01em; }
+  .lrow small { display: block; color: var(--muted); font-size: 13.5px; }
+  .lrow code { font-size: 12.5px; color: var(--muted); }
+  .lrow .chev { font-size: 22px; color: var(--muted); }
+  @media (max-width: 560px) { .lrow { grid-template-columns: 52px minmax(0, 1fr) 16px; } .lrow code { display: none; } }
+
   /* Fichiers : une icône de document (coin plié), son extension, son poussin qui dépasse, le nom en dessous */
   .files { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 22px 14px; }
   .fic { border: 0; background: transparent; color: var(--ink); display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: 18px; text-align: center; transition: background-color 250ms var(--ease); }
@@ -112,8 +141,11 @@
     .viewer, .viewer.has-nav { grid-template-rows: 1fr; }
     .viewer .bar, .viewer .nav { display: none; }
     .viewer iframe { grid-row: 1; }
-    .float-back { display: grid; place-items: center; position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 5; width: 48px; height: 48px; border-radius: 50%; border: 0; padding: 4px; background: var(--brand-blue); box-shadow: 0 6px 18px rgb(0 0 0 / .3); opacity: .9; }
-    .float-back svg { width: 100%; height: auto; display: block; }
+    /* Le bouton n'apparaît que quand on fait défiler (vers le haut ou le bas), puis s'efface : l'écran reste à l'app */
+    .float-back { display: flex; align-items: center; gap: 8px; position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 5; border: 0; border-radius: 999px; padding: 6px 16px 6px 6px; min-height: 48px; background: var(--ink); color: var(--surface); font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3); transform: translate(-50%, 0); opacity: 1; transition: opacity 350ms var(--ease), transform 350ms var(--ease); white-space: nowrap; }
+    .float-back.off { opacity: 0; transform: translate(-50%, 24px); pointer-events: none; }
+    .float-back i { width: 36px; height: 36px; border-radius: 50%; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; flex: none; }
+    .float-back svg { width: 118%; height: auto; display: block; }
   }
   @media (prefers-reduced-motion: reduce) { .tile { transition: none; } }
 </style>
@@ -127,7 +159,7 @@
     <div class="tools"><button class="full" id="full-btn" aria-pressed="false">⤢ Plein écran · <span>Désactivé</span></button><div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div></div>
   </div>
   <p class="full-msg" id="full-msg" role="status" hidden></p>
-  <p class="lead">Tous les fichiers du projet. Touche une carte : le fichier s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
+  <p class="lead">Tout le projet au même endroit. Touche une carte : elle s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
   <div id="groups"></div>
 </main>
 
@@ -135,7 +167,7 @@
   <div class="bar" id="bar"></div>
   <nav class="nav" id="nav" aria-label="Changer de fichier"></nav>
   <iframe id="frame" title="Fichier ouvert" allow="fullscreen"></iframe>
-  <button class="float-back" data-close aria-label="Revenir à la tour de contrôle" id="fback"></button>
+  <button class="float-back off" data-close id="fback"><i aria-hidden="true"></i>Revenir au centre de contrôle</button>
 </section>
 
 <div class="gate" id="gate" hidden>
@@ -153,11 +185,12 @@
 <script>
 /* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
 const FILES = [
-  { g: 'Pages', f: 'index.html', n: 'L’app', s: 'Le tableau de bord dans son téléphone, avec le panneau Démo.', sl: 'today', acc: 'none', pal: 'original', mood: 'happy' },
-  { g: 'Pages', f: 'widgets.html', n: 'Widgets', s: 'Les widgets d’écran d’accueil, en aperçu.', sl: 'balance', acc: 'lunettes', pal: 'repos' },
-  { g: 'Pages', f: 'mascotte.html', n: 'Mascotte', s: 'Le poussin, ses accessoires, ses humeurs.', sl: 'share', acc: 'fete', pal: 'social' },
-  { g: 'Pages', f: 'identite.html', n: 'Identité visuelle', s: 'Signe, mot, couleurs, typo, mouvement.', sl: 'start', acc: 'pinceau', pal: 'projets' },
-  { g: 'Pages', f: 'lab-o.html', n: 'Labo du ö', s: 'Régler les deux points du ö.', sl: 'focus', acc: 'loupe', pal: 'original' },
+  { g: 'Exp', f: 'index.html', n: 'L’app', s: 'Le tableau de bord dans son téléphone, avec le panneau Démo.', sl: 'today', acc: 'none', pal: 'original', mood: 'happy' },
+  { g: 'Exp', f: 'widgets.html', n: 'Widgets', s: 'Les widgets d’écran d’accueil, en aperçu.', sl: 'balance', acc: 'lunettes', pal: 'repos' },
+  { g: 'Exp', f: 'notifications.html', n: 'Notifications', s: 'Le rappel doux, sur l’écran verrouillé et en bannière.', sl: 'focus', acc: 'bulles', pal: 'social', mood: 'happy' },
+  { g: 'Labs', f: 'mascotte.html', n: 'Mascotte', s: 'Le poussin, ses accessoires, ses humeurs.', sl: 'share', acc: 'fete', pal: 'social' },
+  { g: 'Labs', f: 'identite.html', n: 'Identité visuelle', s: 'Signe, mot, couleurs, typo, mouvement.', sl: 'start', acc: 'pinceau', pal: 'projets' },
+  { g: 'Labs', f: 'lab-o.html', n: 'Labo du ö', s: 'Régler les deux points du ö.', sl: 'curve', acc: 'loupe', pal: 'original' },
   { g: 'Code', f: 'app.js', n: 'La logique', s: 'Mesure, écrans, cartes, questionnaire.', sl: 'regular', acc: 'chantier', pal: 'projets', mood: 'focus' },
   { g: 'Code', f: 'mascot.js', n: 'Le poussin', s: 'Dessin, yeux, humeurs, accessoires.', sl: 'curve', acc: 'crayon', pal: 'sommeil' },
   { g: 'Code', f: 'style.css', n: 'Les styles', s: 'Tout ce qui met en forme l’app.', sl: 'week', acc: 'pousse', pal: 'repos' },
@@ -181,7 +214,24 @@ const $ = id => document.getElementById(id);
 const pic = (x, o = {}) => chick({ acc: [x.acc], pal: x.pal, mood: x.mood || 'auto', deco: true, ...o });
 
 $('av').innerHTML = chick({ acc: ['loupe'], deco: true });
-$('fback').innerHTML = chick({ look: [0, 0], deco: true });
+$('fback').querySelector('i').innerHTML = chick({ acc: ['loupe'], look: [0, 0], deco: true });
+// Sur téléphone : le bouton de retour se montre quand on fait défiler la page ouverte, puis s'efface après 2 s
+let backTimer = 0;
+function peekBack(ms = 2000) {
+  const b = $('fback'); b.classList.remove('off');
+  clearTimeout(backTimer); backTimer = setTimeout(() => b.classList.add('off'), ms);
+}
+$('frame').addEventListener('load', () => {
+  try {
+    const d = $('frame').contentDocument; let lastY = null;
+    const onMove = () => peekBack();
+    d.addEventListener('scroll', onMove, { capture: true, passive: true });     // capte aussi le défilement des zones internes (l'écran de l'app)
+    d.addEventListener('wheel', onMove, { passive: true });
+    d.addEventListener('touchstart', e => { lastY = e.touches[0].clientY; }, { passive: true });
+    d.addEventListener('touchmove', e => { if (lastY != null && Math.abs(e.touches[0].clientY - lastY) > 12) { lastY = e.touches[0].clientY; peekBack(); } }, { passive: true });
+  } catch (e) {}
+  if (!$('viewer').hidden) peekBack(2600);                                         // à l'ouverture : on le montre une fois, pour qu'on sache qu'il existe
+});
 // Sur téléphone, on demande aussi le vrai plein écran (marche sur Android ; iPhone et certains cadres l'ignorent)
 const mobile = () => matchMedia('(max-width: 640px)').matches;
 // Plein écran : seulement si tu l'as autorisé (bouton « Plein écran »). Le navigateur exige un toucher pour l'activer,
@@ -204,7 +254,6 @@ function drawFull(msg = '') {
 const NO_FULL = /iPhone|iPod/.test(navigator.userAgent)
   ? `Sur iPhone, le navigateur ne permet pas le plein écran. À la place : ouvre le lien dans Safari, touche Partager, puis « Sur l’écran d’accueil ».`
   : `Ici, le navigateur bloque le plein écran (par exemple dans l’app Claude). Ouvre le lien dans Chrome ou Edge pour l’avoir.`;
-const groups = [...new Set(FILES.map(x => x.g))];
 // Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
 /* Code d'accès des fichiers bruts. Simple verrou d'affichage : il cache, il ne chiffre rien
    (les fichiers restent lisibles par qui connaît leur adresse). */
@@ -217,15 +266,29 @@ function askCode(f) {
   $('gate').hidden = false; setTimeout(() => $('gate-in').focus(), 30);
 }
 function closeGate() { $('gate').hidden = true; pending = null; }
+const GROUP_NAMES = { Exp: 'Expérience finale', Labs: 'Labs et ressources', Code: 'Code' };
+// Expérience finale : 3 grandes cartes côte à côte (carrousel sur téléphone)
 const tile = x => `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
-     <span class="kind">Page</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
+     <span class="kind">Expérience</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
      <span class="m" aria-hidden="true">${pic(x)}</span></button>`;
+// Labs et ressources : une liste, plus basse, pour qu'on les distingue de l'expérience
+const row = x => `<button class="lrow" style="${slStyle(x.sl)}" data-open="${x.f}">
+     <span class="li" aria-hidden="true">${pic(x, { look: [0, 0] })}</span>
+     <span class="lt"><b>${esc(x.n)}</b><small>${esc(x.s)}</small></span><code>${x.f}</code><span class="chev" aria-hidden="true">›</span></button>`;
+// Code : des icônes de fichiers, comme dans l'explorateur
 const fileIcon = x => `<button class="fic" style="${slStyle(x.sl)}" data-open="${x.f}" title="${esc(x.s)}">
      <span class="doc"><span class="ext">${x.f.split('.').pop().toUpperCase()}</span><span class="lock" aria-label="Protégé par un code">🔒</span><span class="m" aria-hidden="true">${pic(x)}</span></span>
      <b>${x.f}</b><small>${esc(x.n)}</small></button>`;
-const drawTiles = () => $('groups').innerHTML = groups.map(g => g === 'Pages'
-  ? `<h2>${g}</h2><div class="grid">${FILES.filter(x => x.g === g).map(tile).join('')}</div>`
-  : `<h2>${g}</h2><div class="files">${FILES.filter(x => x.g === g).map(fileIcon).join('')}</div>`).join('');
+const drawTiles = () => {
+  const of = g => FILES.filter(x => x.g === g);
+  $('groups').innerHTML = `<h2>${GROUP_NAMES.Exp}</h2>
+    <div class="exp" id="exp">${of('Exp').map(tile).join('')}</div>
+    <div class="edots" role="tablist" aria-label="Choisir une carte">${of('Exp').map((x, i) => `<button role="tab" data-slide="${i}" aria-label="${esc(x.n)}" aria-selected="${i === 0}"></button>`).join('')}</div>
+    <h2>${GROUP_NAMES.Labs}</h2><div class="list">${of('Labs').map(row).join('')}</div>
+    <h2>${GROUP_NAMES.Code}</h2><div class="files">${of('Code').map(fileIcon).join('')}</div>`;
+  const ex = $('exp');
+  ex.addEventListener('scroll', () => { const i = Math.round(ex.scrollLeft / (ex.firstElementChild.offsetWidth + 12)); document.querySelectorAll('.edots button').forEach((b, k) => b.setAttribute('aria-selected', k === i)); }, { passive: true });
+};
 drawTiles();
 
 // Lien complet d'un fichier, à copier ou à ouvrir seul
@@ -254,6 +317,7 @@ function close(push = true) {
 
 document.addEventListener('click', e => {
   const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
+  const sd = e.target.closest('[data-slide]'); if (sd) { const ex = $('exp'); return ex.scrollTo({ left: +sd.dataset.slide * (ex.firstElementChild.offsetWidth + 12), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
   if (e.target.closest('#full-btn')) {
     fullPref = !fullPref; try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
     if (!fullPref) { exitFull(); return drawFull(); }

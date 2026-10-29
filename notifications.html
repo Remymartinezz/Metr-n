@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Notifications</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--stage); color: var(--ink); font: 15px/1.45 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 80px; display: grid; gap: 26px; grid-template-columns: repeat(2, 330px) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 1060px) { main { grid-template-columns: repeat(2, minmax(0, 330px)); } .side { grid-column: 1 / -1; } }
+  @media (max-width: 720px) { main { grid-template-columns: minmax(0, 360px); justify-content: center; } }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.02em; }
+  p { margin: 6px 0; }
+  .head { grid-column: 1 / -1; }
+  .lead { color: var(--muted); max-width: 62ch; }
+  .cap { text-align: center; color: var(--muted); font-size: 13px; font-weight: 600; margin-top: 10px; }
+
+  /* Écrans de téléphone */
+  .phone { border-radius: 44px; border: 10px solid #0e0e0d; aspect-ratio: 9 / 18.5; overflow: hidden; position: relative; padding: 46px 12px 20px; display: flex; flex-direction: column; }
+  .lock { background: linear-gradient(170deg, #26305E, #6E5DA8 55%, #E3A77B); color: #fff; }
+  .lock .time { text-align: center; font-size: 64px; font-weight: 300; letter-spacing: -.03em; line-height: 1; margin-top: 18px; }
+  .lock .date { text-align: center; font-size: 15px; font-weight: 600; opacity: .9; margin-top: 4px; }
+  .lock .stack { margin-top: auto; display: grid; gap: 8px; }
+  .home { background: linear-gradient(160deg, #7FA9C4, #B7B2E8 60%, #F0D7A8); }
+  .home .apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; margin-top: 92px; }
+  .home .apps i { aspect-ratio: 1; border-radius: 14px; background: rgb(255 255 255 / .45); display: block; }
+
+  /* La notification : même forme sur les deux écrans */
+  .notif { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; align-items: start; padding: 12px; border-radius: 20px; background: rgb(250 250 250 / .82); color: #111; backdrop-filter: blur(18px); box-shadow: 0 8px 24px rgb(0 0 0 / .18); text-align: left; }
+  .notif .ic { width: 38px; height: 38px; border-radius: 10px; overflow: hidden; display: block; }
+  .notif b { font-size: 14px; display: block; }
+  .notif span { font-size: 14px; line-height: 1.35; display: block; }
+  .notif small { font-size: 12px; color: #6b6b6b; white-space: nowrap; }
+  .notif.old { opacity: .78; transform: scale(.97); }
+  .banner { position: absolute; left: 10px; right: 10px; top: 14px; z-index: 2; animation: drop 3.4s var(--ease) infinite; }
+  @keyframes drop { 0%, 8% { transform: translateY(-140%); } 20%, 78% { transform: translateY(0); } 92%, 100% { transform: translateY(-140%); } }
+  @media (prefers-reduced-motion: reduce) { .banner { animation: none; } }
+
+  .card { background: var(--surface); border-radius: 22px; padding: 20px; margin-bottom: 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; margin-bottom: 8px; }
+  .ok { background: #D7EBD3; color: #1F5A22; }
+  .mid { background: #F7E6B5; color: #6B4A00; }
+  .btn { border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; font-weight: 700; background: var(--ink); color: var(--surface); cursor: pointer; min-height: 44px; margin-top: 8px; }
+  .btn:active { transform: scale(.97); }
+  .msg { font-size: 14px; color: var(--muted); min-height: 1.4em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <h1>Notifications Metrön</h1>
+    <p class="lead">Le rappel doux, tel qu'il apparaît sur le téléphone. Un seul par jour, à l'heure choisie dans les réglages, et seulement s'il reste quelque chose à cocher. Il propose ta prochaine habitude, sans jamais compter ce qui manque.</p>
+  </div>
+
+  <div><div class="phone lock" aria-label="Écran verrouillé">
+    <div class="time" id="t">19:00</div><div class="date" id="d"></div>
+    <div class="stack" id="stack"></div>
+  </div><p class="cap">Écran verrouillé</p></div>
+
+  <div><div class="phone home" aria-label="Écran d'accueil">
+    <div class="banner" id="banner"></div>
+    <div class="apps"></div>
+  </div><p class="cap">En utilisant le téléphone</p></div>
+
+  <div class="side">
+    <div class="card">
+      <span class="tag ok">Marche déjà</span>
+      <h3>Le rappel doux</h3>
+      <p>Réglages → Rappel doux, puis choisis l'heure. Tant que l'app (ou son onglet) est ouverte, le rappel arrive à l'heure dite, avec le poussin et ta prochaine habitude. Le toucher ouvre Metrön sur Aujourd'hui.</p>
+      <button class="btn" id="try">M'envoyer une notification d'essai</button>
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+    <div class="card">
+      <span class="tag mid">Demande une app native</span>
+      <h3>Quand l'app est fermée</h3>
+      <p>Un site web ne peut pas réveiller le téléphone tout seul à 19 h. Pour un rappel même app fermée, il faut une app native ou un serveur d'envoi.</p>
+    </div>
+  </div>
+</main>
+
+<script src="mascot.js"></script>
+<script>
+/* Lit l'état de l'app (même navigateur) pour afficher la vraie prochaine habitude */
+const KEY = 'metron.v2', dayKey = d => new Date(d).toLocaleDateString('sv-SE'), today = dayKey(Date.now());
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let S = null; try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+const habits = S && S.habits && S.habits.length ? S.habits : [{ id: 'x', name: 'Marche ou activité douce' }];
+const logs = (S && S.logs) || [];
+const next = habits.find(h => !logs.some(l => l.habit === h.id && l.day === today)) || habits[0];
+const time = (S && S.reminder && S.reminder.time) || '19:00';
+
+// Même texte que l'app (app.js, notify)
+const TITLE = 'Metrön', BODY = `Une petite chose aujourd'hui ? ${next.name}.`;
+const icon = `<span class="ic">${chick({ bg: 'var(--brand-blue)', deco: true, look: [0, 0] }).replace('<svg ', '<svg width="38" height="38" ')}</span>`;
+const notif = (when, cls = '') => `<div class="notif ${cls}">${icon}<div><b>${TITLE}</b><span>${esc(BODY)}</span></div><small>${when}</small></div>`;
+
+document.getElementById('t').textContent = time;
+document.getElementById('d').textContent = new Date().toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long' });
+document.getElementById('stack').innerHTML = notif('maintenant');
+document.getElementById('banner').innerHTML = notif('maintenant');
+document.querySelector('.home .apps').innerHTML = '<i></i>'.repeat(16);
+
+// Une vraie notification d'essai, sur cet appareil
+document.getElementById('try').addEventListener('click', async () => {
+  const msg = document.getElementById('msg');
+  if (typeof Notification === 'undefined') { msg.textContent = 'Ce navigateur ne gère pas les notifications.'; return; }
+  let p = Notification.permission;
+  if (p === 'default') p = await Notification.requestPermission();
+  if (p !== 'granted') { msg.textContent = 'Les notifications sont bloquées. Autorise-les dans les réglages du navigateur.'; return; }
+  try { new Notification(TITLE, { body: BODY, icon: 'icon.svg' }); msg.textContent = 'Envoyée. Regarde en haut ou dans le centre de notifications.'; }
+  catch (e) { msg.textContent = 'Le navigateur a refusé (sur téléphone, il faut souvent installer l’app d’abord).'; }
+});
+</script>
+</body>
+</html>

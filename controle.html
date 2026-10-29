@@ -54,6 +54,19 @@
   .tile .m { position: absolute; right: -18px; bottom: -22px; width: 44%; pointer-events: none; }
   .tile .m svg { display: block; width: 100%; height: auto; }
 
+  /* Fichiers : une icône de document (coin plié), son extension, son poussin qui dépasse, le nom en dessous */
+  .files { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 22px 14px; }
+  .fic { border: 0; background: transparent; color: var(--ink); display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border-radius: 18px; text-align: center; transition: background-color 250ms var(--ease); }
+  .fic:hover { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+  .fic:active { transform: scale(.97); }
+  .fic .doc { position: relative; width: 84px; height: 104px; background: var(--sl); color: var(--sl-i); border-radius: 12px; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%); overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); }
+  .fic .doc::before { content: ""; position: absolute; right: 0; top: 0; width: 26px; height: 26px; background: color-mix(in srgb, var(--sl-i) 22%, var(--sl)); border-bottom-left-radius: 8px; }
+  .fic .ext { position: absolute; left: 10px; top: 12px; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+  .fic .m { position: absolute; left: 10px; right: -14px; bottom: -16px; }
+  .fic .m svg { display: block; width: 100%; height: auto; }
+  .fic b { font: 600 13.5px ui-monospace, Consolas, monospace; word-break: break-all; }
+  .fic small { font-size: 12.5px; color: var(--muted); }
+
   /* Mode tour de contrôle : le fichier ouvert dans la tour */
   .viewer { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; background: var(--stage); }
   .viewer[hidden] { display: none; }
@@ -142,10 +155,16 @@ const mobile = () => matchMedia('(max-width: 640px)').matches;
 const goFull = () => { const d = document.documentElement; if (mobile() && !document.fullscreenElement && d.requestFullscreen) d.requestFullscreen().catch(() => {}); };
 const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
 const groups = [...new Set(FILES.map(x => x.g))];
-const drawTiles = () => $('groups').innerHTML = groups.map(g => `<h2>${g}</h2><div class="grid">${FILES.filter(x => x.g === g).map(x =>
-  `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
-     <span class="kind">${x.g === 'Pages' ? 'Page' : 'Fichier'}</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
-     <span class="m" aria-hidden="true">${pic(x)}</span></button>`).join('')}</div>`).join('');
+// Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
+const tile = x => `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
+     <span class="kind">Page</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
+     <span class="m" aria-hidden="true">${pic(x)}</span></button>`;
+const fileIcon = x => `<button class="fic" style="${slStyle(x.sl)}" data-open="${x.f}" title="${esc(x.s)}">
+     <span class="doc"><span class="ext">${x.f.split('.').pop().toUpperCase()}</span><span class="m" aria-hidden="true">${pic(x)}</span></span>
+     <b>${x.f}</b><small>${esc(x.n)}</small></button>`;
+const drawTiles = () => $('groups').innerHTML = groups.map(g => g === 'Pages'
+  ? `<h2>${g}</h2><div class="grid">${FILES.filter(x => x.g === g).map(tile).join('')}</div>`
+  : `<h2>${g}</h2><div class="files">${FILES.filter(x => x.g === g).map(fileIcon).join('')}</div>`).join('');
 drawTiles();
 
 // Lien complet d'un fichier, à copier ou à ouvrir seul

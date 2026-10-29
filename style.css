@@ -289,6 +289,8 @@ h1, h2, h3, p { margin: 0; }
 .uml::before { left: var(--u-in, .055em); border-radius: var(--u-r1, 4%) var(--u-r3, 1%) var(--u-r2, 100%) var(--u-r3, 1%); }
 .uml::after { right: var(--u-in, .055em); border-radius: var(--u-r3, 1%) var(--u-r1, 4%) var(--u-r3, 1%) var(--u-r2, 100%); }
 .phone.dark-ob .uml::before, .phone.dark-ob .uml::after { background: var(--brand-yellow); }
+/* Pages d'accueil : les points du ö prennent l'encre de la page, en plus foncé */
+.phone.ob-mode .uml { --u-color: color-mix(in srgb, var(--obink) 60%, #000); }
 
 /* Les points du ö suivent aussi le regard */
 .uml::before, .uml::after { transform: translate(calc((var(--ux, 0) + var(--u-x, 0)) * 1em), calc(var(--uy, 0) * 1em)); }

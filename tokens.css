@@ -86,12 +86,30 @@
     --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
     --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
     --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
+    /* Cartes du carrousel en sombre : les couleurs s'inversent (le fond prend l'encre, le texte prend le pastel) */
+    --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
+    --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
+    --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;
+    --sl-balance: #0B4F4E;  --sl-balance-ink: #D9F3F1;
+    --sl-curve:   #2B1B6B;  --sl-curve-ink:   #ECE8FF;
+    --sl-regular: #3A2C25;  --sl-regular-ink: #FFFDF2;
+    --sl-share:   #8A1111;  --sl-share-ink:   #FFE0E0;
+    --sl-week:    #24480F;  --sl-week-ink:    #E6F3D3;
   }
 }
 :root[data-theme="dark"] {
   --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
   --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
   --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
+  /* Cartes du carrousel en sombre : les couleurs s'inversent (le fond prend l'encre, le texte prend le pastel) */
+  --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
+  --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
+  --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;
+  --sl-balance: #0B4F4E;  --sl-balance-ink: #D9F3F1;
+  --sl-curve:   #2B1B6B;  --sl-curve-ink:   #ECE8FF;
+  --sl-regular: #3A2C25;  --sl-regular-ink: #FFFDF2;
+  --sl-share:   #8A1111;  --sl-share-ink:   #FFE0E0;
+  --sl-week:    #24480F;  --sl-week-ink:    #E6F3D3;
 }
 
 /* =====================================================

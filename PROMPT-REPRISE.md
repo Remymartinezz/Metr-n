@@ -108,6 +108,7 @@ La mesure (`measure(at, n)`) : pour chaque domaine, prévu = Σ(h × w) × facte
 - Noms de variables à ne pas confondre : `uid()` (app, identifiants d'habitudes) et `chickUid` (mascotte, identifiants de clips SVG).
 - Les textes utilisent l'apostrophe typographique ’ quand c'est possible, et les chaînes entre backticks pour éviter les problèmes d'échappement (un `'` dans une chaîne `'…'` a déjà cassé le script plusieurs fois).
 - Le fichier `style.css` est long et superposé : vérifier qu'une règle n'est pas écrasée par une règle plus bas avant de conclure qu'elle ne marche pas.
+- Avant chaque commit, lancer `sh outils/version.sh` : il met un numéro de version (`?v=…`) sur les CSS et JS des pages, sinon le navigateur de Rémy garde les anciens fichiers en mémoire et il voit une vieille version.
 - Pour modifier une ligne précise d'un gros fichier : retrouver le numéro de ligne (`grep -n`), puis `sed`. Éviter les heredocs imbriqués dans des scripts bash (les guillemets cassent) : écrire le texte dans un fichier intermédiaire, puis l'insérer.
 
 ## 9. Comment tester

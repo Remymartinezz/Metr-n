@@ -1,7 +1,7 @@
 /* Metrön : fonctionne hors ligne, et affiche le rappel doux.
    Stratégie : réseau d'abord, copie en cache si le réseau manque (pas de version périmée en développement). */
 
-const CACHE = 'metron-v1';
+const CACHE = 'metron-v2';
 const SHELL = ['./', 'index.html', 'app.html', 'style.css', 'tokens.css', 'app.js', 'icon.svg', 'logo.svg', 'manifest.webmanifest', 'widgets.html'];
 
 self.addEventListener('install', e => {

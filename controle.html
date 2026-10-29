@@ -139,14 +139,18 @@
   .viewer iframe { grid-row: 3; }
 
   /* Sur téléphone : le fichier ouvert prend tout l'écran (expérience complète), un seul petit bouton pour revenir */
-  .float-back { display: none; }
+  .float { display: none; }
   @media (max-width: 640px) {
     .viewer, .viewer.has-nav { grid-template-rows: 1fr; }
     .viewer .bar, .viewer .nav { display: none; }
     .viewer iframe { grid-row: 1; }
     /* Le bouton n'apparaît que quand on fait défiler (vers le haut ou le bas), puis s'efface : l'écran reste à l'app */
-    .float-back { display: flex; align-items: center; gap: 8px; position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 5; border: 0; border-radius: 999px; padding: 6px 16px 6px 6px; min-height: 48px; background: var(--ink); color: var(--surface); font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3); transform: translate(-50%, 0); opacity: 1; transition: opacity 350ms var(--ease), transform 350ms var(--ease); white-space: nowrap; }
-    .float-back.off { opacity: 0; transform: translate(-50%, 24px); pointer-events: none; }
+    .float { display: flex; gap: 8px; position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 5; transform: translate(-50%, 0); opacity: 1; transition: opacity 350ms var(--ease), transform 350ms var(--ease); }
+    .float.off { opacity: 0; transform: translate(-50%, 24px); pointer-events: none; }
+    .float button { border: 0; border-radius: 999px; min-height: 48px; background: var(--ink); color: var(--surface); font-weight: 700; font-size: 14px; box-shadow: 0 8px 24px rgb(0 0 0 / .3); white-space: nowrap; }
+    .float-back { display: flex; align-items: center; gap: 8px; padding: 6px 16px 6px 6px; }
+    .float-full { width: 48px; font-size: 20px; padding: 0; }
+    .float-full[aria-pressed="true"] { background: var(--surface); color: var(--ink); }
     .float-back i { width: 36px; height: 36px; border-radius: 50%; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; flex: none; }
     .float-back svg { width: 118%; height: auto; display: block; }
   }
@@ -170,7 +174,10 @@
   <div class="bar" id="bar"></div>
   <nav class="nav" id="nav" aria-label="Changer de fichier"></nav>
   <iframe id="frame" title="Fichier ouvert" allow="fullscreen"></iframe>
-  <button class="float-back off" data-close id="fback"><i aria-hidden="true"></i>Revenir au centre de contrôle</button>
+  <div class="float off" id="float">
+    <button class="float-full" id="ffull" aria-pressed="false" aria-label="Plein écran">⤢</button>
+    <button class="float-back" data-close id="fback"><i aria-hidden="true"></i>Revenir au centre de contrôle</button>
+  </div>
 </section>
 
 <div class="gate" id="gate" hidden>
@@ -226,7 +233,7 @@ $('fback').querySelector('i').innerHTML = chick({ acc: ['loupe'], look: [0, 0], 
 // Sur téléphone : le bouton de retour se montre quand on fait défiler la page ouverte, puis s'efface après 2 s
 let backTimer = 0;
 function peekBack(ms = 2000) {
-  const b = $('fback'); b.classList.remove('off');
+  const b = $('float'); b.classList.remove('off');
   clearTimeout(backTimer); backTimer = setTimeout(() => b.classList.add('off'), ms);
 }
 $('frame').addEventListener('load', () => {
@@ -255,6 +262,9 @@ function reqFull() {
 }
 const goFull = () => { if (fullPref) reqFull(); };
 const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function drawFloatFull() { const on = isFull(); $('ffull').setAttribute('aria-pressed', on); $('ffull').textContent = on ? '⤡' : '⤢'; $('ffull').setAttribute('aria-label', on ? 'Quitter le plein écran' : 'Plein écran'); }
+document.addEventListener('fullscreenchange', drawFloatFull); document.addEventListener('webkitfullscreenchange', drawFloatFull);
 function drawFull(msg = '') {
   $('full-btn').setAttribute('aria-pressed', fullPref);
   $('full-btn').querySelector('span').textContent = fullPref ? 'Activé' : 'Désactivé';
@@ -329,6 +339,12 @@ function close(push = true) {
 document.addEventListener('click', e => {
   const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
   const sd = e.target.closest('[data-slide]'); if (sd) { const ex = $('exp'); return ex.scrollTo({ left: +sd.dataset.slide * (ex.firstElementChild.offsetWidth + 12), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+  if (e.target.closest('#ffull')) {
+    // Directement depuis la page ouverte : bascule le plein écran, et le garde pour la suite
+    if (isFull()) { exitFull(); fullPref = false; } else { fullPref = true; if (!canFull()) { peekBack(4000); return alert(NO_FULL); } reqFull().then(ok => { if (!ok) alert(NO_FULL); }); }
+    try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
+    drawFull(); return peekBack();
+  }
   if (e.target.closest('#full-btn')) {
     fullPref = !fullPref; try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
     if (!fullPref) { exitFull(); return drawFull(); }

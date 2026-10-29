@@ -66,6 +66,22 @@
   .fic .m svg { display: block; width: 100%; height: auto; }
   .fic b { font: 600 13.5px ui-monospace, Consolas, monospace; word-break: break-all; }
   .fic small { font-size: 12.5px; color: var(--muted); }
+  .fic .lock { position: absolute; right: 6px; bottom: 6px; z-index: 2; width: 26px; height: 26px; border-radius: 50%; background: var(--sl-i); color: var(--sl); display: grid; place-items: center; font-size: 13px; }
+  .unlocked .fic .lock { display: none; }
+
+  /* Code d'accès pour les fichiers bruts */
+  .gate { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgb(0 0 0 / .45); }
+  .gate[hidden] { display: none; }
+  .gate form { width: min(360px, 100%); background: var(--surface); color: var(--ink); border-radius: 26px; padding: 24px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .gate .gm { width: 110px; } .gate .gm svg { display: block; width: 100%; height: auto; }
+  .gate h3 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+  .gate p { margin: 0; color: var(--muted); font-size: 14px; }
+  .gate input { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); }
+  .gate .err { color: var(--high); font-weight: 600; min-height: 1.4em; }
+  .gate .row { display: flex; gap: 8px; width: 100%; }
+  .gate button { flex: 1; border: 0; border-radius: 999px; padding: 12px; font-weight: 700; min-height: 44px; }
+  .gate .ok { background: var(--ink); color: var(--surface); }
+  .gate .no { background: var(--bg); color: var(--ink); border: 1.5px solid var(--line); }
 
   /* Mode tour de contrôle : le fichier ouvert dans la tour */
   .viewer { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; background: var(--stage); }
@@ -117,6 +133,17 @@
   <button class="float-back" data-close aria-label="Revenir à la tour de contrôle" id="fback"></button>
 </section>
 
+<div class="gate" id="gate" hidden>
+  <form id="gate-form">
+    <span class="gm" id="gate-m" aria-hidden="true"></span>
+    <h3>Code d'accès</h3>
+    <p>Les fichiers de code sont protégés. Entre le code pour les voir.</p>
+    <input id="gate-in" type="password" autocomplete="off" aria-label="Code d'accès">
+    <span class="err" id="gate-err" role="status"></span>
+    <div class="row"><button type="button" class="no" data-gate-no>Annuler</button><button class="ok">Ouvrir</button></div>
+  </form>
+</div>
+
 <script src="mascot.js"></script>
 <script>
 /* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
@@ -156,11 +183,22 @@ const goFull = () => { const d = document.documentElement; if (mobile() && !docu
 const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
 const groups = [...new Set(FILES.map(x => x.g))];
 // Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
+/* Code d'accès des fichiers bruts. Simple verrou d'affichage : il cache, il ne chiffre rien
+   (les fichiers restent lisibles par qui connaît leur adresse). */
+const CODE = 'metron', CODE_KEY = 'metron.tour.code';
+let unlocked = false; try { unlocked = sessionStorage.getItem(CODE_KEY) === '1'; } catch (e) {}
+let pending = null;
+const isCode = f => (FILES.find(x => x.f === f) || {}).g === 'Code';
+function askCode(f) {
+  pending = f; $('gate-m').innerHTML = chick({ acc: ['loupe'], deco: true }); $('gate-err').textContent = ''; $('gate-in').value = '';
+  $('gate').hidden = false; setTimeout(() => $('gate-in').focus(), 30);
+}
+function closeGate() { $('gate').hidden = true; pending = null; }
 const tile = x => `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
      <span class="kind">Page</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
      <span class="m" aria-hidden="true">${pic(x)}</span></button>`;
 const fileIcon = x => `<button class="fic" style="${slStyle(x.sl)}" data-open="${x.f}" title="${esc(x.s)}">
-     <span class="doc"><span class="ext">${x.f.split('.').pop().toUpperCase()}</span><span class="m" aria-hidden="true">${pic(x)}</span></span>
+     <span class="doc"><span class="ext">${x.f.split('.').pop().toUpperCase()}</span><span class="lock" aria-label="Protégé par un code">🔒</span><span class="m" aria-hidden="true">${pic(x)}</span></span>
      <b>${x.f}</b><small>${esc(x.n)}</small></button>`;
 const drawTiles = () => $('groups').innerHTML = groups.map(g => g === 'Pages'
   ? `<h2>${g}</h2><div class="grid">${FILES.filter(x => x.g === g).map(tile).join('')}</div>`
@@ -171,6 +209,7 @@ drawTiles();
 const linkOf = f => new URL(f, location.href).href;
 
 function open(f, push = true) {
+  if (isCode(f) && !unlocked) return askCode(f);
   const x = FILES.find(y => y.f === f);
   if (!x) return close(false);
   const v = $('viewer');
@@ -192,6 +231,9 @@ function close(push = true) {
 
 document.addEventListener('click', e => {
   const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
+  if (e.target.closest('[data-gate-no]') || e.target === $('gate')) return closeGate();
+  const o = e.target.closest('[data-open]');
+  if (o && isCode(o.dataset.open) && !unlocked) { e.preventDefault(); return askCode(o.dataset.open); }
   const t = e.target.closest('[data-open],[data-close],[data-copy]'); if (!t) return;
   if (t.dataset.open) { goFull(); open(t.dataset.open); }
   else if (t.hasAttribute('data-close')) { exitFull(); close(); }
@@ -201,9 +243,17 @@ document.addEventListener('click', e => {
     setTimeout(() => { t.textContent = 'Copier le lien'; }, 1600);
   }
 });
+$('gate-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if ($('gate-in').value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === CODE) {
+    unlocked = true; try { sessionStorage.setItem(CODE_KEY, '1'); } catch (er) {}
+    document.body.classList.add('unlocked'); const f = pending; closeGate(); goFull(); open(f);
+  } else { $('gate-err').textContent = 'Ce n’est pas le bon code.'; $('gate-in').select(); }
+});
+if (unlocked) document.body.classList.add('unlocked');
 addEventListener('popstate', () => { const f = location.hash.slice(1); f ? open(f, false) : close(false); });
-addEventListener('keydown', e => { if (e.key === 'Escape' && !$('viewer').hidden) close(); });
-if (location.hash.length > 1) open(decodeURIComponent(location.hash.slice(1)), false);
+addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('gate').hidden) closeGate(); else if (!$('viewer').hidden) close(); });
+if (location.hash.length > 1) { const f = decodeURIComponent(location.hash.slice(1)); isCode(f) && !unlocked ? askCode(f) : open(f, false); }
 </script>
 </body>
 </html>

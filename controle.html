@@ -20,6 +20,19 @@
   .uml::before { left: .055em; border-radius: 4% 1% 100% 1%; }
   .uml::after { right: .055em; border-radius: 1% 4% 1% 100%; }
 
+  /* Thème : clair, sombre, ou comme l'appareil (data-theme sur <html>, couleurs dans tokens.css) */
+  :root { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  :root[data-theme="dark"] .uml::before, :root[data-theme="dark"] .uml::after { background: var(--brand-yellow); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { color-scheme: dark; }
+    :root:not([data-theme="light"]) .uml::before, :root:not([data-theme="light"]) .uml::after { background: var(--brand-yellow); }
+  }
+  .theme { margin-left: auto; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); align-self: flex-start; }
+  .theme button { border: 0; background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; min-height: 40px; }
+  .theme button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  @media (max-width: 640px) { .top { flex-wrap: wrap; } .theme { margin-left: 0; order: 3; } }
+
   /* Accueil de la tour */
   .home { max-width: 1100px; margin: 0 auto; padding: 36px 16px 80px; }
   .top { display: flex; align-items: center; gap: 16px; }
@@ -78,6 +91,7 @@
   <div class="top">
     <span class="av" id="av"></span>
     <div><p class="eyebrow">Metr<span class="uml">o</span>n</p><h1>Tour de contrôle</h1></div>
+    <div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div>
   </div>
   <p class="lead">Tous les fichiers du projet. Touche une carte : le fichier s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
   <div id="groups"></div>
@@ -107,6 +121,15 @@ const FILES = [
 ];
 // En ligne, l'app est publiée sous app.html (index.html y est la tour) ; en local, c'est index.html
 fetch('app.html', { method: 'HEAD' }).then(r => { if (r.ok) { FILES[0].f = 'app.html'; drawTiles(); } }).catch(() => {});
+// Thème choisi, gardé sur cet appareil
+const THEME_KEY = 'metron.tour.theme';
+function setTheme(t) {
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = t;
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.setAttribute('aria-pressed', b.dataset.themeSet === t));
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+}
+let savedTheme = 'auto'; try { savedTheme = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) {}
+setTheme(savedTheme);
 const slStyle = k => `--sl:var(--sl-${k});--sl-i:var(--sl-${k}-ink);--sl-o:var(--sl-${k}-op)`;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = id => document.getElementById(id);
@@ -149,6 +172,7 @@ function close(push = true) {
 }
 
 document.addEventListener('click', e => {
+  const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
   const t = e.target.closest('[data-open],[data-close],[data-copy]'); if (!t) return;
   if (t.dataset.open) { goFull(); open(t.dataset.open); }
   else if (t.hasAttribute('data-close')) { exitFull(); close(); }

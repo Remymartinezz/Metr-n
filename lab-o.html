@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Labo du ö</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--stage); color: var(--ink); font: 15px/1.5 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 80px; display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  h1 { font-size: 30px; letter-spacing: -.03em; margin: 0; grid-column: 1 / -1; }
+  h1 + p { grid-column: 1 / -1; margin: -18px 0 0; color: var(--muted); max-width: 62ch; }
+  h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+
+  /* Le ö : mêmes règles que style.css, mêmes variables --u-* */
+  .word { white-space: nowrap; font-weight: 750; letter-spacing: -.03em; line-height: 1.05; }
+  .uml { position: relative; display: inline-block; line-height: 1; }
+  .uml::before, .uml::after { content: ""; position: absolute; top: var(--u-top); width: var(--u-w); height: var(--u-h); background: var(--dot); transform: translate(calc(var(--u-x) * 1em), 0); }
+  .uml::before { left: var(--u-in); border-radius: var(--u-r1) var(--u-r3) var(--u-r2) var(--u-r3); }
+  .uml::after { right: var(--u-in); border-radius: var(--u-r3) var(--u-r1) var(--u-r3) var(--u-r2); }
+
+  .previews { display: grid; gap: 14px; }
+  .pv { border-radius: 22px; padding: 26px 24px; }
+  .pv small { display: block; font-size: 12px; opacity: .7; margin-top: 10px; }
+  .pv-ob { background: var(--ob-1); color: var(--ob-1-ink); --dot: var(--dot-ob); }
+  .pv-ob .word { font-size: clamp(38px, 7vw, 56px); }
+  .pv-app { background: var(--bg); color: var(--ink); --dot: var(--dot-app); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .pv-app .word { font-size: 21px; }
+  .pv-app img { width: 34px; height: 34px; border-radius: 10px; }
+  .pv-big { background: var(--surface); color: var(--ink); --dot: var(--dot-app); text-align: center; }
+  .pv-big .word { font-size: clamp(80px, 16vw, 160px); }
+
+  .panel { background: var(--surface); border-radius: 22px; padding: 20px; position: sticky; top: 16px; display: grid; gap: 14px; }
+  .ctl { display: grid; gap: 4px; }
+  .ctl label { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
+  .ctl output { color: var(--muted); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--ink); height: 28px; }
+  .colors { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .sw { width: 36px; height: 36px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px var(--line); padding: 0; cursor: pointer; }
+  .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--ink); }
+  input[type=color] { width: 36px; height: 36px; border: 0; padding: 0; background: none; cursor: pointer; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button.b { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 9px 16px; font: inherit; font-weight: 600; cursor: pointer; color: var(--ink); }
+  button.b.dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+  textarea { width: 100%; height: 150px; border: 1px solid var(--line); border-radius: 14px; padding: 10px; font: 12.5px/1.5 ui-monospace, Consolas, monospace; background: var(--bg); color: var(--ink); resize: vertical; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; width: 100%; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Labo du ö</h1>
+  <p>Règle les deux points jusqu'à ce que ce soit comme tu veux. Quand c'est bon, touche « Copier les réglages » et colle-les-moi dans le chat : je les mets dans l'app.</p>
+
+  <div class="previews" id="previews">
+    <div class="pv pv-ob"><span class="word">Metr<span class="uml">o</span>n.</span><small>Page d'accueil (fond lilas)</small></div>
+    <div class="pv pv-app"><img src="icon.svg" alt=""><span class="word">Metr<span class="uml">o</span>n</span><small style="width:100%">En-tête du tableau de bord</small></div>
+    <div class="pv pv-big"><span class="word">Metr<span class="uml">o</span>n</span><small>En grand, pour bien voir la forme</small></div>
+  </div>
+
+  <div class="panel" id="panel"></div>
+</main>
+
+<script>
+// Valeurs de départ = celles de l'app (style.css)
+const DEF = { top: .18, w: .155, h: .14, inset: .055, x: 0, r1: 4, r2: 100, r3: 1 };
+const SLIDERS = [
+  ['top', 'Hauteur', 0, .4, .005, 'em'],
+  ['w', 'Largeur d’un point', .05, .3, .005, 'em'],
+  ['h', 'Épaisseur d’un point', .05, .3, .005, 'em'],
+  ['inset', 'Écart depuis le bord du o', -.05, .2, .005, 'em'],
+  ['x', 'Décalage gauche / droite', -.1, .1, .005, 'em'],
+  ['r1', 'Arrondi du coin extérieur', 0, 100, 1, '%'],
+  ['r2', 'Arrondi du coin intérieur (le quart de disque)', 0, 100, 1, '%'],
+  ['r3', 'Arrondi des deux autres coins', 0, 50, 1, '%'],
+];
+const OB_COLORS = [['color-mix(in srgb, var(--ob-1-ink) 30%, #000)', 'Violet très foncé (actuel)'], ['color-mix(in srgb, var(--ob-1-ink) 60%, #000)', 'Violet foncé'], ['var(--ob-1-ink)', 'Comme le texte'], ['var(--brand-brown)', 'Brun'], ['#000000', 'Noir']];
+const APP_COLORS = [['var(--brand-brown)', 'Brun (actuel)'], ['var(--ink)', 'Comme le texte'], ['var(--brand-gold)', 'Or'], ['var(--brand-blue)', 'Bleu'], ['#000000', 'Noir']];
+
+let v = { ...DEF, ob: OB_COLORS[0][0], app: APP_COLORS[0][0] };
+try { Object.assign(v, JSON.parse(localStorage.getItem('metron.lab-o')) || {}); } catch (e) {}
+const save = () => { try { localStorage.setItem('metron.lab-o', JSON.stringify(v)); } catch (e) {} };
+const r = n => +n.toFixed(3);
+const unit = k => SLIDERS.find(s => s[0] === k)[5];
+
+function apply() {
+  const s = document.getElementById('previews').style;
+  s.setProperty('--u-top', v.top + 'em'); s.setProperty('--u-w', v.w + 'em'); s.setProperty('--u-h', v.h + 'em');
+  s.setProperty('--u-in', v.inset + 'em'); s.setProperty('--u-x', v.x);
+  s.setProperty('--u-r1', v.r1 + '%'); s.setProperty('--u-r2', v.r2 + '%'); s.setProperty('--u-r3', v.r3 + '%');
+  s.setProperty('--dot-ob', v.ob); s.setProperty('--dot-app', v.app);
+  const out = document.getElementById('out');
+  if (out) out.value = `/* Labo du ö : réglages de Rémy */
+.uml { --u-top: ${r(v.top)}em; --u-w: ${r(v.w)}em; --u-h: ${r(v.h)}em; --u-in: ${r(v.inset)}em; --u-x: ${r(v.x)}; --u-r1: ${v.r1}%; --u-r2: ${v.r2}%; --u-r3: ${v.r3}%; --u-color: ${v.app}; }
+.phone.ob-mode .uml { --u-color: ${v.ob}; }`;
+  save();
+}
+
+const swatches = (k, list) => `<div class="colors">${list.map(([c, n]) => `<button class="sw" data-k="${k}" data-c="${c}" style="background:${c}" title="${n}" aria-label="${n}" aria-pressed="${v[k] === c}"></button>`).join('')}<input type="color" data-k="${k}" aria-label="Autre couleur" title="Autre couleur"></div>`;
+function panel() {
+  document.getElementById('panel').innerHTML = `<h2>Forme et place</h2>
+    ${SLIDERS.map(([k, n, mi, ma, st]) => `<div class="ctl"><label for="s-${k}">${n}<output id="o-${k}">${v[k]}${unit(k)}</output></label><input type="range" id="s-${k}" data-k="${k}" min="${mi}" max="${ma}" step="${st}" value="${v[k]}"></div>`).join('')}
+    <hr><h2>Couleur sur l'accueil</h2>${swatches('ob', OB_COLORS)}
+    <h2>Couleur dans l'app</h2>${swatches('app', APP_COLORS)}
+    <hr><div class="row"><button class="b dark" id="copy">Copier les réglages</button><button class="b" id="reset">Revenir à l'actuel</button></div>
+    <textarea id="out" readonly aria-label="Réglages à me donner"></textarea>`;
+  apply();
+}
+document.addEventListener('input', e => {
+  const k = e.target.dataset.k; if (!k) return;
+  if (e.target.type === 'range') { v[k] = +e.target.value; document.getElementById('o-' + k).textContent = v[k] + unit(k); }
+  if (e.target.type === 'color') { v[k] = e.target.value; document.querySelectorAll(`.sw[data-k="${k}"]`).forEach(b => b.setAttribute('aria-pressed', 'false')); }
+  apply();
+});
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.c) { v[t.dataset.k] = t.dataset.c; document.querySelectorAll(`.sw[data-k="${t.dataset.k}"]`).forEach(b => b.setAttribute('aria-pressed', b === t)); apply(); }
+  if (t.id === 'reset') { v = { ...DEF, ob: OB_COLORS[0][0], app: APP_COLORS[0][0] }; panel(); }
+  if (t.id === 'copy') { const o = document.getElementById('out'); (navigator.clipboard ? navigator.clipboard.writeText(o.value) : Promise.reject()).catch(() => { o.select(); document.execCommand('copy'); }); t.textContent = 'Copié ✓'; setTimeout(() => t.textContent = 'Copier les réglages', 1500); }
+});
+panel();
+</script>
+</body>
+</html>

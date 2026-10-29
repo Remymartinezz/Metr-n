@@ -66,7 +66,7 @@
 
   /* — Cartes du carrousel du haut de page : chacune sa couleur, son texte, son sous-texte (clair seulement pour l'instant) — */
   --sl-today:   #ADDDFF;  --sl-today-ink:   #0B3A63;  --sl-today-op:   .9;     /* Aujourd'hui, avec le poussin */
-  --sl-start:   #FFFEC2;  --sl-start-ink:   #53510E;  --sl-start-op:   .88;    /* Pour toi */
+  --sl-start:   #DCEBFA;  --sl-start-ink:   #173F66;  --sl-start-op:   .88;    /* Pour toi */
   --sl-focus:   #FEE8B4;  --sl-focus-ink:   #7A3E00;  --sl-focus-op:   .9;     /* À regarder */
   --sl-balance: #D9F3F1;  --sl-balance-ink: #0B4F4E;  --sl-balance-op: .85;    /* Équilibre (radar) */
   --sl-curve:   #ECE8FF;  --sl-curve-ink:   #2B1B6B;  --sl-curve-op:   .85;    /* Évolution */
@@ -111,7 +111,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
-    --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
+    --sl-start:   #173A5C;  --sl-start-ink:   #DCEBFA;
     --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;
     --sl-balance: #0B4F4E;  --sl-balance-ink: #D9F3F1;
     --sl-curve:   #2B1B6B;  --sl-curve-ink:   #ECE8FF;
@@ -122,7 +122,7 @@
 }
 :root[data-theme="dark"], :root[data-theme="black"] {
   --sl-today:   #0B3A63;  --sl-today-ink:   #ADDDFF;
-  --sl-start:   #53510E;  --sl-start-ink:   #FFFEC2;
+  --sl-start:   #173A5C;  --sl-start-ink:   #DCEBFA;
   --sl-focus:   #7A3E00;  --sl-focus-ink:   #FEE8B4;
   --sl-balance: #0B4F4E;  --sl-balance-ink: #D9F3F1;
   --sl-curve:   #2B1B6B;  --sl-curve-ink:   #ECE8FF;
@@ -140,7 +140,7 @@ html[data-contrast="high"] {
   --band: #F2E85A; --band-ink: #3A2600; --low: #164E7A; --high: #7A4A00;
   --dom-etudes: #1D4ED8; --dom-sport: #B91C1C; --dom-sommeil: #3730A3; --dom-social: #B45309; --dom-repos: #15803D; --dom-projets: #7E22CE; --dom-balance: #0B7C7B;
   --sl-today: #D6ECFF;   --sl-today-ink: #00152B;   --sl-today-op: 1;
-  --sl-start: #FFFBB0;   --sl-start-ink: #2B2900;   --sl-start-op: 1;
+  --sl-start: #D6E8FA;   --sl-start-ink: #001A33;   --sl-start-op: 1;
   --sl-focus: #FFE9B0;   --sl-focus-ink: #3A1B00;   --sl-focus-op: 1;
   --sl-balance: #D2F3F0; --sl-balance-ink: #00302F; --sl-balance-op: 1;
   --sl-curve: #E7E1FF;   --sl-curve-ink: #150A47;   --sl-curve-op: 1;

@@ -542,7 +542,6 @@ function viewTodayCta() {
 function viewStartCta() {
   return `<div class="card slide-card cta-card cta-start sl" ${slStyle('start')}>
     <p class="cta-eyebrow">Pour toi</p>
-    <p class="cta-sub">3 questions, et Metrön compose des habitudes qui te ressemblent.</p>
     <span class="cta-initial cta-num" aria-hidden="true">3</span>
     <p class="cta-sub">3 questions, et Metrön compose des habitudes qui te ressemblent.</p>
     <div class="cta-row"><button class="cta-btn" data-act="start-ob">Commencer</button><button class="cta-link" data-act="dismiss-banner">Plus tard</button></div>

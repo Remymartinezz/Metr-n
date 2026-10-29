@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Identité visuelle</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Hanken Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 960px; margin: 0 auto; padding: 48px 20px 96px; }
+  h1, h2, p { margin: 0; }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: clamp(36px, 7vw, 64px); letter-spacing: -.03em; line-height: 1.02; margin-top: 8px; }
+  h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 64px 0 18px; }
+  .lead { color: var(--muted); max-width: 52ch; margin-top: 14px; }
+  .grid { display: grid; gap: 14px; }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; display: grid; place-items: center; min-height: 240px; text-align: center; }
+  .card small { display: block; color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .card svg { display: block; }
+  .on-brown { background: var(--brand-brown); border-color: transparent; color: var(--ob-paper); }
+  .on-brown small { color: rgb(255 253 242 / .65); }
+  .on-blue { background: var(--brand-blue); border-color: transparent; }
+  .on-blue small { color: rgb(43 29 23 / .6); }
+
+  .word-big { font-size: clamp(64px, 16vw, 150px); font-weight: 750; letter-spacing: -.035em; line-height: 1; white-space: nowrap; }
+  .uml { position: relative; display: inline-block; line-height: 1; }
+  .uml::before, .uml::after { content: ""; position: absolute; top: .18em; width: .155em; height: .14em; background: var(--brand-brown); }
+  .uml::before { left: .055em; border-radius: 4% 1% 100% 1%; }
+  .uml::after { right: .055em; border-radius: 1% 4% 1% 100%; }
+  .on-brown .uml::before, .on-brown .uml::after { background: var(--brand-yellow); }
+
+  .sw { border-radius: 22px; padding: 18px; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid rgb(0 0 0 / .05); }
+  .sw b { font-size: 17px; }
+  .sw code { font-size: 13px; opacity: .75; }
+  .sw .role { font-size: 13px; opacity: .7; margin-top: 2px; }
+  .light { color: var(--ob-ink); }
+  .dark { color: var(--ob-paper); }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { border-radius: 999px; padding: 10px 18px; font-weight: 600; }
+  .type-card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; }
+  .type-card .big { font-size: clamp(34px, 6vw, 56px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+  .type-card p + p { margin-top: 10px; color: var(--muted); }
+  .scale { display: grid; gap: 8px; margin-top: 22px; }
+  .scale div { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--line); padding-top: 8px; }
+  .scale small { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Identité visuelle · première version</p>
+  <h1>Metr<span class="uml">o</span>n</h1>
+  <p class="lead">Un poussin, deux points qui font le ö, un bec. Tout se règle dans <code>tokens.css</code> : couleurs, mouvement, arrondis.</p>
+
+  <h2>Le signe</h2>
+  <div class="grid g3">
+    <div class="card"><img src="logo.svg" alt="Le poussin" width="200"><small>Le poussin · <code>logo.svg</code></small></div>
+    <div class="card on-blue"><img src="icon.svg" alt="Icône de l'app" width="150"><small>Icône de l'app · <code>icon.svg</code></small></div>
+    <div class="card"><div style="display:flex;align-items:end;gap:14px"><img src="icon.svg" alt="" width="96"><img src="icon.svg" alt="" width="56"><img src="icon.svg" alt="" width="38"><img src="icon.svg" alt="" width="24"></div><small>Tailles : icône, en-tête de l'app, onglet</small></div>
+  </div>
+
+  <h2>Le mot</h2>
+  <div class="grid g3" style="grid-template-columns: 1fr">
+    <div class="card"><div class="word-big">Metr<span class="uml">o</span>n</div><small>Le ö est dessiné en CSS : un « o » sans point, deux quarts de disque bruns. Il reprend les formes du poussin.</small></div>
+  </div>
+
+  <h2>Couleurs de marque</h2>
+  <div class="grid g3">
+    <div class="sw light" style="background:var(--brand-yellow)"><b>Jaune poussin</b><code>#F5F4B5</code><span class="role">La juste mesure</span></div>
+    <div class="sw dark" style="background:var(--brand-brown)"><b>Brun</b><code>#663A2B</code><span class="role">Les points du ö, l'encre forte</span></div>
+    <div class="sw light" style="background:var(--brand-gold)"><b>Or</b><code>#CE9A2B</code><span class="role">Au-dessus de la mesure</span></div>
+    <div class="sw light" style="background:var(--brand-blue)"><b>Bleu</b><code>#6F9AB8</code><span class="role">En dessous, l'icône</span></div>
+  </div>
+
+  <h2>Dans l'interface</h2>
+  <div class="grid g3">
+    <div class="sw light" style="background:var(--bg)"><b>Fond</b><code>--bg</code></div>
+    <div class="sw light" style="background:var(--surface)"><b>Carte</b><code>--surface</code></div>
+    <div class="sw dark" style="background:var(--ink)"><b>Encre</b><code>--ink</code></div>
+    <div class="sw light" style="background:var(--band)"><b>Dans ta mesure</b><code>--band</code></div>
+  </div>
+  <div class="row" style="margin-top:16px">
+    <span class="chip" style="background:var(--band);color:var(--band-ink)">dans ta mesure</span>
+    <span class="chip" style="background:var(--low);color:#fff">un peu en dessous</span>
+    <span class="chip" style="background:var(--high);color:var(--ob-ink)">au-dessus</span>
+  </div>
+  <p class="lead">Jamais de rouge : on est en dessous (froid) ou au-dessus (chaud), jamais « en échec ».</p>
+
+  <h2>Pages plein écran</h2>
+  <div class="grid g3">
+    <div class="sw light" style="background:var(--ob-1)"><b>Bienvenue</b><code>--ob-1</code></div>
+    <div class="sw light" style="background:var(--ob-2)"><b>Comment ça marche</b><code>--ob-2</code></div>
+    <div class="sw light" style="background:var(--ob-3)"><b>Ce que tu fais</b><code>--ob-3</code></div>
+    <div class="sw light" style="background:var(--ob-4)"><b>Ce qui compte</b><code>--ob-4</code></div>
+    <div class="sw light" style="background:var(--ob-5)"><b>Habitudes actuelles</b><code>--ob-5</code></div>
+    <div class="sw light" style="background:var(--ob-gen)"><b>Génération</b><code>--ob-gen</code></div>
+  </div>
+
+  <h2>Typographie</h2>
+  <div class="type-card">
+    <p class="big">Hanken Grotesk</p>
+    <p>Une grotesque contemporaine, nette et chaleureuse. Titres en 650–750, texte en 400–500, serrés de -2 à -3 % sur les grands corps.</p>
+    <div class="scale">
+      <div><span style="font-size:36px;font-weight:650;letter-spacing:-.03em">Qu'est-ce qui compte pour toi ?</span><small>Question · 36 / 650</small></div>
+      <div><span style="font-size:24px;font-weight:620;letter-spacing:-.02em">Tu es dans ta mesure.</span><small>Titre · 24 / 620</small></div>
+      <div><span style="font-size:16px">Coche ce que tu fais, sans pression.</span><small>Texte · 16 / 400</small></div>
+      <div><span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Détail par domaine</span><small>Étiquette · 12 / majuscules</small></div>
+    </div>
+  </div>
+
+  <h2>Mouvement</h2>
+  <div class="type-card">
+    <p class="big" style="font-size:28px">Une seule courbe pour tout.</p>
+    <p><code>cubic-bezier(.2, .8, .2, 1)</code> en 600 ms : l'élément démarre vite puis se pose doucement. Radar, barres, courbe, feuilles et boutons l'utilisent, pour que tout bouge de la même façon.</p>
+  </div>
+</main>
+</body>
+</html>

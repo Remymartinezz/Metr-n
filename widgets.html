@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Widgets</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: #E4E1D3; color: #2B1D17; font: 15px/1.45 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; display: grid; gap: 26px; grid-template-columns: 400px minmax(0, 1fr); align-items: start; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.02em; }
+  h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #6C635A; margin: 22px 0 8px; }
+  p { margin: 6px 0; }
+  .head { grid-column: 1 / -1; }
+  .lead { color: #6C635A; max-width: 60ch; }
+
+  /* Écran d'accueil du téléphone */
+  .home { background: linear-gradient(160deg, #7FA9C4, #B7B2E8 60%, #F0D7A8); border-radius: 44px; border: 10px solid #0e0e0d; padding: 54px 18px 24px; display: grid; gap: 16px; position: sticky; top: 16px; }
+  .home .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .app { display: grid; justify-items: center; gap: 4px; font-size: 11px; color: #fff; text-shadow: 0 1px 3px rgb(0 0 0 / .4); }
+  .app i { width: 54px; height: 54px; border-radius: 14px; background: rgb(255 255 255 / .45); display: block; }
+  .app img { width: 54px; height: 54px; border-radius: 14px; display: block; }
+
+  /* Widgets : mêmes couleurs que l'app (tokens.css) */
+  .w { border-radius: 24px; background: var(--sl-today); color: var(--sl-today-ink); padding: 14px; position: relative; overflow: hidden; }
+  .w small { opacity: .75; }
+  .w-s { aspect-ratio: 1; }
+  .w-m { grid-column: span 4; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .w-title { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; opacity: .7; margin: 0; }
+  .big-check { position: absolute; left: 14px; right: 14px; bottom: 14px; border: 0; border-radius: 999px; padding: 12px; font: inherit; font-weight: 700; background: var(--sl-today-ink); color: var(--sl-today); cursor: pointer; }
+  .big-check:active { transform: scale(.97); }
+  .w-name { font-size: 18px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin: 8px 0 0; }
+  .w-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+  .w-list li { display: flex; align-items: center; gap: 10px; background: rgb(255 255 255 / .55); border-radius: 14px; padding: 8px 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .w-list .t { width: 22px; height: 22px; border-radius: 50%; border: 2px solid currentColor; display: grid; place-items: center; font-size: 12px; flex: none; opacity: .8; }
+  .w-list li.done .t { background: currentColor; }
+  .w-list li.done .t b { color: var(--sl-today); }
+  .w-list li.done span:last-child { opacity: .55; text-decoration: line-through; }
+  .w-eq { background: var(--sl-balance); color: var(--sl-balance-ink); }
+  .w-ring { background: var(--sl-regular); color: var(--sl-regular-ink); display: grid; place-items: center; }
+  .w-ring svg { width: 74%; }
+  .w-cta { background: var(--sl-focus); color: var(--sl-focus-ink); }
+  .w-cta .w-name { font-size: 16px; }
+
+  .card { background: #FBFAF5; border-radius: 22px; padding: 20px; margin-bottom: 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 10px; margin-bottom: 8px; }
+  .ok { background: #D7EBD3; color: #1F5A22; }
+  .mid { background: #F7E6B5; color: #6B4A00; }
+  code { background: #EEEADD; border-radius: 6px; padding: 1px 6px; font-size: 13px; }
+  .reset { border: 1.5px solid #DDD8C8; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <h1>Widgets Metrön</h1>
+    <p class="lead">Aperçu des widgets de l'écran d'accueil. Ils lisent tes vraies données (celles de l'app, sur cet appareil) : touche une case pour cocher, puis ouvre l'app, c'est le même état.</p>
+  </div>
+
+  <div class="home" id="home" aria-label="Écran d'accueil du téléphone"></div>
+
+  <div>
+    <div class="card">
+      <span class="tag ok">Marche déjà</span>
+      <h3>Raccourcis sur l'icône (appui long)</h3>
+      <p>Une fois Metrön ajoutée à l'écran d'accueil, un appui long sur l'icône propose <b>« Cocher la prochaine habitude »</b> et <b>« Voir mon équilibre »</b> : un seul geste, sans passer par le tableau de bord. Sur Android avec Chrome c'est actif ; sur iPhone, ces raccourcis d'icône ne sont pas gérés par le navigateur.</p>
+    </div>
+    <div class="card">
+      <span class="tag mid">Demande une app native</span>
+      <h3>Les vrais widgets (écran d'accueil, écran verrouillé)</h3>
+      <p>Un site web ne peut pas poser de widget sur le téléphone : il faut une app native (WidgetKit sur iPhone, Glance sur Android). Cette page montre le <b>design et le contenu</b> de ces widgets, avec les couleurs de l'app, pour qu'ils soient prêts à être construits.</p>
+      <p>Les cinq formats : prochaine habitude (petit), liste du jour (moyen), équilibre (petit et moyen), anneau de progression (écran verrouillé).</p>
+    </div>
+    <div class="card">
+      <h3>Aucune donnée ?</h3>
+      <p>Ouvre l'app et coche une habitude : elle apparaît ici. Les widgets ci-contre utilisent des exemples tant qu'il n'y a rien.</p>
+      <button class="reset" id="sample">Revenir à l'exemple</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/* Lit l'état de l'app (même navigateur, même origine) : habitudes cochées, rythme, historique. */
+const KEY = 'metron.v2', DAY = 864e5;
+const CAT = { etudes: 'Études', sport: 'Sport', sommeil: 'Sommeil', social: 'Social', repos: 'Repos', projets: 'Projets' };
+const ORDER = Object.keys(CAT);
+const K = { calme: { sport: 1.2, projets: 1.2, social: 1.2 }, normal: {}, charge: { etudes: 1.3, sport: .7, social: .7, projets: .5 } };
+const dayKey = d => new Date(d).toLocaleDateString('sv-SE'), today = () => dayKey(Date.now());
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+let useSample = false, S = load();
+function sample() {
+  const hs = [['Session de travail focus', 'etudes', 1, 5], ['Marche ou activité douce', 'sport', .5, 4], ['Nuit de sommeil', 'sommeil', 8, 7], ['Pause sans écran', 'repos', .5, 5]].map(([name, domain, h, w], i) => ({ id: 'x' + i, name, domain, h, w }));
+  const logs = []; for (let i = 0; i < 7; i++) hs.forEach((h, k) => { if ((i + k) % 3 !== 0) logs.push({ habit: h.id, day: dayKey(Date.now() - i * DAY), h: h.h, domain: h.domain }); });
+  return { habits: hs, logs: logs.filter(l => !(l.day === today() && l.habit === 'x1')), rhythm: 'normal', start: Date.now() - 20 * DAY };
+}
+function load() { if (!useSample) { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return s; } catch (e) {} } return sample(); }
+const save = () => { if (!useSample) try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const done = id => S.logs.some(l => l.habit === id && l.day === today());
+const pos = (v, t) => v < t.min ? .4 * (v / t.min) : v <= t.max ? .4 + .3 * (v - t.min) / (t.max - t.min) : Math.min(1, .7 + .3 * (v - t.max) / (t.max * .5));
+
+function measure() {
+  const since = dayKey(Date.now() - 6 * DAY), k = K[S.rhythm] || {};
+  return ORDER.filter(id => S.habits.some(h => h.domain === id)).map(id => {
+    const planned = S.habits.filter(h => h.domain === id).reduce((a, h) => a + h.h * h.w, 0) * (k[id] || 1);
+    const v = S.logs.filter(l => l.domain === id && l.day >= since).reduce((a, l) => a + l.h, 0);
+    return { id, name: CAT[id], p: pos(v, { min: planned * .8, max: planned * 1.2 }) };
+  });
+}
+function radarSvg(m, size) {
+  const N = m.length, R = 46, c = 60, a = i => -Math.PI / 2 + i * 2 * Math.PI / N, pt = (i, r) => [c + Math.cos(a(i)) * r * R, c + Math.sin(a(i)) * r * R].map(n => n.toFixed(1)).join(',');
+  const ring = r => 'M' + m.map((_, i) => pt(i, r).replace(',', ' ')).join('L') + 'Z';
+  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}"><polygon points="${m.map((_, i) => pt(i, 1)).join(' ')}" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+    <path d="${ring(.7)}${ring(.4)}" fill="var(--band)" fill-rule="evenodd"/>
+    <polygon points="${m.map((x, i) => pt(i, x.p)).join(' ')}" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.6"/>
+    ${m.map((x, i) => { const [px, py] = pt(i, x.p).split(','); return `<circle cx="${px}" cy="${py}" r="3" fill="var(--dom-${x.id})"/>`; }).join('')}</svg>`;
+}
+
+function render() {
+  const left = S.habits.filter(h => !done(h.id)), nxt = left[0], m = measure();
+  const total = S.habits.length, fin = total - left.length, deg = total ? fin / total : 0, C = 2 * Math.PI * 34;
+  const inN = m.filter(x => x.p >= .4 && x.p <= .7).length;
+  document.getElementById('home').innerHTML = `
+    <div class="row"><div class="app"><i></i>Photos</div><div class="app"><i></i>Messages</div><div class="app"><i></i>Agenda</div><div class="app"><i></i>Musique</div></div>
+
+    <div class="two">
+      <div class="w w-s"><p class="w-title">Prochaine</p>
+        <p class="w-name">${nxt ? esc(nxt.name) : `Tout est fait`}</p>
+        ${nxt ? `<button class="big-check" data-c="${nxt.id}">C'est fait</button>` : `<p style="position:absolute;left:14px;bottom:14px;font-weight:700">Bonne journée</p>`}</div>
+      <div class="w w-eq w-s"><p class="w-title">Équilibre</p><div style="position:absolute;inset:34px 8px 8px">${radarSvg(m, '100%')}</div></div>
+    </div>
+
+    <div class="w w-m"><p class="w-title">Aujourd'hui · ${fin} sur ${total}</p>
+      <ul class="w-list">${S.habits.slice(0, 4).map(h => `<li class="${done(h.id) ? 'done' : ''}" data-c="${h.id}"><span class="t"><b>${done(h.id) ? '✓' : ''}</b></span><span>${esc(h.name)}</span></li>`).join('')}</ul></div>
+
+    <div class="two">
+      <div class="w w-ring w-s"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * deg).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="46" text-anchor="middle" font-size="20" font-weight="800" fill="currentColor">${fin}/${total}</text></svg></div>
+      <div class="w w-cta w-s"><p class="w-title">À regarder</p><p class="w-name">${inN === m.length ? `Tu es dans ta mesure` : `${m.length - inN} domaine${m.length - inN > 1 ? 's' : ''} à regarder`}</p></div>
+    </div>
+
+    <div class="row"><div class="app"><i></i>Notes</div><div class="app"><i></i>Plans</div><div class="app"><img src="icon.svg" alt=""><span>Metrön</span></div><div class="app"><i></i>Réglages</div></div>`;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-c]'); if (t) {
+    const id = t.dataset.c, i = S.logs.findIndex(l => l.habit === id && l.day === today()), h = S.habits.find(x => x.id === id);
+    if (i >= 0) S.logs.splice(i, 1); else S.logs.push({ habit: id, day: today(), h: h.h, domain: h.domain });
+    save(); render();
+  }
+  if (e.target.id === 'sample') { useSample = true; S = sample(); render(); }
+});
+render();
+</script>
+</body>
+</html>

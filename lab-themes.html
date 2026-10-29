@@ -18,14 +18,16 @@
   .chip { border: 1.5px solid #DDD8C8; background: #fff; border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; color: inherit; min-height: 40px; }
   .chip[aria-pressed="true"] { background: #2B1D17; color: #fff; border-color: #2B1D17; }
 
-  .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 22px; align-items: start; }
-  @media (max-width: 1100px) { .modes { grid-template-columns: minmax(0, 420px); justify-content: center; } }
+  .modes { display: grid; gap: 18px; margin-top: 22px; }
+  .row { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 18px; align-items: start; }
+  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 900px) { .row { grid-template-columns: 1fr; } .shots { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; } .shots .shot { flex: 0 0 78%; scroll-snap-align: start; } }
   .mode { background: #FBFAF5; border-radius: 26px; padding: 16px; }
   .mode h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
   .mode > p { margin: 2px 0 12px; color: #6C635A; font-size: 14px; }
   .shot { width: 100%; aspect-ratio: 390 / 760; border-radius: 28px; overflow: hidden; border: 8px solid #0e0e0d; position: relative; background: #000; }
   .shot iframe { position: absolute; left: 0; top: 0; width: 390px; height: 760px; border: 0; transform-origin: 0 0; }
-  .ctl { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 10px; align-items: center; margin-top: 14px; font-size: 14px; }
+  .ctl { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 10px; align-items: center; font-size: 14px; }
   .ctl label { font-weight: 600; }
   .ctl input[type=color] { width: 40px; height: 32px; border: 0; padding: 0; background: none; cursor: pointer; }
   .ctl code { font-size: 12px; color: #6C635A; width: 64px; }
@@ -46,8 +48,8 @@
 <body>
 <main>
   <h1>Labo des thèmes</h1>
-  <p class="lead">Les trois modes côte à côte, sur le vrai tableau de bord. Change une couleur, l'aperçu suit. Écris ta vision en bas, puis « Copier pour Claude » et colle-le-moi : je l'applique à l'app.</p>
-  <div class="bar" id="screens"><span>Écran</span></div>
+  <p class="lead">Les trois modes, chacun sur trois écrans différents de l'app. Choisis un jeu d'écrans en haut pour en voir d'autres. Change une couleur, l'aperçu suit. Écris ta vision en bas, puis « Copier pour Claude » et colle-le-moi : je l'applique à l'app.</p>
+  <div class="bar" id="screens"><span>Écrans</span></div>
   <div class="modes" id="modes"></div>
 
   <section class="out">
@@ -66,12 +68,19 @@ const DEF = {
   dark:  { name: 'Sombre', note: 'Pas de noir : le jaune du poussin, très assombri.', v: { '--bg': '#29261A', '--surface': '#35311F', '--stage': '#1F1C12', '--ink': '#F6F2D6', '--muted': '#B9B18C', '--line': '#4A4529', '--band': '#6A6224', '--band-ink': '#F4EC91' } },
   black: { name: 'Ultra-sombre', note: 'Presque noir, pour la nuit.', v: { '--bg': '#17110E', '--surface': '#231A16', '--stage': '#0C0807', '--ink': '#F4EFDD', '--muted': '#A09384', '--line': '#3A2C25', '--band': '#4B4724', '--band-ink': '#EDE58A' } },
 };
-const SCREENS = [['month', 'Tableau de bord'], ['equilibre', 'Équilibre'], ['regularite', 'Régularité'], ['welcome', 'Accueil'], ['settings', 'Réglages']];
+// Trois écrans variés par mode, en jeux : on voit la même logique de couleurs partout
+const SETS = [
+  ['a', 'Tableau de bord · domaine · réglages', ['month', 'domaine-sport', 'settings']],
+  ['b', 'Équilibre · régularité · modifier', ['equilibre', 'regularite', 'edit']],
+  ['c', 'Accueil · habitudes · nuit', ['welcome', 'habits', 'nuit']],
+  ['d', 'Filtre · répartition · pause', ['filtre', 'repartition', 'pause']],
+];
+const SLOTS = [0, 1, 2];
 const KEY = 'metron.lab-themes';
 // En ligne, l'app est publiée sous app.html (index.html y est la tour de contrôle) ; en local, c'est index.html
 let APP = 'index.html';
-let st = { screen: 'month', modes: JSON.parse(JSON.stringify(DEF)), vision: '' };
-try { const sv = JSON.parse(localStorage.getItem(KEY)); if (sv) { st.screen = sv.screen || st.screen; st.vision = sv.vision || ''; for (const k in DEF) Object.assign(st.modes[k].v, (sv.modes || {})[k] || {}); } } catch (e) {}
+let st = { screen: 'a', modes: JSON.parse(JSON.stringify(DEF)), vision: '' };
+try { const sv = JSON.parse(localStorage.getItem(KEY)); if (sv) { st.screen = SETS.some(x => x[0] === sv.screen) ? sv.screen : st.screen; st.vision = sv.vision || ''; for (const k in DEF) Object.assign(st.modes[k].v, (sv.modes || {})[k] || {}); } } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ screen: st.screen, vision: st.vision, modes: Object.fromEntries(Object.keys(DEF).map(k => [k, st.modes[k].v])) })); } catch (e) {} };
 const $ = id => document.getElementById(id);
 
@@ -81,8 +90,7 @@ const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m);
 
 const css = k => `:root[data-theme="${k}"] { ${TOKENS.map(([t]) => `${t}: ${st.modes[k].v[t]};`).join(' ')} }`;
 function paint(k) {
-  const f = $('f-' + k);
-  try { const d = f.contentDocument; d.documentElement.dataset.theme = k; let s = d.getElementById('labt'); if (!s) { s = d.createElement('style'); s.id = 'labt'; d.head.appendChild(s); } s.textContent = css(k); } catch (e) {}
+  SLOTS.forEach(i => { try { const d = $(`f-${k}-${i}`).contentDocument; d.documentElement.dataset.theme = k; let s = d.getElementById('labt'); if (!s) { s = d.createElement('style'); s.id = 'labt'; d.head.appendChild(s); } s.textContent = css(k); } catch (e) {} });
   const v = st.modes[k].v, c = [['Texte sur fond', v['--ink'], v['--bg']], ['Texte discret sur fond', v['--muted'], v['--bg']], ['Texte sur carte', v['--ink'], v['--surface']], ['Texte de la zone', v['--band-ink'], v['--band']]];
   $('c-' + k).innerHTML = c.map(([n, a, b]) => { const r = ratio(a, b); return `<div class="${r >= 4.5 ? 'ok' : 'ko'}"><span>${n}</span><b>${r.toFixed(1)}:1 ${r >= 4.5 ? '✓' : '· trop faible'}</b></div>`; }).join('');
   $('css').value = (st.vision.trim() ? `/* Vision de Rémy :\n${st.vision.trim()}\n*/\n` : '') + Object.keys(DEF).map(css).join('\n');
@@ -90,18 +98,18 @@ function paint(k) {
 }
 function fit() { document.querySelectorAll('.shot').forEach(s => { const i = s.querySelector('iframe'); i.style.transform = `scale(${s.clientWidth / 390})`; }); }
 
-$('screens').insertAdjacentHTML('beforeend', SCREENS.map(([id, n]) => `<button class="chip" data-screen="${id}" aria-pressed="${st.screen === id}">${n}</button>`).join(''));
+$('screens').insertAdjacentHTML('beforeend', SETS.map(([id, n]) => `<button class="chip" data-screen="${id}" aria-pressed="${st.screen === id}">${n}</button>`).join(''));
 $('modes').innerHTML = Object.entries(st.modes).map(([k, m]) => `<section class="mode">
   <h2>${m.name}</h2><p>${m.note}</p>
-  <div class="shot"><iframe id="f-${k}" title="Aperçu ${m.name}" src="about:blank"></iframe></div>
-  <div class="ctl">${TOKENS.map(([t, n]) => `<label for="i-${k}${t}">${n}</label><code id="h-${k}${t}">${m.v[t]}</code><input type="color" id="i-${k}${t}" data-k="${k}" data-t="${t}" value="${m.v[t]}">`).join('')}</div>
+  <div class="row"><div class="side"><div class="ctl">${TOKENS.map(([t, n]) => `<label for="i-${k}${t}">${n}</label><code id="h-${k}${t}">${m.v[t]}</code><input type="color" id="i-${k}${t}" data-k="${k}" data-t="${t}" value="${m.v[t]}">`).join('')}</div>
   <div class="checks" id="c-${k}"></div>
-  <button class="chip reset" data-reset="${k}">Revenir à l'actuel</button>
+  <button class="chip reset" data-reset="${k}">Revenir à l'actuel</button></div>
+  <div class="shots">${SLOTS.map(i => `<div class="shot"><iframe id="f-${k}-${i}" title="Aperçu ${m.name} ${i + 1}" src="about:blank"></iframe></div>`).join('')}</div></div>
 </section>`).join('');
 $('vision').value = st.vision;
-Object.keys(DEF).forEach(k => $('f-' + k).addEventListener('load', () => paint(k)));
+Object.keys(DEF).forEach(k => SLOTS.forEach(i => $(`f-${k}-${i}`).addEventListener('load', () => { paint(k); fit(); })));
 Object.keys(DEF).forEach(paint);
-const loadAll = () => Object.keys(DEF).forEach(k => $('f-' + k).src = `${APP}?screen=${st.screen}`);
+const loadAll = () => { const set = SETS.find(x => x[0] === st.screen)[2]; Object.keys(DEF).forEach(k => SLOTS.forEach(i => { $(`f-${k}-${i}`).src = `${APP}?screen=${set[i]}`; })); };
 fetch('app.html', { method: 'HEAD' }).then(r => { if (r.ok) APP = 'app.html'; }).catch(() => {}).finally(loadAll);
 
 document.addEventListener('input', e => {

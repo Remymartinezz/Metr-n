@@ -28,10 +28,14 @@
     :root:not([data-theme="light"]) { color-scheme: dark; }
     :root:not([data-theme="light"]) .uml::before, :root:not([data-theme="light"]) .uml::after { background: var(--brand-yellow); }
   }
-  .theme { margin-left: auto; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); align-self: flex-start; }
+  .tools { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-self: flex-start; }
+  .full { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; min-height: 48px; }
+  .full[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .full-msg { margin: 14px 0 0; padding: 12px 16px; border-radius: 16px; background: var(--sl-focus); color: var(--sl-focus-ink); max-width: 60ch; font-size: 14px; }
+  .theme { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); align-self: flex-start; }
   .theme button { border: 0; background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; min-height: 40px; }
   .theme button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
-  @media (max-width: 640px) { .top { flex-wrap: wrap; } .theme { margin-left: 0; order: 3; } }
+  @media (max-width: 640px) { .top { flex-wrap: wrap; } .tools { margin-left: 0; order: 3; justify-content: flex-start; } }
 
   /* Accueil de la tour */
   .home { max-width: 1100px; margin: 0 auto; padding: 36px 16px 80px; }
@@ -120,8 +124,9 @@
   <div class="top">
     <span class="av" id="av"></span>
     <div><p class="eyebrow">Metr<span class="uml">o</span>n</p><h1>Tour de contrôle</h1></div>
-    <div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div>
+    <div class="tools"><button class="full" id="full-btn" aria-pressed="false">⤢ Plein écran · <span>Désactivé</span></button><div class="theme" role="group" aria-label="Thème"><button data-theme-set="auto">Auto</button><button data-theme-set="light">Clair</button><button data-theme-set="dark">Sombre</button></div></div>
   </div>
+  <p class="full-msg" id="full-msg" role="status" hidden></p>
   <p class="lead">Tous les fichiers du projet. Touche une carte : le fichier s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
   <div id="groups"></div>
 </main>
@@ -179,13 +184,31 @@ $('av').innerHTML = chick({ acc: ['loupe'], deco: true });
 $('fback').innerHTML = chick({ look: [0, 0], deco: true });
 // Sur téléphone, on demande aussi le vrai plein écran (marche sur Android ; iPhone et certains cadres l'ignorent)
 const mobile = () => matchMedia('(max-width: 640px)').matches;
-const goFull = () => { const d = document.documentElement; if (mobile() && !document.fullscreenElement && d.requestFullscreen) d.requestFullscreen().catch(() => {}); };
+// Plein écran : seulement si tu l'as autorisé (bouton « Plein écran »). Le navigateur exige un toucher pour l'activer,
+// donc on le relance à chaque fichier ouvert. Gardé sur cet appareil.
+const FULL_KEY = 'metron.tour.full';
+let fullPref = false; try { fullPref = localStorage.getItem(FULL_KEY) === '1'; } catch (e) {}
+const canFull = () => !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+function reqFull() {
+  const d = document.documentElement, r = d.requestFullscreen || d.webkitRequestFullscreen;
+  if (!r || document.fullscreenElement || document.webkitFullscreenElement) return Promise.resolve(!!r);
+  try { return Promise.resolve(r.call(d)).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+}
+const goFull = () => { if (fullPref) reqFull(); };
 const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
+function drawFull(msg = '') {
+  $('full-btn').setAttribute('aria-pressed', fullPref);
+  $('full-btn').querySelector('span').textContent = fullPref ? 'Activé' : 'Désactivé';
+  $('full-msg').textContent = msg; $('full-msg').hidden = !msg;
+}
+const NO_FULL = /iPhone|iPod/.test(navigator.userAgent)
+  ? `Sur iPhone, le navigateur ne permet pas le plein écran. À la place : ouvre le lien dans Safari, touche Partager, puis « Sur l’écran d’accueil ».`
+  : `Ici, le navigateur bloque le plein écran (par exemple dans l’app Claude). Ouvre le lien dans Chrome ou Edge pour l’avoir.`;
 const groups = [...new Set(FILES.map(x => x.g))];
 // Les pages en grandes cartes ; le code en icônes de fichiers, comme dans l'explorateur
 /* Code d'accès des fichiers bruts. Simple verrou d'affichage : il cache, il ne chiffre rien
    (les fichiers restent lisibles par qui connaît leur adresse). */
-const CODE = 'metron', CODE_KEY = 'metron.tour.code';
+const CODE = 'metrön', CODE_KEY = 'metron.tour.code';
 let unlocked = false; try { unlocked = sessionStorage.getItem(CODE_KEY) === '1'; } catch (e) {}
 let pending = null;
 const isCode = f => (FILES.find(x => x.f === f) || {}).g === 'Code';
@@ -231,12 +254,18 @@ function close(push = true) {
 
 document.addEventListener('click', e => {
   const th = e.target.closest('[data-theme-set]'); if (th) return setTheme(th.dataset.themeSet);
+  if (e.target.closest('#full-btn')) {
+    fullPref = !fullPref; try { localStorage.setItem(FULL_KEY, fullPref ? '1' : '0'); } catch (er) {}
+    if (!fullPref) { exitFull(); return drawFull(); }
+    drawFull(); if (!canFull()) return drawFull(NO_FULL);
+    return reqFull().then(ok => drawFull(ok ? '' : NO_FULL));
+  }
   if (e.target.closest('[data-gate-no]') || e.target === $('gate')) return closeGate();
   const o = e.target.closest('[data-open]');
   if (o && isCode(o.dataset.open) && !unlocked) { e.preventDefault(); return askCode(o.dataset.open); }
   const t = e.target.closest('[data-open],[data-close],[data-copy]'); if (!t) return;
   if (t.dataset.open) { goFull(); open(t.dataset.open); }
-  else if (t.hasAttribute('data-close')) { exitFull(); close(); }
+  else if (t.hasAttribute('data-close')) close();
   else if (t.dataset.copy) {
     const url = linkOf(t.dataset.copy);
     (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { t.textContent = 'Copié ✓'; }, () => { t.textContent = url; });
@@ -245,12 +274,13 @@ document.addEventListener('click', e => {
 });
 $('gate-form').addEventListener('submit', e => {
   e.preventDefault();
-  if ($('gate-in').value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === CODE) {
+  if ($('gate-in').value.trim().toLowerCase().normalize('NFC') === CODE) {
     unlocked = true; try { sessionStorage.setItem(CODE_KEY, '1'); } catch (er) {}
     document.body.classList.add('unlocked'); const f = pending; closeGate(); goFull(); open(f);
   } else { $('gate-err').textContent = 'Ce n’est pas le bon code.'; $('gate-in').select(); }
 });
 if (unlocked) document.body.classList.add('unlocked');
+drawFull();
 addEventListener('popstate', () => { const f = location.hash.slice(1); f ? open(f, false) : close(false); });
 addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('gate').hidden) closeGate(); else if (!$('viewer').hidden) close(); });
 if (location.hash.length > 1) { const f = decodeURIComponent(location.hash.slice(1)); isCode(f) && !unlocked ? askCode(f) : open(f, false); }

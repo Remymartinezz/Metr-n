@@ -9,7 +9,7 @@
 <link rel="icon" href="favicon-16.png" type="image/png" sizes="16x16">
 <link rel="alternate icon" href="favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261029140359">
+<link rel="stylesheet" href="tokens.css?v=20261029140528">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
@@ -68,7 +68,7 @@
 /* Les couleurs de base de chaque mode (mêmes valeurs que tokens.css) */
 const TOKENS = [['--bg', 'Fond'], ['--surface', 'Cartes et listes'], ['--stage', 'Autour du téléphone'], ['--ink', 'Texte'], ['--muted', 'Texte discret'], ['--line', 'Traits'], ['--band', 'Zone « dans ta mesure »'], ['--band-ink', 'Texte de la zone']];
 const DEF = {
-  light: { name: 'Clair', note: 'Le mode de jour.', v: { '--bg': '#F8F7F0', '--surface': '#FFFFFF', '--stage': '#E4E1D3', '--ink': '#2B1D17', '--muted': '#6C635A', '--line': '#DDD8C8', '--band': '#E6DF74', '--band-ink': '#6E4A12' } },
+  light: { name: 'Clair', note: 'Le mode de jour.', v: { '--bg': '#FFFFFF', '--surface': '#FFFFFF', '--stage': '#E4E1D3', '--ink': '#2B1D17', '--muted': '#6C635A', '--line': '#DDD8C8', '--band': '#E6DF74', '--band-ink': '#6E4A12' } },
   dark:  { name: 'Sombre', note: 'Pas de noir : le jaune du poussin, très assombri.', v: { '--bg': '#29261A', '--surface': '#35311F', '--stage': '#1F1C12', '--ink': '#F6F2D6', '--muted': '#B9B18C', '--line': '#4A4529', '--band': '#6A6224', '--band-ink': '#F4EC91' } },
   black: { name: 'Ultra-sombre', note: 'Presque noir, pour la nuit.', v: { '--bg': '#17110E', '--surface': '#231A16', '--stage': '#0C0807', '--ink': '#F4EFDD', '--muted': '#A09384', '--line': '#3A2C25', '--band': '#4B4724', '--band-ink': '#EDE58A' } },
 };
@@ -128,6 +128,6 @@ document.addEventListener('click', e => {
 });
 addEventListener('resize', fit); fit();
 </script>
-<script src="nav.js?v=20261029140359"></script>
+<script src="nav.js?v=20261029140528"></script>
 </body>
 </html>

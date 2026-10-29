@@ -12,7 +12,7 @@
   --brand-blue:   #2D7BB4;   /* l'à-côté, le calme */
 
   /* — Rôles dans l'interface (clair) — */
-  --bg: #F8F7F0;
+  --bg: #FFFFFF;             /* fond blanc pur (demande de Rémy) */
   --surface: #FFFFFF;
   --ink: #2B1D17;            /* brun presque noir */
   --muted: #6C635A;

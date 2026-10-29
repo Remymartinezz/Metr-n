@@ -1414,7 +1414,7 @@ function updateIcon() {
     if (!l.dataset.pngIcon) l.dataset.pngIcon = l.rel;
     l.rel = f === 'all' ? l.dataset.pngIcon : 'x-icon-off';
   });
-  if (f === 'all') { link.href = 'icon.svg'; meta.content = '#F8F7F0'; return; }
+  if (f === 'all') { link.href = 'icon.svg'; meta.content = '#FFFFFF'; return; }
   try {
     const bg = resolveColor(`var(--dom-${f}-focus)`);
     const inner = chickInner({ acc: [DOM_ACC[f]], pal: f, mood: 'happy', look: [0, 0], deco: true });

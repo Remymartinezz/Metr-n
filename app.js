@@ -258,7 +258,8 @@ const GEN_COLOR = 'var(--ob-gen)';
 
 // Habitudes suggérées : la première de chaque domaine choisi, tant qu'on n'y a pas touché.
 // Elles s'affichent à mi-chemin entre « non choisi » et « choisi » ; un tap les confirme, un second tap les retire.
-const sugKeys = d => d.domains.map(id => `${id}:0`).filter(k => !d.touched.includes(k));
+// Dès qu'une habitude du domaine est choisie, la suggestion de ce domaine disparaît : c'est plus clair.
+const sugKeys = d => d.domains.filter(id => !d.habits.some(k => k.startsWith(id + ':'))).map(id => `${id}:0`).filter(k => !d.touched.includes(k));
 const includedHabits = d => [...new Set([...d.habits, ...sugKeys(d)])].filter(k => d.domains.includes(k.split(':')[0]));
 
 function viewOnboarding() {

@@ -1,0 +1,115 @@
+/* =====================================================
+   Metrön : identité visuelle
+   Tout ce qui est couleur passe par ici. Change les valeurs,
+   l'app et la page identite.html suivent.
+   ===================================================== */
+
+:root {
+  /* — Les 4 couleurs de la marque (tirées de la référence) — */
+  --brand-yellow: #FFFD94;   /* le poussin, la juste mesure */
+  --brand-brown:  #663A2B;   /* les deux points du ö */
+  --brand-gold:   #CE9A2B;   /* le bec */
+  --brand-blue:   #2D7BB4;   /* l'à-côté, le calme */
+
+  /* — Rôles dans l'interface (clair) — */
+  --bg: #F8F7F0;
+  --surface: #FFFFFF;
+  --ink: #2B1D17;            /* brun presque noir */
+  --muted: #6C635A;
+  --line: #DDD8C8;
+  --band: #E6DF74;                     /* la zone « dans ta mesure » (plus soutenue que le poussin pour se voir) */
+  --track: #E8ECEE;                   /* piste des barres */
+  --band-ink: #6E4A12;                /* texte et repères « dans ta mesure » */
+  --low: #4F80A3;                     /* en dessous : froid */
+  --high: #B07A12;          /* au-dessus : chaud */
+  --stage: #E4E1D3;                   /* fond autour du téléphone */
+
+  /* — Un repère de couleur par domaine (graphique de répartition) — */
+  --dom-etudes:  #2563EB;   /* bleu    · connaissance, apprentissage */
+  --dom-sport:   #DC2626;   /* rouge   · énergie, mouvement */
+  --dom-sommeil: #4F46E5;   /* indigo  · calme, récupération */
+  --dom-social:  #EA580C;   /* orange  · échange, chaleur */
+  --dom-repos:   #16A34A;   /* vert    · détente, respiration */
+  --dom-projets: #9333EA;   /* violet  · créativité, ambition */
+
+  /* — Quand on est sur UN domaine : une vraie personnalité, très différente des autres et de la couleur de base.
+       Tout l'écran s'y adapte (carte du haut, filtres, cases cochées, fond teinté). — */
+  --dom-etudes-focus:  #1F3FFF;   /* cobalt        · net, concentré */
+  --dom-sport-focus:   #FF3D00;   /* vermillon     · intense, explosif */
+  --dom-sommeil-focus: #2D1B8A;   /* nuit profonde · calme, grave */
+  --dom-social-focus:  #FF9F0A;   /* ambre         · chaleureux, solaire */
+  --dom-repos-focus:   #0B7A4B;   /* vert forêt    · posé, respirant */
+  --dom-projets-focus: #D61FC0;   /* fuchsia       · audacieux, créatif */
+
+  /* — Quand tout est équilibré : une seule couleur pour l'harmonie générale — */
+  --dom-balance: #0EA5A4;   /* turquoise (option 1) ; autres idées : #3B82F6 bleu lumineux, #14B8A6 vert d'eau */
+
+  /* — Pages plein écran du questionnaire — */
+  --ob-ink: #2B1D17;
+  --ob-paper: #FFFDF2;
+  --ob-1: #C2BCF1;           /* bienvenue */
+  --ob-2: #F5F4B5;           /* comment ça marche */
+  --ob-3: #FFDF94;           /* ce que tu fais */
+  --ob-4: #C5D9E6;           /* ce qui compte */
+  --ob-5: #FFE0E0;           /* habitudes actuelles */
+  --ob-r: #C8F0D8;           /* ton rythme */
+  --ob-gen: #8C80EA;         /* génération du tracker */
+
+  /* — Texte de chaque page : couleur, et opacité du sous-texte (1 = plein, .6 = discret) — */
+  --ob-1-ink: #1F23AD;   --ob-1-op: 1;
+  --ob-2-ink: #53510E;   --ob-2-op: 1;
+  --ob-3-ink: #785917;   --ob-3-op: 1;
+  --ob-4-ink: #336180;   --ob-4-op: 1;
+  --ob-5-ink: #9D0B0B;   --ob-5-op: 1;
+  --ob-r-ink: #14532D;   --ob-r-op: 1;
+  --ob-gen-ink: #1B1050; --ob-gen-op: 1;
+
+  /* — Cartes du carrousel du haut de page : chacune sa couleur, son texte, son sous-texte (clair seulement pour l'instant) — */
+  --sl-today:   #ADDDFF;  --sl-today-ink:   #0B3A63;  --sl-today-op:   .9;     /* Aujourd'hui, avec le poussin */
+  --sl-start:   #FFFEC2;  --sl-start-ink:   #53510E;  --sl-start-op:   .88;    /* Pour toi */
+  --sl-focus:   #FEE8B4;  --sl-focus-ink:   #7A3E00;  --sl-focus-op:   .9;     /* À regarder */
+  --sl-balance: #D9F3F1;  --sl-balance-ink: #0B4F4E;  --sl-balance-op: .85;    /* Équilibre (radar) */
+  --sl-curve:   #ECE8FF;  --sl-curve-ink:   #2B1B6B;  --sl-curve-op:   .85;    /* Évolution */
+  --sl-regular: #2B1D17;  --sl-regular-ink: #FFFDF2;  --sl-regular-op: .8;     /* Régularité */
+  --sl-share:   #FFE0E0;  --sl-share-ink:   #8A1111;  --sl-share-op:   .85;    /* Répartition */
+  --sl-week:    #E6F3D3;  --sl-week-ink:    #24480F;  --sl-week-op:    .88;    /* Ta semaine (dimanche soir) */
+
+  /* — Mouvement et formes — */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur: 600ms;
+  --r: 20px;
+}
+
+/* Mode sombre : suit le téléphone, ou se force avec data-theme="dark" / "light" (utilisé par le labo) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
+    --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
+    --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17110E; --surface: #231A16; --ink: #F4EFDD; --muted: #A09384;
+  --line: #3A2C25; --track: #2E2420; --band: #4B4724; --band-ink: #EDE58A;
+  --low: #86AACA; --high: #DDAE4B; --stage: #0C0807;
+}
+
+/* =====================================================
+   Mode accessibilité : contraste renforcé
+   (activé dans Réglages ; data-contrast="high" sur <html>)
+   ===================================================== */
+html[data-contrast="high"] {
+  --bg: #FFFFFF; --surface: #FFFFFF; --ink: #000000; --muted: #3A332C; --line: #5A544A; --track: #CFCBBF;
+  --band: #F2E85A; --band-ink: #3A2600; --low: #164E7A; --high: #7A4A00;
+  --dom-etudes: #1D4ED8; --dom-sport: #B91C1C; --dom-sommeil: #3730A3; --dom-social: #B45309; --dom-repos: #15803D; --dom-projets: #7E22CE; --dom-balance: #0B7C7B;
+  --sl-today: #D6ECFF;   --sl-today-ink: #00152B;   --sl-today-op: 1;
+  --sl-start: #FFFBB0;   --sl-start-ink: #2B2900;   --sl-start-op: 1;
+  --sl-focus: #FFE9B0;   --sl-focus-ink: #3A1B00;   --sl-focus-op: 1;
+  --sl-balance: #D2F3F0; --sl-balance-ink: #00302F; --sl-balance-op: 1;
+  --sl-curve: #E7E1FF;   --sl-curve-ink: #150A47;   --sl-curve-op: 1;
+  --sl-regular: #000000; --sl-regular-ink: #FFFFFF; --sl-regular-op: 1;
+  --sl-share: #FFD9D9;   --sl-share-ink: #4A0000;   --sl-share-op: 1;
+  --sl-week: #DDF0C4;    --sl-week-ink: #112A05;    --sl-week-op: 1;
+  --ob-1-ink: #0B0F63; --ob-2-ink: #2B2900; --ob-3-ink: #3A2600; --ob-4-ink: #0B2A44; --ob-5-ink: #5C0000; --ob-r-ink: #053018; --ob-gen-ink: #0B0630;
+  --ob-1-op: 1; --ob-2-op: 1; --ob-3-op: 1; --ob-4-op: 1; --ob-5-op: 1; --ob-r-op: 1; --ob-gen-op: 1;
+}

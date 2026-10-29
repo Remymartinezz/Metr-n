@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Mascotte, variations</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: #ECEAE2; color: #2B1D17; font: 15px/1.55 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1120px; margin: 0 auto; padding: 36px 24px 120px; }
+  h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -.03em; margin: 0; line-height: 1.05; }
+  h2 { font-size: 24px; letter-spacing: -.02em; margin: 0; }
+  h3 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #6C635A; margin: 0 0 12px; font-weight: 700; }
+  p { margin: 8px 0 0; }
+  .lead { color: #6C635A; max-width: 62ch; }
+  section { margin-top: 96px; }
+  .sub { color: #6C635A; margin-top: 6px; max-width: 60ch; }
+  button { font: inherit; cursor: pointer; }
+  .chipbar { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { border: 1.5px solid #DDD8C8; background: #fff; border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; color: inherit; }
+  .chip[aria-pressed="true"] { background: #2B1D17; color: #fff; border-color: #2B1D17; }
+  .chip:hover { border-color: #837A70; }
+  .solid { border: 0; background: #2B1D17; color: #fff; border-radius: 999px; padding: 12px 22px; font-weight: 700; }
+  .solid:active, .chip:active { transform: scale(.97); }
+
+  /* Générateur */
+  .gen { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 40px; align-items: start; margin-top: 28px; }
+  @media (max-width: 760px) { .gen { grid-template-columns: 1fr; } }
+  .stage { border-radius: 36px; overflow: hidden; background: var(--sl-today); aspect-ratio: 1.075; }
+  .stage svg { width: 100%; height: 100%; display: block; }
+  .ctl { display: grid; gap: 26px; }
+  .row-b { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 36px; }
+
+  /* Navigation et idées */
+  .topnav { position: sticky; top: 0; z-index: 20; display: flex; gap: 6px; overflow-x: auto; padding: 12px 24px; margin: 0 -24px; background: color-mix(in srgb, #ECEAE2 88%, transparent); backdrop-filter: blur(10px); scrollbar-width: none; }
+  .topnav::-webkit-scrollbar { display: none; }
+  .topnav a { flex: none; text-decoration: none; color: #2B1D17; font-weight: 600; font-size: 13.5px; padding: 7px 14px; border-radius: 999px; background: #fff; border: 1.5px solid #DDD8C8; }
+  .topnav a:hover { border-color: #837A70; }
+  .ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; margin-top: 26px; }
+  .idea { background: #FBFAF5; border-radius: 28px; padding: 14px 14px 22px; position: relative; display: block; }
+  .idea-art { border-radius: 20px; overflow: hidden; }
+  .art-bg { height: 218px; display: grid; place-items: center; padding: 12px; }
+  .art-bg > svg { height: 100%; width: auto; max-width: 100%; }
+  .idea-n { position: absolute; top: 26px; left: 26px; margin: 0; font-size: 13px; letter-spacing: .1em; color: #2B1D17; opacity: .5; font-weight: 800; }
+  .idea h4 { font-size: 18px; letter-spacing: -.02em; margin: 18px 6px 2px; }
+  .idea p { margin: 8px 6px 0; font-size: 14px; line-height: 1.5; }
+  .idea .why { color: #6C635A; }
+  .idea p b { color: #2B1D17; }
+  .art-bg.tr { display: block; padding: 18px 20px; background: var(--bg); }
+  .tk span { font-size: 12px; font-weight: 700; color: #6C635A; }
+  .trk { position: relative; height: 12px; background: #E8ECEE; border-radius: 12px; margin: 10px 0 18px; }
+  .trk .zone { position: absolute; left: 40%; width: 30%; top: 0; bottom: 0; background: var(--band); border-radius: 6px; }
+  .trk b { position: absolute; top: 50%; width: 46px; height: 44px; transform: translate(-50%, -58%); }
+  .trk b svg { width: 100%; height: 100%; }
+  .wkc { width: 34px; flex: none; display: block; } .wkc svg { width: 100%; height: auto; display: block; }
+  .art-bg .mrow { box-shadow: none; }
+  .gz { grid-auto-flow: column; gap: 14px; justify-content: center; }
+  .gz > svg { height: 150px; }
+  .pr { background: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 14px; color: var(--dom-social); box-shadow: 0 6px 16px -10px rgb(0 0 0 / .4); }
+  .night { gap: 8px; align-content: center; } .night > svg { height: 150px; } .night b { font-size: 18px; letter-spacing: -.02em; }
+  .fav6 { grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; background: var(--bg); }
+  .fav6 .tile { border-radius: 22px; aspect-ratio: 1; display: grid; place-items: center; padding: 6px; }
+  .fav6 .tile svg { width: 100%; height: auto; }
+  .week { grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 16px 10px; background: var(--bg); align-content: center; }
+  .wd { display: grid; justify-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #6C635A; }
+  .wd svg { width: 100%; height: auto; }
+  .wd.today { color: #2B1D17; } .wd.today svg { outline: 3px solid #2B1D17; outline-offset: 3px; border-radius: 50%; }
+  .breathe { position: relative; overflow: hidden; }
+  .breathe i { position: absolute; width: 140px; height: 140px; border-radius: 50%; border: 3px solid var(--dom-repos-focus); opacity: 0; animation: ring 6s ease-in-out infinite; }
+  .breathe i:nth-of-type(2) { animation-delay: 2s; } .breathe i:nth-of-type(3) { animation-delay: 4s; }
+  .breathe svg { position: relative; z-index: 1; animation: inhale 6s ease-in-out infinite; }
+  @keyframes ring { 0% { transform: scale(.7); opacity: .7; } 100% { transform: scale(1.9); opacity: 0; } }
+  @keyframes inhale { 0%, 100% { transform: scale(.9); } 50% { transform: scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) { .breathe i, .breathe svg { animation: none; } }
+  /* L'haltère se soulève : mouvement lent et régulier, coupé si tu as demandé moins d'animations */
+  .lift { animation: lift 1.9s cubic-bezier(.45,0,.55,1) infinite; transform-box: fill-box; transform-origin: center; }
+  .lift.float { animation-name: floatlift; animation-duration: 2.6s; }
+  @keyframes lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-78px); } }
+  @keyframes floatlift { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-60px) rotate(3deg); } }
+  @media (prefers-reduced-motion: reduce) { .lift { animation: none; } }
+  .sw.pal { width: 38px; height: 38px; } .sw.pal[aria-pressed="true"] { outline: 3px solid #2B1D17; outline-offset: 3px; }
+  .sw { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1.5px #DDD8C8; padding: 0; }
+  .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px #2B1D17; }
+
+  /* Cartes de variantes */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; margin-top: 22px; }
+  .vc { background: #FBFAF5; border-radius: 26px; padding: 12px 12px 16px; display: grid; gap: 4px; justify-items: center; position: relative; }
+  .vc .art { width: 100%; border-radius: 18px; overflow: hidden; }
+  .vc svg { display: block; width: 100%; height: auto; }
+  .vc b { font-size: 15px; margin-top: 8px; }
+  .vc small { color: #6C635A; text-align: center; line-height: 1.35; min-height: 2.7em; }
+  .fav { position: absolute; top: 18px; right: 18px; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgb(255 255 255 / .85); font-size: 19px; line-height: 1; color: #6C635A; box-shadow: 0 1px 4px rgb(0 0 0 / .15); }
+  .fav[aria-pressed="true"] { color: #E53935; }
+  .fav::after { content: ""; position: absolute; inset: -6px; }
+  .fam { margin-top: 56px; }
+  .fam:first-of-type { margin-top: 28px; }
+  .fam-h { display: flex; align-items: center; gap: 12px; }
+  .fam-h i { width: 14px; height: 14px; border-radius: 50%; display: block; }
+
+  /* Maquettes « dans l'app » */
+  .minis { display: flex; flex-wrap: wrap; gap: 36px; margin-top: 26px; align-items: flex-start; }
+  .mini-w { width: 244px; }
+  .mini { width: 244px; height: 500px; border-radius: 40px; border: 7px solid #0e0e0d; overflow: hidden; background: var(--bg); position: relative; padding: 20px 14px; }
+  .mini.tint { background: color-mix(in srgb, var(--dom-sport-focus) 9%, var(--bg)); }
+  .mini .tb { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; }
+  .mini .tb .av { width: 30px; height: 30px; border-radius: 10px; background: var(--brand-blue); overflow: hidden; display: block; }
+  .mini .tb .av svg { width: 100%; height: 100%; display: block; }
+  .mini .g { font-size: 11px; color: #6C635A; margin-top: 14px; }
+  .mini .h { font-size: 22px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
+  .mcard { border-radius: 22px; padding: 18px 16px; position: relative; overflow: hidden; margin-top: 14px; height: 218px; }
+  .mcard .e { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; opacity: .7; }
+  .mcard .t { font-size: 22px; font-weight: 800; letter-spacing: -.03em; line-height: 1.05; margin-top: 8px; max-width: 12ch; }
+  .mcard .s { font-size: 11px; margin-top: 8px; opacity: .85; max-width: 19ch; }
+  .mcard .b { position: absolute; left: 16px; bottom: 16px; border-radius: 999px; padding: 9px 14px; font-size: 11px; font-weight: 700; z-index: 2; }
+  .mcard .m { position: absolute; z-index: 1; }
+  .mrow { background: #fff; border-radius: 16px; padding: 12px 12px; display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; font-weight: 700; box-shadow: 0 6px 16px -10px rgb(43 29 23 / .3); }
+  .mrow i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #DDD8C8; flex: none; }
+  .mrow.on { background: color-mix(in srgb, var(--band) 34%, #fff); }
+  .mrow.on i { background: #663A2B; border-color: #663A2B; }
+  .cap { color: #6C635A; font-size: 13.5px; margin-top: 14px; line-height: 1.45; }
+  .cap b { color: #2B1D17; }
+
+  /* Sélection */
+  .sel { margin-top: 20px; background: #FBFAF5; border-radius: 26px; padding: 22px; }
+  .sel ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .sel li { background: #fff; border: 1.5px solid #DDD8C8; border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 13.5px; }
+  textarea { width: 100%; height: 96px; margin-top: 14px; border: 1px solid #DDD8C8; border-radius: 14px; padding: 12px; font: 13px/1.5 ui-monospace, Consolas, monospace; background: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <nav class="topnav" aria-label="Sections"><a href="#generateur">Générateur</a><a href="#domaines">Domaines</a><a href="#couleurs">Couleurs</a><a href="#humeurs">Humeurs</a><a href="#app">Dans l'app</a><a href="#idees">Idées</a><a href="#selection">Sélection</a></nav>
+  <p style="margin:34px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#6C635A;font-weight:700">Metrön · exploration</p>
+  <h1>Le poussin et ses accessoires</h1>
+  <p class="lead">Des versions de la mascotte selon l'humeur, le domaine, et même le sport pratiqué. Rien n'est branché dans l'app : c'est une page pour regarder, comparer, et marquer les favoris avec le ♡. On discutera ensuite de ce qu'on intègre. Ses yeux suivent ton curseur.</p>
+
+  <!-- 1. Générateur -->
+  <section id="generateur">
+    <h2>Générateur</h2>
+    <p class="sub">Compose une version, ou laisse faire le hasard : douze variations se tirent d'un coup.</p>
+    <div class="gen">
+      <div class="stage" id="stage"></div>
+      <div class="ctl">
+        <div><h3>Humeur</h3><div class="chipbar" id="c-mood"></div></div>
+        <div><h3>Accessoire</h3><div class="chipbar" id="c-acc"></div></div>
+        <div><h3>Fond</h3><div class="chipbar" id="c-bg"></div></div>
+        <div><h3>Couleur du poussin</h3><div class="chipbar" id="c-pal"></div></div>
+        <div><h3>Petit rond dans l'œil</h3><div class="chipbar" id="c-ref"></div></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap"><button class="solid" id="rand">Surprends-moi · 12 variations</button><button class="chip" id="dl">Télécharger le SVG</button><button class="chip" id="favcur">♡ Garder celle-ci</button></div>
+      </div>
+    </div>
+    <div class="grid" id="randgrid"></div>
+  </section>
+
+  <!-- 2. Par domaine -->
+  <section id="domaines">
+    <h2>Par domaine</h2>
+    <p class="sub">Un ou plusieurs accessoires par domaine. Pour le sport, une version par discipline. Le poussin prend la couleur de son domaine.</p>
+    <div class="chipbar" id="galtoggle" style="margin-top:16px"></div>
+    <div id="fams"></div>
+  </section>
+
+  <!-- 2b. Couleurs -->
+  <section id="couleurs">
+    <h2>Une couleur par domaine</h2>
+    <p class="sub">Visage, bec et yeux prennent la teinte du domaine, calculée depuis <code>tokens.css</code> : elle suit le labo des couleurs. Sur un domaine, tout l'écran et le poussin changent ensemble.</p>
+    <div class="grid" id="pals"></div>
+  </section>
+
+  <!-- 3. Humeurs -->
+  <section id="humeurs">
+    <h2>Humeurs</h2>
+    <p class="sub">Selon ce qui se passe dans l'app : un jour calme, tout coché, une pause, une surprise.</p>
+    <div class="grid" id="moods"></div>
+  </section>
+
+  <!-- 4. Dans l'app -->
+  <section id="app">
+    <h2>Où il pourrait vivre dans l'app</h2>
+    <p class="sub">Quatre idées de place. Les couleurs viennent de <code>tokens.css</code>, donc elles suivent le labo des couleurs.</p>
+    <div class="minis" id="minis"></div>
+  </section>
+
+  <!-- 4b. Idées -->
+  <section id="idees">
+    <h2>Où l'intégrer, et pas forcément là où on l'attend</h2>
+    <p class="sub">Onze idées, des plus sages aux plus décalées (la tête à l'envers, le clin d'œil à la place de la coche…). Marque celles que tu veux creuser avec le ♡.</p>
+    <div class="ideas" id="ideas"></div>
+  </section>
+
+  <!-- 5. Sélection -->
+  <section id="selection">
+    <h2>Ta sélection</h2>
+    <div class="sel">
+      <h3 style="margin:0">Favoris (♡)</h3>
+      <ul id="favlist"></ul>
+      <textarea id="favout" readonly placeholder="Marque des ♡ ci-dessus : la liste apparaît ici, prête à me la donner."></textarea>
+      <div style="margin-top:12px"><button class="chip" id="favcopy">Copier la liste</button> <button class="chip" id="favclear">Tout effacer</button></div>
+    </div>
+  </section>
+</main>
+
+<script src="mascot.js"></script>
+<script>
+const MOODS = { auto: 'Selon l’accessoire', open: 'Normal', happy: 'Content', closed: 'Paisible', wide: 'Surpris', focus: 'Concentré', wink: 'Clin d’œil' };
+
+
+const DOMS = [
+  { id: 'etudes', name: 'Études' }, { id: 'sport', name: 'Sport · une version par discipline' }, { id: 'sommeil', name: 'Sommeil' },
+  { id: 'social', name: 'Social' }, { id: 'repos', name: 'Repos' }, { id: 'projets', name: 'Projets' },
+];
+const BGS = { 'sl-today': 'Ciel', 'sl-start': 'Citron', 'sl-focus': 'Abricot', 'sl-balance': 'Menthe', 'sl-curve': 'Lavande', 'sl-share': 'Rose', 'sl-regular': 'Nuit', 'ob-1': 'Violet' };
+const bgVar = k => `var(--${k})`;
+
+
+/* ---------- Favoris ---------- */
+const FKEY = 'metron.mascotte.favs';
+let favs = []; try { favs = JSON.parse(localStorage.getItem(FKEY)) || []; } catch (e) {}
+const saveFavs = () => { try { localStorage.setItem(FKEY, JSON.stringify(favs)); } catch (e) {} };
+const label = k => { if (k.startsWith('idee:')) return 'Idée : ' + ((IDEAS.find(i => i.id === k.slice(5)) || {}).title || k);
+   const [a, m, b, p] = k.split('|'); return `${(ACC[a] || {}).name || a} · ${MOODS[m] || m}${b ? ' · ' + BGS[b] : ''}${p && p !== 'original' ? ' · couleur ' + palOf(p).name : ''}`; };
+function card(key, svg, name, note) {
+  return `<div class="vc"><div class="art">${svg}</div><button class="fav" data-k="${key}" aria-pressed="${favs.includes(key)}" aria-label="Garder : ${name}">${favs.includes(key) ? '♥' : '♡'}</button><b>${name}</b><small>${note || ''}</small></div>`;
+}
+
+/* ---------- Générateur ---------- */
+const st = { mood: 'auto', acc: 'lunettes', bg: 'sl-today', reflet: true, pal: 'original' };
+let galPal = true;                                  // galerie : couleur du domaine, ou poussin original
+const $ = id => document.getElementById(id);
+const chips = (el, items, cur, attr) => { $(el).innerHTML = items.map(([k, n]) => `<button class="chip" ${attr}="${k}" aria-pressed="${cur === k}">${n}</button>`).join(''); };
+function drawGen() {
+  $('stage').innerHTML = chick({ mood: st.mood, acc: [st.acc], bg: bgVar(st.bg), reflet: st.reflet, pal: st.pal });
+  $('c-pal').innerHTML = Object.entries(PALS).map(([k, p]) => `<button class="sw pal" data-pal="${k}" aria-pressed="${st.pal === k}" aria-label="Couleur ${p.name}" title="${p.name}" style="background:${p.face};box-shadow:inset 0 0 0 5px ${p.face},inset 0 0 0 10px ${p.eyes}"></button>`).join('');
+  $('c-ref').innerHTML = [[true, 'Avec'], [false, 'Sans']].map(([v, n]) => `<button class="chip" data-ref="${v}" aria-pressed="${st.reflet === v}">${n}</button>`).join('');
+  $('stage').style.background = bgVar(st.bg);
+  chips('c-mood', Object.entries(MOODS), st.mood, 'data-mood');
+  chips('c-acc', Object.entries(ACC).map(([k, a]) => [k, a.name]), st.acc, 'data-acc');
+  $('c-bg').innerHTML = Object.keys(BGS).map(k => `<button class="sw" data-bg="${k}" style="background:${bgVar(k)}" aria-pressed="${st.bg === k}" aria-label="${BGS[k]}"></button>`).join('');
+  const key = `${st.acc}|${st.mood}|${st.bg}|${st.pal}`;
+  $('favcur').textContent = favs.includes(key) ? '♥ Gardée' : '♡ Garder celle-ci';
+}
+function randomGrid() {
+  const accs = Object.keys(ACC).filter(k => k !== 'none'), moods = Object.keys(MOODS), bgs = Object.keys(BGS), pick = a => a[Math.floor(Math.random() * a.length)];
+  $('randgrid').innerHTML = Array.from({ length: 12 }, () => {
+    const a = pick(accs), m = Math.random() < .55 ? 'auto' : pick(moods.filter(x => x !== 'auto')), b = pick(bgs), p = Math.random() < .3 ? 'original' : pick(Object.keys(PALS));
+    return card(`${a}|${m}|${b}|${p}`, chick({ mood: m, acc: [a], bg: bgVar(b), pal: p }), ACC[a].name, `${MOODS[m]} · ${p === 'original' ? 'couleur d’origine' : 'couleur ' + palOf(p).name}`);
+  }).join('');
+}
+
+/* ---------- Galerie par domaine ---------- */
+function drawFams() {
+  const colors = { etudes: 'var(--dom-etudes)', sport: 'var(--dom-sport)', sommeil: 'var(--dom-sommeil)', social: 'var(--dom-social)', repos: 'var(--dom-repos)', projets: 'var(--dom-projets)' };
+  const bgOf = { etudes: 'sl-today', sport: 'sl-focus', sommeil: 'sl-curve', social: 'sl-share', repos: 'sl-balance', projets: 'sl-start' };
+  $('fams').innerHTML = DOMS.map(d => `<div class="fam"><div class="fam-h"><i style="background:${colors[d.id]}"></i><h3 style="margin:0">${d.name}</h3></div><div class="grid">${
+    Object.entries(ACC).filter(([k, a]) => a.dom === d.id && k !== 'none').map(([k, a]) => card(`${k}|auto|${bgOf[d.id]}|${galPal ? d.id : 'original'}`, chick({ acc: [k], bg: bgVar(bgOf[d.id]), pal: galPal ? d.id : 'original' }), a.name, a.note)).join('')}</div></div>`).join('');
+}
+
+
+/* ---------- Une couleur par domaine ---------- */
+function drawPals() {
+  const bgs = { original: 'sl-today', etudes: 'sl-today', sport: 'sl-focus', sommeil: 'sl-curve', social: 'sl-share', repos: 'sl-balance', projets: 'sl-start' };
+  const acc = { original: 'none', etudes: 'lunettes', sport: 'course', sommeil: 'bonnet', social: 'fete', repos: 'casque', projets: 'chantier' };
+  $('pals').innerHTML = Object.entries(PALS).map(([k, p]) => card(`${acc[k]}|auto|${bgs[k]}|${k}`, chick({ acc: [acc[k]], bg: bgVar(bgs[k]), pal: k }), p.name, k === 'original' ? 'Le jaune du logo.' : `Visage, bec et yeux en ${p.name.toLowerCase()}.`)).join('');
+}
+function drawGalToggle() {
+  $('galtoggle').innerHTML = [[true, 'Couleur du domaine'], [false, 'Poussin original']].map(([v, n]) => `<button class="chip" data-gal="${v}" aria-pressed="${galPal === v}">${n}</button>`).join('');
+}
+/* ---------- Humeurs ---------- */
+function drawMoods() {
+  const items = [['open', 'Normal', 'Tableau de bord, jour ordinaire.', 'sl-today'], ['happy', 'Content', 'Une habitude cochée.', 'sl-start'], ['closed', 'Paisible', 'Soirée, repos, sommeil.', 'sl-curve'], ['wide', 'Surpris', 'Une idée, une nouveauté.', 'sl-focus'], ['focus', 'Concentré', 'Études, travail, projets.', 'sl-balance']];
+  $('moods').innerHTML = items.map(([m, n, note, bg]) => card(`none|${m}|${bg}|original`, chick({ mood: m, bg: bgVar(bg) }), n, note)).join('') +
+    card('confetti|happy|sl-today|original', chick({ acc: ['confetti', 'fete'], bg: bgVar('sl-today') }), 'Tout est fait', 'Confettis et chapeau de fête.');
+}
+
+/* ---------- Maquettes dans l'app ---------- */
+function drawMinis() {
+  const M = (inner, cap, cls = '') => `<div class="mini-w"><div class="mini ${cls}">${inner}</div><p class="cap">${cap}</p></div>`;
+  const tb = (av = '') => `<div class="tb"><span style="display:flex;align-items:center;gap:8px"><span class="av">${av || chick({ bg: 'var(--brand-blue)' })}</span>Metrön</span></div>`;
+  $('minis').innerHTML =
+    M(`${tb()}<p class="g">jeudi 29 octobre</p><p class="h">Bonjour</p>
+       <div class="mcard" style="background:var(--sl-today);color:var(--sl-today-ink)"><div class="e">Aujourd'hui</div><div class="t">Il te reste 3 habitudes</div><div class="s">Prochaine : Marche · 30 min</div><div class="b" style="background:var(--sl-today-ink);color:var(--sl-today)">C'est fait</div><div class="m" style="right:-26px;bottom:-34px;width:48%">${chick({})}</div></div>`,
+      '<b>A · Il dépasse de la carte.</b> C\'est la version actuelle : discret, il surveille la carte et suit le doigt.') +
+    M(`${tb()}<p class="g">Sport · mis en avant</p><p class="h">Sport</p>
+       <div class="mcard" style="background:var(--dom-sport-focus);color:${INK}"><div class="e">Domaine · 2 habitudes</div><div class="t">Sport</div><div class="s">Tu peux y revenir · 5,5 h sur 30 jours</div><div class="b" style="background:${INK};color:#fff">C'est fait : Course</div><div class="m" style="right:-8px;bottom:-26px;width:52%">${chick({ acc: ['course'], pal: 'sport' })}</div></div>
+       <div class="mrow"><i></i>Course à pied</div>`,
+      '<b>B · Il s\'habille du domaine.</b> Sur un domaine, il met l\'accessoire du sport pratiqué : l\'écran entier prend sa personnalité.', 'tint') +
+    M(`<div class="tb"><span style="display:flex;align-items:center;gap:10px"><span class="av" style="background:var(--sl-curve);border-radius:50%;width:38px;height:38px">${chick({ acc: ['bonnet'], bg: 'var(--sl-curve)', pal: 'sommeil' })}</span><span><span class="g" style="margin:0;display:block">22:40</span><span class="h" style="font-size:18px">Bonne nuit</span></span></span></div>
+       <div class="mrow on" style="margin-top:26px"><i></i>Nuit de sommeil</div><div class="mrow"><i></i>Pause sans écran</div><div class="mrow"><i></i>Lecture</div>`,
+      '<b>C · Un avatar qui change avec l\'heure.</b> Bonnet de nuit le soir, casque le week-end, lunettes pendant les révisions. Petit, il ne prend pas de place.') +
+    M(`${tb()}<p class="g">jeudi 29 octobre</p><p class="h">Bravo</p>
+       <div class="mcard" style="background:var(--sl-start);color:var(--sl-start-ink);height:300px"><div class="e">Aujourd'hui</div><div class="t">Tout est fait.</div><div class="s">Profite de ta journée.</div><div class="m" style="left:18%;bottom:16px;width:64%">${chick({ acc: ['confetti', 'fete'] })}</div></div>`,
+      '<b>D · Il fête avec toi.</b> Quand tout est coché : confettis, chapeau, sans aucun score. Un seul moment un peu spectaculaire dans l\'app.');
+}
+
+
+/* ---------- Idées d'intégration : des endroits où on ne l'attend pas forcément ---------- */
+const IDEAS = [
+  { id: 'envers', title: 'La tête à l’envers', where: 'Quand tu dépasses largement ta mesure (« tu peux lever le pied »).', why: 'Au lieu d’une alerte, il fait le poirier. Un clin d’œil, jamais de rouge, jamais de reproche.',
+    art: () => `<div class="art-bg" style="background:var(--sl-focus)">${chick({ mood: 'wide', flip: true })}</div>` },
+  { id: 'curseur', title: 'Il est le rond des barres', where: 'Détail par domaine : le rond coloré est remplacé par un mini-poussin qui glisse sur la barre.', why: 'La barre devient vivante, et chaque domaine a son poussin (sa couleur, son accessoire).',
+    art: () => `<div class="art-bg tr">${[['sport', 'course', .3], ['sommeil', 'bonnet', .56], ['etudes', 'lunettes', .82]].map(([d, a, p]) => `<div class="tk"><span>${palOf(d).name}</span><div class="trk"><i class="zone"></i><b style="left:${p * 100}%">${chick({ acc: [a], pal: d })}</b></div></div>`).join('')}</div>` },
+  { id: 'clin', title: 'Le clin d’œil remplace la coche', where: 'Quand on coche une habitude : un petit poussin de la ligne fait un clin d’œil, plus de ✓.', why: 'La récompense est un geste, pas un score. Et c’est la seule animation de la liste.',
+    art: () => `<div class="art-bg" style="background:var(--bg)"><div class="mrow on" style="width:100%;margin:0"><span class="wkc">${chick({ mood: 'wink' })}</span>Session de travail focus</div><div class="mrow" style="width:100%"><span class="wkc">${chick({ mood: 'open' })}</span>Marche ou activité douce</div></div>` },
+  { id: 'regard', title: 'Son regard montre ce qui compte', where: 'Au centre du radar : il regarde, sans rien dire, le domaine qui a besoin d’attention.', why: 'Pas de texte à lire : on suit ses yeux. Ça marche même quand on ne comprend pas le radar.',
+    art: () => `<div class="art-bg gz" style="background:var(--sl-balance)">${chick({ look: [.95, -.35] })}<span class="pr">Social ›</span></div>` },
+  { id: 'nuit', title: 'Il s’endort à 23 h', where: 'Passé 23 h, le tableau de bord se réduit à lui et à une phrase : « Bonne nuit, à demain. »', why: 'L’app encourage à ne PAS l’ouvrir plus longtemps. C’est l’inverse d’une appli qui retient.',
+    art: () => `<div class="art-bg night" style="background:var(--sl-regular);color:var(--sl-regular-ink)">${chick({ acc: ['lune'], pal: 'sommeil' })}<b>Bonne nuit</b></div>` },
+  { id: 'icone', title: 'L’icône change avec le domaine', where: 'L’icône de l’onglet et de l’écran d’accueil : l’accessoire du domaine que tu as ouvert en dernier.', why: 'Tu reconnais d’un coup d’œil, sans ouvrir, où tu en étais.',
+    art: () => `<div class="art-bg fav6">${[['course', 'sport'], ['lunettes', 'etudes'], ['bonnet', 'sommeil'], ['soleil', 'social'], ['casque', 'repos'], ['chantier', 'projets']].map(([a, d]) => `<div class="tile" style="background:var(--dom-${d}-focus)">${chick({ acc: [a], pal: d })}</div>`).join('')}</div>` },
+  { id: 'semaine', title: 'Les 7 jours en 7 poussins', where: 'La bande des jours : un petit poussin par jour à la place du point. Jour vide = poussin paisible.', why: 'Un jour sans rien coché n’est jamais « raté » : il dort, simplement.',
+    art: () => `<div class="art-bg week">${[['V', 'happy'], ['S', 'happy'], ['D', 'closed'], ['L', 'open'], ['M', 'happy'], ['M', 'happy'], ['J', 'wink', 1]].map(([l, m, t]) => `<div class="wd${t ? ' today' : ''}"><span>${l}</span>${chick({ mood: m })}</div>`).join('')}</div>` },
+  { id: 'boite', title: 'Liste vide : il sort de sa boîte', where: 'Quand il n’y a aucune habitude, ou rien de fait : il regarde par-dessus un carton.', why: 'Un état vide qui sourit au lieu d’un « Aucune donnée ».',
+    art: () => `<div class="art-bg" style="background:var(--sl-start)">${chick({ acc: ['boite'] })}</div>` },
+  { id: 'respire', title: 'Pause de 5 minutes', where: 'Appui long sur le poussin : un guide de respiration où il gonfle et se dégonfle avec toi.', why: 'Rien d’un tableau de bord : c’est un moment pour souffler. Cohérent avec « juste mesure ».',
+    art: () => `<div class="art-bg breathe" style="background:var(--sl-balance)"><i></i><i></i><i></i>${chick({ mood: 'closed', pal: 'repos' })}</div>` },
+  { id: 'hebdo', title: 'Le bilan du dimanche', where: 'Dimanche soir : une carte « Ta semaine » où il lit le journal de ta semaine.', why: 'Un rituel hebdomadaire plutôt qu’un flux de statistiques.',
+    art: () => `<div class="art-bg" style="background:var(--sl-today)">${chick({ acc: ['livre'], mood: 'focus' })}</div>` },
+  { id: 'hors', title: 'Hors ligne : une tasse de thé', where: 'Pas de réseau, import qui échoue : il boit un thé en attendant.', why: 'Même les erreurs deviennent des pauses, pas des alertes.',
+    art: () => `<div class="art-bg" style="background:var(--sl-share)">${chick({ acc: ['the'], pal: 'repos' })}</div>` },
+];
+function drawIdeas() {
+  $('ideas').innerHTML = IDEAS.map((d, i) => {
+    const key = `idee:${d.id}`, on = favs.includes(key);
+    return `<article class="idea"><div class="idea-art">${d.art()}</div><button class="fav" data-k="${key}" aria-pressed="${on}" aria-label="Garder l'idée : ${d.title}">${on ? '♥' : '♡'}</button>
+      <h3 class="idea-n">${String(i + 1).padStart(2, '0')}</h3><h4>${d.title}</h4><p><b>Où.</b> ${d.where}</p><p class="why"><b>Pourquoi c’est inattendu.</b> ${d.why}</p></article>`;
+  }).join('');
+}
+
+/* ---------- Télécharger le poussin affiché en SVG autonome ---------- */
+function resolveColor(v) {
+  const probe = document.createElement('i'); document.body.appendChild(probe); probe.style.color = v;
+  const css = getComputedStyle(probe).color; probe.remove();
+  const cv = document.createElement('canvas'); cv.width = cv.height = 1; const x = cv.getContext('2d', { willReadFrequently: true });
+  x.fillStyle = css; x.fillRect(0, 0, 1, 1); const d = x.getImageData(0, 0, 1, 1).data;
+  return '#' + [d[0], d[1], d[2]].map(n => n.toString(16).padStart(2, '0')).join('');
+}
+function downloadSvg() {
+  const svg = $('stage').querySelector('svg'); if (!svg) return;
+  const P = palOf(st.pal), root = getComputedStyle(document.documentElement);
+  let s = svg.outerHTML.replace(/ style="[^"]*"/g, m => /rotate\(180deg\)/.test(m) ? ' transform="rotate(180 350 330)"' : '')
+    .replace(/var\(--cf\)/g, P.face)
+    .replace(/(fill|stroke)="([^"]*(?:var\(|color-mix)[^"]*)"/g, (m, a, v) => `${a}="${resolveColor(v.replace(/var\((--[a-z0-9-]+)\)/g, (mm, n) => root.getPropertyValue(n).trim() || mm))}"`)
+    .replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([s], { type: 'image/svg+xml' }));
+  a.download = `poussin-${st.acc}-${st.pal}.svg`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+/* ---------- Événements ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.mood) { st.mood = t.dataset.mood; drawGen(); }
+  if (t.dataset.acc) { st.acc = t.dataset.acc; drawGen(); }
+  if (t.dataset.bg) { st.bg = t.dataset.bg; drawGen(); }
+  if (t.dataset.ref) { st.reflet = t.dataset.ref === 'true'; drawGen(); }
+  if (t.dataset.pal) { st.pal = t.dataset.pal; drawGen(); }
+  if (t.dataset.gal) { galPal = t.dataset.gal === 'true'; drawGalToggle(); drawFams(); refreshFavs(); }
+  if (t.id === 'rand') randomGrid();
+  if (t.id === 'dl') downloadSvg();
+  if (t.id === 'favcur') toggleFav(`${st.acc}|${st.mood}|${st.bg}|${st.pal}`);
+  if (t.classList.contains('fav')) toggleFav(t.dataset.k);
+  if (t.id === 'favclear') { favs = []; saveFavs(); refreshFavs(); }
+  if (t.id === 'favcopy') { const v = $('favout').value; (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(() => { $('favout').select(); document.execCommand('copy'); }); t.textContent = 'Copié ✓'; setTimeout(() => t.textContent = 'Copier la liste', 1500); }
+});
+function toggleFav(k) { favs = favs.includes(k) ? favs.filter(x => x !== k) : [...favs, k]; saveFavs(); refreshFavs(); }
+function refreshFavs() {
+  document.querySelectorAll('.fav').forEach(b => { const on = favs.includes(b.dataset.k); b.setAttribute('aria-pressed', on); b.textContent = on ? '♥' : '♡'; });
+  $('favlist').innerHTML = favs.length ? favs.map(k => `<li>${label(k)}</li>`).join('') : `<li style="opacity:.6">Aucun favori pour l'instant</li>`;
+  $('favout').value = favs.map(k => `- ${label(k)}   [${k}]`).join('\n');
+  const key = `${st.acc}|${st.mood}|${st.bg}|${st.pal}`; $('favcur').textContent = favs.includes(key) ? '♥ Gardée' : '♡ Garder celle-ci';
+}
+
+/* ---------- Les yeux suivent le curseur (comme dans l'app) ---------- */
+const look = { x: null, y: null }, state = new WeakMap();
+const move = e => { look.x = e.clientX; look.y = e.clientY; };
+window.addEventListener('pointermove', move); window.addEventListener('pointerdown', move);
+document.addEventListener('mouseleave', () => look.x = null);
+(function loop() {
+  document.querySelectorAll('svg.mc:not([data-static])').forEach(svg => {
+    const r = svg.getBoundingClientRect(); if (!r.width || r.bottom < 0 || r.top > innerHeight) return;
+    let tx = 0, ty = 0;
+    if (look.x != null) { const dx = look.x - (r.left + r.width / 2), dy = look.y - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 220); tx = dx / d * k; ty = dy / d * k; }
+    const s = state.get(svg) || { x: 0, y: 0 }; s.x += (tx - s.x) * .14; s.y += (ty - s.y) * .14; state.set(svg, s);
+    const mv = (sel, m) => svg.querySelectorAll(sel).forEach(n => n.style.transform = `translate(${(s.x * m).toFixed(1)}px, ${(s.y * m).toFixed(1)}px)`);
+    mv('.eye', 30); mv('.face', 7); mv('.beak', 14);
+  });
+  requestAnimationFrame(loop);
+})();
+
+drawGen(); randomGrid(); drawGalToggle(); drawFams(); drawPals(); drawMoods(); drawMinis(); drawIdeas(); refreshFavs();
+</script>
+</body>
+</html>

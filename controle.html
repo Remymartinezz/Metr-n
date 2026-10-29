@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrön · Tour de contrôle</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--stage); color: var(--ink); font: 15px/1.5 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  /* Le ö (mêmes règles que l'app) */
+  .uml { position: relative; display: inline-block; line-height: 1; }
+  .uml::before, .uml::after { content: ""; position: absolute; top: .18em; width: .155em; height: .14em; background: var(--brand-brown); }
+  .uml::before { left: .055em; border-radius: 4% 1% 100% 1%; }
+  .uml::after { right: .055em; border-radius: 1% 4% 1% 100%; }
+
+  /* Accueil de la tour */
+  .home { max-width: 1100px; margin: 0 auto; padding: 36px 16px 80px; }
+  .top { display: flex; align-items: center; gap: 16px; }
+  .top .av { width: 76px; flex: none; border-radius: 22px; overflow: hidden; background: var(--brand-blue); }
+  .top .av svg { display: block; width: 100%; height: auto; }
+  .eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  h1 { margin: 2px 0 0; font-size: clamp(30px, 6vw, 46px); letter-spacing: -.03em; line-height: 1.05; }
+  .lead { color: var(--muted); max-width: 60ch; margin: 18px 0 0; }
+  h2 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 48px 0 14px; font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .tile { position: relative; overflow: hidden; border: 0; text-align: left; border-radius: 26px; padding: 22px 22px 20px; min-height: 196px; background: var(--sl); color: var(--sl-i); display: flex; flex-direction: column; transition: transform 300ms var(--ease), box-shadow 300ms var(--ease); }
+  .tile:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgb(43 29 23 / .45); }
+  .tile:active { transform: scale(.98); }
+  .tile .kind { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; opacity: var(--sl-o); }
+  .tile b { font-size: 24px; letter-spacing: -.03em; line-height: 1.1; margin-top: 8px; max-width: 11ch; }
+  .tile small { font-size: 14px; margin-top: 6px; opacity: var(--sl-o); max-width: 22ch; line-height: 1.4; }
+  .tile .file { margin-top: auto; padding-top: 16px; font: 12.5px ui-monospace, Consolas, monospace; opacity: var(--sl-o); }
+  .tile .m { position: absolute; right: -18px; bottom: -22px; width: 44%; pointer-events: none; }
+  .tile .m svg { display: block; width: 100%; height: auto; }
+
+  /* Mode tour de contrôle : le fichier ouvert dans la tour */
+  .viewer { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr; background: var(--stage); }
+  .viewer[hidden] { display: none; }
+  .bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--sl); color: var(--sl-i); flex-wrap: wrap; }
+  .bar .back { border: 0; border-radius: 999px; padding: 10px 16px; background: var(--sl-i); color: var(--sl); font-weight: 700; min-height: 44px; }
+  .bar .who { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 200px; }
+  .bar .who i { width: 40px; flex: none; display: block; }
+  .bar .who svg { display: block; width: 100%; height: auto; }
+  .bar .who b { font-size: 17px; letter-spacing: -.02em; display: block; line-height: 1.15; }
+  .bar .who code { font-size: 12px; opacity: var(--sl-o); word-break: break-all; }
+  .bar .act { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bar .act a, .bar .act button { border: 1.5px solid currentColor; background: transparent; color: inherit; border-radius: 999px; padding: 9px 14px; font-weight: 700; font-size: 14px; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+  .viewer iframe { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+  .nav { display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--line); scrollbar-width: none; grid-row: 2; }
+  .viewer.has-nav { grid-template-rows: auto auto 1fr; }
+  .nav button { flex: none; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; font-weight: 600; font-size: 13px; }
+  .nav button[aria-current="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .viewer iframe { grid-row: 3; }
+
+  /* Sur téléphone : le fichier ouvert prend tout l'écran (expérience complète), un seul petit bouton pour revenir */
+  .float-back { display: none; }
+  @media (max-width: 640px) {
+    .viewer, .viewer.has-nav { grid-template-rows: 1fr; }
+    .viewer .bar, .viewer .nav { display: none; }
+    .viewer iframe { grid-row: 1; }
+    .float-back { display: grid; place-items: center; position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 5; width: 48px; height: 48px; border-radius: 50%; border: 0; padding: 4px; background: var(--brand-blue); box-shadow: 0 6px 18px rgb(0 0 0 / .3); opacity: .9; }
+    .float-back svg { width: 100%; height: auto; display: block; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } }
+</style>
+</head>
+<body>
+
+<main class="home" id="home">
+  <div class="top">
+    <span class="av" id="av"></span>
+    <div><p class="eyebrow">Metr<span class="uml">o</span>n</p><h1>Tour de contrôle</h1></div>
+  </div>
+  <p class="lead">Tous les fichiers du projet. Touche une carte : le fichier s'ouvre ici, avec son lien en haut pour le copier ou l'ouvrir seul.</p>
+  <div id="groups"></div>
+</main>
+
+<section class="viewer has-nav" id="viewer" hidden aria-label="Fichier ouvert">
+  <div class="bar" id="bar"></div>
+  <nav class="nav" id="nav" aria-label="Changer de fichier"></nav>
+  <iframe id="frame" title="Fichier ouvert" allow="fullscreen"></iframe>
+  <button class="float-back" data-close aria-label="Revenir à la tour de contrôle" id="fback"></button>
+</section>
+
+<script src="mascot.js"></script>
+<script>
+/* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
+const FILES = [
+  { g: 'Pages', f: 'index.html', n: 'L’app', s: 'Le tableau de bord dans son téléphone, avec le panneau Démo.', sl: 'today', acc: 'none', pal: 'original', mood: 'happy' },
+  { g: 'Pages', f: 'widgets.html', n: 'Widgets', s: 'Les widgets d’écran d’accueil, en aperçu.', sl: 'balance', acc: 'lunettes', pal: 'repos' },
+  { g: 'Pages', f: 'mascotte.html', n: 'Mascotte', s: 'Le poussin, ses accessoires, ses humeurs.', sl: 'share', acc: 'fete', pal: 'social' },
+  { g: 'Pages', f: 'identite.html', n: 'Identité visuelle', s: 'Signe, mot, couleurs, typo, mouvement.', sl: 'start', acc: 'pinceau', pal: 'projets' },
+  { g: 'Pages', f: 'lab-o.html', n: 'Labo du ö', s: 'Régler les deux points du ö.', sl: 'focus', acc: 'loupe', pal: 'original' },
+  { g: 'Code', f: 'app.js', n: 'La logique', s: 'Mesure, écrans, cartes, questionnaire.', sl: 'regular', acc: 'chantier', pal: 'projets', mood: 'focus' },
+  { g: 'Code', f: 'mascot.js', n: 'Le poussin', s: 'Dessin, yeux, humeurs, accessoires.', sl: 'curve', acc: 'crayon', pal: 'sommeil' },
+  { g: 'Code', f: 'style.css', n: 'Les styles', s: 'Tout ce qui met en forme l’app.', sl: 'week', acc: 'pousse', pal: 'repos' },
+  { g: 'Code', f: 'tokens.css', n: 'Les couleurs', s: 'Toutes les couleurs et le mouvement.', sl: 'share', acc: 'pinceau', pal: 'social' },
+  { g: 'Code', f: 'sw.js', n: 'Hors ligne', s: 'Le service worker : cache et rappels.', sl: 'curve', acc: 'the', pal: 'sommeil' },
+];
+// En ligne, l'app est publiée sous app.html (index.html y est la tour) ; en local, c'est index.html
+fetch('app.html', { method: 'HEAD' }).then(r => { if (r.ok) { FILES[0].f = 'app.html'; drawTiles(); } }).catch(() => {});
+const slStyle = k => `--sl:var(--sl-${k});--sl-i:var(--sl-${k}-ink);--sl-o:var(--sl-${k}-op)`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+const pic = (x, o = {}) => chick({ acc: [x.acc], pal: x.pal, mood: x.mood || 'auto', deco: true, ...o });
+
+$('av').innerHTML = chick({ acc: ['loupe'], deco: true });
+$('fback').innerHTML = chick({ look: [0, 0], deco: true });
+// Sur téléphone, on demande aussi le vrai plein écran (marche sur Android ; iPhone et certains cadres l'ignorent)
+const mobile = () => matchMedia('(max-width: 640px)').matches;
+const goFull = () => { const d = document.documentElement; if (mobile() && !document.fullscreenElement && d.requestFullscreen) d.requestFullscreen().catch(() => {}); };
+const exitFull = () => { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); };
+const groups = [...new Set(FILES.map(x => x.g))];
+const drawTiles = () => $('groups').innerHTML = groups.map(g => `<h2>${g}</h2><div class="grid">${FILES.filter(x => x.g === g).map(x =>
+  `<button class="tile" style="${slStyle(x.sl)}" data-open="${x.f}">
+     <span class="kind">${x.g === 'Pages' ? 'Page' : 'Fichier'}</span><b>${esc(x.n)}</b><small>${esc(x.s)}</small><span class="file">${x.f}</span>
+     <span class="m" aria-hidden="true">${pic(x)}</span></button>`).join('')}</div>`).join('');
+drawTiles();
+
+// Lien complet d'un fichier, à copier ou à ouvrir seul
+const linkOf = f => new URL(f, location.href).href;
+
+function open(f, push = true) {
+  const x = FILES.find(y => y.f === f);
+  if (!x) return close(false);
+  const v = $('viewer');
+  v.setAttribute('style', slStyle(x.sl));
+  $('bar').innerHTML = `<button class="back" data-close>‹ Tour</button>
+    <div class="who"><i aria-hidden="true">${pic(x, { look: [0, 0] })}</i><div><b>${esc(x.n)}</b><code>${esc(linkOf(f))}</code></div></div>
+    <div class="act"><button data-copy="${f}">Copier le lien</button><a href="${f}" target="_blank" rel="noopener">Ouvrir seul ↗</a></div>`;
+  $('nav').innerHTML = FILES.map(y => `<button data-open="${y.f}" aria-current="${y.f === f}">${esc(y.n)}</button>`).join('');
+  // replace() : changer de fichier n'ajoute pas d'étape à « retour » (seule la tour en ajoute)
+  const fr = $('frame'), url = linkOf(f);
+  if (fr.dataset.f !== f) { fr.dataset.f = f; try { fr.contentWindow.location.replace(url); } catch (e) { fr.src = url; } }
+  v.hidden = false; $('home').hidden = true; document.title = `Metrön · ${x.n}`;
+  if (push) try { history.pushState({ f }, '', '#' + f); } catch (e) { location.hash = f; }
+}
+function close(push = true) {
+  $('viewer').hidden = true; $('home').hidden = false; document.title = 'Metrön · Tour de contrôle';
+  if (push) try { history.pushState({}, '', location.pathname + location.search); } catch (e) {}
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-open],[data-close],[data-copy]'); if (!t) return;
+  if (t.dataset.open) { goFull(); open(t.dataset.open); }
+  else if (t.hasAttribute('data-close')) { exitFull(); close(); }
+  else if (t.dataset.copy) {
+    const url = linkOf(t.dataset.copy);
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { t.textContent = 'Copié ✓'; }, () => { t.textContent = url; });
+    setTimeout(() => { t.textContent = 'Copier le lien'; }, 1600);
+  }
+});
+addEventListener('popstate', () => { const f = location.hash.slice(1); f ? open(f, false) : close(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('viewer').hidden) close(); });
+if (location.hash.length > 1) open(decodeURIComponent(location.hash.slice(1)), false);
+</script>
+</body>
+</html>

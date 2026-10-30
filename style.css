@@ -158,6 +158,7 @@ h1, h2, h3, p { margin: 0; }
 @keyframes up { from { transform: translateY(100%); } }
 .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 16px; }
 .lbl { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 18px 2px 8px; display: block; }
+.text-in { width: 100%; background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; }   /* suit le thème (sinon blanc sur blanc en sombre) */
 .sheet .text-in { font-size: 22px; margin-top: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-size: 14px; transition: all 250ms var(--ease); }

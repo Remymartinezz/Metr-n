@@ -925,3 +925,9 @@ html[data-motion="off"] .habit.pop::after { display: none; }
 .me-tile svg { width: 125%; height: auto; display: block; }
 @media (prefers-reduced-motion: reduce) { .ob-buddy > i, .pill .pm, .how .hop, .hero-mark.thinking .eye, .hero-mark .bubbles i { animation: none; } .hero-mark .bubbles i { opacity: .8; } }
 html[data-motion="off"] .ob-buddy > i, html[data-motion="off"] .pill .pm, html[data-motion="off"] .how .hop, html[data-motion="off"] .hero-mark.thinking .eye { animation: none !important; }
+/* L'île ouverte : un point par habitude à faire, pour choisir laquelle */
+.island[data-mode="open"] { flex-wrap: wrap; }
+.island .isl-dots { position: relative; z-index: 1; flex: 0 0 100%; display: flex; justify-content: center; gap: 8px; margin-top: -2px; }
+.island .isl-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgb(255 253 242 / .35); position: relative; transition: width 300ms var(--ease), background-color 300ms var(--ease); }
+.island .isl-dots button::after { content: ""; position: absolute; inset: -12px -6px; }
+.island .isl-dots button[aria-selected="true"] { width: 22px; background: var(--brand-yellow); }

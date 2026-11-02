@@ -927,7 +927,10 @@ function renderIsland() {
   const off = ui.onboarding || (IPHONE && matchMedia('(max-width: 500px)').matches);   // sur un vrai iPhone : on laisse la sienne
   el.classList.toggle('isl-off', off);
   if (off) { el.innerHTML = ''; return; }
-  const left = S.habits.filter(h => !doneOn(h.id, today())), nxt = left[0];
+  // Les habitudes à faire : on choisit laquelle avec les points, pas d'ordre imposé
+  const left = S.habits.filter(h => !doneOn(h.id, today()));
+  ui.islandIdx = Math.min(ui.islandIdx || 0, Math.max(0, left.length - 1));
+  const nxt = left[ui.islandIdx];
   const total = S.habits.length, frac = total ? (total - left.length) / total : 0, C = 2 * Math.PI * 9;
   const ring = `<svg class="isl-ring" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/><circle cx="12" cy="12" r="9" fill="none" stroke="var(--brand-yellow)" stroke-width="3" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 12 12)"/></svg>`;
   const face = `<span class="isl-face">${miniChick({ mood: islandMsg || !nxt ? 'happy' : 'open' })}</span>`;
@@ -937,8 +940,9 @@ function renderIsland() {
     html = `${face}<span class="isl-txt"><b>C’est fait</b><small>${esc(islandMsg.name)}</small></span><span class="isl-ok" aria-hidden="true">✓</span>`;
   } else if (ui.islandOpen) {
     mode = 'open';
-    html = `<button class="isl-hit" data-act="island" aria-label="Replier"></button>${face}<span class="isl-txt"><small>${nxt ? 'Prochaine' : 'Aujourd’hui'}</small><b>${nxt ? esc(nxt.name) : 'Tout est fait.'}</b>${nxt ? `<small>${fmtDur(nxt.h)} · ${esc(dname(nxt.domain))}</small>` : `<small>Profite de ta journée.</small>`}</span>
-      ${nxt ? `<button class="isl-btn" data-act="toggle" data-v="${nxt.id}">C’est fait</button>` : ``}`;
+    html = `<button class="isl-hit" data-act="island" aria-label="Replier"></button>${face}<span class="isl-txt"><small>${nxt ? 'À faire' : 'Aujourd’hui'}</small><b>${nxt ? esc(nxt.name) : 'Tout est fait.'}</b>${nxt ? `<small>${fmtDur(nxt.h)} · ${esc(dname(nxt.domain))}</small>` : `<small>Profite de ta journée.</small>`}</span>
+      ${nxt ? `<button class="isl-btn" data-act="toggle" data-v="${nxt.id}">C’est fait</button>` : ``}
+      ${left.length > 1 ? `<span class="isl-dots" role="tablist" aria-label="Choisir une habitude">${left.map((h, i) => `<button role="tab" data-act="island-pick" data-v="${i}" aria-selected="${i === ui.islandIdx}" aria-label="${esc(h.name)}"></button>`).join('')}</span>` : ``}`;
   } else {
     mode = 'mini';
     html = `<button class="isl-hit" data-act="island" aria-label="Ouvrir l’île Metrön"></button>${face}<span class="isl-txt"><b>${nxt ? esc(nxt.name) : 'Tout est fait'}</b></span>${ring}`;
@@ -1020,6 +1024,7 @@ document.addEventListener('click', e => {
 
     // Modifier
     case 'island': ui.islandOpen = !ui.islandOpen; renderIsland(); break;
+    case 'island-pick': ui.islandIdx = +v; renderIsland(); break;
     case 'edit': openSheet(v); break;
     case 'add': {
       const dom = ui.filter !== 'all' ? ui.filter : (S.habits.length ? S.habits[S.habits.length - 1].domain : 'etudes');

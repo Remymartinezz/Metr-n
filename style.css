@@ -853,3 +853,75 @@ html[data-motion="off"] .cta-char.obs .scan, html[data-motion="off"] .cta-char.o
   .screen { padding-top: calc(48px + env(safe-area-inset-top)); }
 }
 @media (prefers-reduced-motion: reduce) { .island { transition: none; } }
+
+/* ---------- Tracker : un bouton sur le tableau de bord, une grande feuille quasi plein écran ---------- */
+.tracker-open { width: 100%; display: grid; grid-template-columns: 52px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 14px; align-items: center; text-align: left; border: 0; border-radius: 24px; padding: 16px 18px; background: var(--surface); color: var(--ink); box-shadow: 0 10px 26px -18px rgb(43 29 23 / .45), 0 0 0 1px var(--line); cursor: pointer; }
+.tracker-open .to-face { grid-row: span 2; width: 52px; height: 52px; border-radius: 16px; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; }
+.tracker-open .to-face svg { width: 120%; height: auto; }
+.tracker-open small { display: block; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.tracker-open b { display: block; font-size: 17px; letter-spacing: -.01em; margin-top: 2px; }
+.tracker-open .to-go { grid-column: 2; margin-top: 8px; font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.tracker-open:active { transform: scale(.985); }
+.sheet-panel.tall { top: 4%; max-height: none; border-radius: 28px 28px 0 0; }
+.tracker-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.tracker-doms .chips { margin-top: 6px; }
+.tracker-doms { margin-top: 18px; }
+
+/* ---------- Cocher : le poussin saute et une petite gerbe part de la case ---------- */
+.habit.pop { position: relative; }
+.habit.pop .tick { animation: tick-jump 620ms var(--ease); }
+.habit.pop::after { content: ""; position: absolute; left: 34px; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; pointer-events: none;
+  box-shadow: 0 -26px 0 -1px var(--dc), 22px -14px 0 -2px var(--brand-gold), 26px 10px 0 -1px var(--dc), 0 26px 0 -2px var(--brand-gold), -22px 14px 0 -1px var(--dc), -24px -12px 0 -2px var(--brand-gold);
+  animation: burst 650ms var(--ease) both; }
+@keyframes tick-jump { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-10px) scale(1.18) rotate(-8deg); } 70% { transform: translateY(0) scale(.94); } 100% { transform: none; } }
+@keyframes burst { 0% { transform: scale(.3); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+html[data-motion="off"] .habit.pop::after { display: none; }
+
+/* ---------- Mobile : l'app prend vraiment tout l'écran ---------- */
+@media (max-width: 500px) { .phone { position: fixed; inset: 0; width: auto; height: auto; } }
+
+/* ---------- Accueil : le poussin qui évolue, les mascottes des choix ---------- */
+.ob-buddy { display: flex; align-items: center; gap: 6px; flex: none; }
+.ob-buddy > i { width: 44px; height: 42px; display: block; animation: bob var(--bd, 2s) ease-in-out infinite; }
+.ob-buddy svg { width: 100%; height: auto; display: block; }
+.ob-badges { display: flex; gap: 2px; }
+.ob-badges i { width: 22px; height: 21px; display: block; animation: badge-in 420ms var(--ease) both; }
+.ob-badges svg { width: 100%; height: auto; display: block; }
+@keyframes badge-in { from { transform: scale(0); } to { transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px) rotate(-3deg); } }
+.pill.with-pm { position: relative; padding-right: 86px; min-height: 76px; }
+.pill .pm { position: absolute; right: 12px; top: 50%; width: 64px; height: 60px; margin-top: -30px; pointer-events: none; animation: bob var(--bd, 2.2s) ease-in-out infinite; }
+.pill .pm svg { width: 100%; height: auto; display: block; }
+.big.two .pill.with-pm { padding-right: 58px; }
+.big.two .pill .pm { width: 46px; height: 44px; margin-top: -22px; right: 8px; }
+.pill.chk.with-pm[aria-pressed="true"]::after { right: auto; left: auto; top: 8px; right: 8px; }
+.big.two .pill.chk.with-pm[aria-pressed="true"]::after { top: 6px; right: 6px; font-size: 14px; }
+/* Comment ça marche : il saute d'une étape à l'autre, puis recommence */
+.how { position: relative; }
+.how .hop { position: absolute; right: 10px; top: 0; width: 46px; height: 44px; z-index: 1; animation: hop 3.6s var(--ease) infinite; pointer-events: none; }
+.how .hop svg { width: 100%; height: auto; display: block; }
+.how li { padding-right: 62px; }
+@keyframes hop {
+  0%, 22% { top: calc(16.6% - 22px); transform: none; }
+  28% { transform: translateY(-26px) rotate(-10deg); }
+  34%, 55% { top: calc(50% - 22px); transform: none; }
+  61% { transform: translateY(-26px) rotate(10deg); }
+  67%, 88% { top: calc(83.3% - 22px); transform: none; }
+  94% { top: calc(40% - 22px); transform: translateY(-40px) scale(.9); opacity: .4; }
+  100% { top: calc(16.6% - 22px); transform: none; opacity: 1; }
+}
+/* Génération : il réfléchit (les yeux cherchent, des bulles de pensée), plus de tremblement */
+.hero-mark.thinking { position: relative; }
+.hero-mark.thinking .eye { animation: think-eyes 2.4s ease-in-out infinite; }
+@keyframes think-eyes { 0%, 100% { transform: translate(-22px, -18px); } 45%, 55% { transform: translate(22px, -18px); } }
+.hero-mark .bubbles { position: absolute; right: -4px; top: -26px; display: flex; align-items: flex-end; gap: 6px; }
+.hero-mark .bubbles i { display: block; border-radius: 50%; background: var(--obink, #fff); opacity: 0; animation: bubble 1.8s ease-in-out infinite; }
+.hero-mark .bubbles i:nth-child(1) { width: 8px; height: 8px; }
+.hero-mark .bubbles i:nth-child(2) { width: 12px; height: 12px; animation-delay: .3s; }
+.hero-mark .bubbles i:nth-child(3) { width: 18px; height: 18px; animation-delay: .6s; }
+@keyframes bubble { 0%, 100% { opacity: 0; transform: translateY(4px); } 40%, 70% { opacity: .85; transform: none; } }
+/* En-tête : ton poussin à toi */
+.me-tile { width: 38px; height: 38px; border-radius: 12px; background: var(--brand-blue); overflow: hidden; display: grid; place-items: center; flex: none; }
+.me-tile svg { width: 125%; height: auto; display: block; }
+@media (prefers-reduced-motion: reduce) { .ob-buddy > i, .pill .pm, .how .hop, .hero-mark.thinking .eye, .hero-mark .bubbles i { animation: none; } .hero-mark .bubbles i { opacity: .8; } }
+html[data-motion="off"] .ob-buddy > i, html[data-motion="off"] .pill .pm, html[data-motion="off"] .how .hop, html[data-motion="off"] .hero-mark.thinking .eye { animation: none !important; }

@@ -9,7 +9,7 @@
 <link rel="icon" href="favicon-16.png" type="image/png" sizes="16x16">
 <link rel="alternate icon" href="favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261030143356">
+<link rel="stylesheet" href="tokens.css?v=20261102112212">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,7 +32,11 @@
 
   /* Générateur */
   .gen { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 40px; align-items: start; margin-top: 28px; }
-  @media (max-width: 760px) { .gen { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) {
+    .gen { grid-template-columns: 1fr; }
+    /* Sur téléphone, le poussin reste visible en haut pendant qu'on change les réglages */
+    .stage { position: sticky; top: 56px; z-index: 10; width: 42%; margin: 0 0 0 auto; box-shadow: 0 14px 30px -16px rgb(0 0 0 / .45); }
+  }
   .stage { border-radius: 36px; overflow: hidden; background: var(--sl-today); aspect-ratio: 1.075; }
   .stage svg { width: 100%; height: 100%; display: block; }
   .ctl { display: grid; gap: 26px; }
@@ -48,6 +52,9 @@
   .idea-art { border-radius: 20px; overflow: hidden; }
   .art-bg { height: 218px; display: grid; place-items: center; padding: 12px; }
   .art-bg > svg { height: 100%; width: auto; max-width: 100%; }
+  .art-bg.offline { position: relative; }
+  .art-bg.offline > svg.nonet { position: absolute; inset: 14% 22%; width: 56%; height: 72%; opacity: .55; }
+  .art-bg.offline > svg.mc { position: relative; }
   .idea-n { position: absolute; top: 26px; left: 26px; margin: 0; font-size: 13px; letter-spacing: .1em; color: #2B1D17; opacity: .5; font-weight: 800; }
   .idea h4 { font-size: 18px; letter-spacing: -.02em; margin: 18px 6px 2px; }
   .idea p { margin: 8px 6px 0; font-size: 14px; line-height: 1.5; }
@@ -100,6 +107,9 @@
   .fav[aria-pressed="true"] { color: #E53935; }
   .fav::after { content: ""; position: absolute; inset: -6px; }
   .fam { margin-top: 56px; }
+  .fam .grid { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(190px, 220px); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; scrollbar-width: thin; }
+  .fam .grid .vc { scroll-snap-align: start; }
+  .fam-h small { color: #6C635A; font-size: 13px; margin-left: auto; }
   .fam:first-of-type { margin-top: 28px; }
   .fam-h { display: flex; align-items: center; gap: 12px; }
   .fam-h i { width: 14px; height: 14px; border-radius: 50%; display: block; }
@@ -207,7 +217,7 @@
   </section>
 </main>
 
-<script src="mascot.js?v=20261030143356"></script>
+<script src="mascot.js?v=20261102112212"></script>
 <script>
 const MOODS = { auto: 'Selon l’accessoire', open: 'Normal', happy: 'Content', closed: 'Paisible', wide: 'Surpris', focus: 'Concentré', wink: 'Clin d’œil' };
 
@@ -258,7 +268,7 @@ function randomGrid() {
 function drawFams() {
   const colors = { etudes: 'var(--dom-etudes)', sport: 'var(--dom-sport)', sommeil: 'var(--dom-sommeil)', social: 'var(--dom-social)', repos: 'var(--dom-repos)', projets: 'var(--dom-projets)' };
   const bgOf = { etudes: 'sl-today', sport: 'sl-focus', sommeil: 'sl-curve', social: 'sl-share', repos: 'sl-balance', projets: 'sl-start' };
-  $('fams').innerHTML = DOMS.map(d => `<div class="fam"><div class="fam-h"><i style="background:${colors[d.id]}"></i><h3 style="margin:0">${d.name}</h3></div><div class="grid">${
+  $('fams').innerHTML = DOMS.map(d => `<div class="fam"><div class="fam-h"><i style="background:${colors[d.id]}"></i><h3 style="margin:0">${d.name}</h3><small>fais glisser →</small></div><div class="grid">${
     Object.entries(ACC).filter(([k, a]) => a.dom === d.id && k !== 'none').map(([k, a]) => card(`${k}|auto|${bgOf[d.id]}|${galPal ? d.id : 'original'}`, chick({ acc: [k], bg: bgVar(bgOf[d.id]), pal: galPal ? d.id : 'original' }), a.name, a.note)).join('')}</div></div>`).join('');
 }
 
@@ -323,7 +333,7 @@ const IDEAS = [
   { id: 'hebdo', title: 'Le bilan du dimanche', where: 'Dimanche soir : une carte « Ta semaine » où il lit le journal de ta semaine.', why: 'Un rituel hebdomadaire plutôt qu’un flux de statistiques.',
     art: () => `<div class="art-bg" style="background:var(--sl-today)">${chick({ acc: ['livre'], mood: 'focus' })}</div>` },
   { id: 'hors', title: 'Hors ligne : une tasse de thé', where: 'Pas de réseau, import qui échoue : il boit un thé en attendant.', why: 'Même les erreurs deviennent des pauses, pas des alertes.',
-    art: () => `<div class="art-bg" style="background:var(--sl-share)">${chick({ acc: ['the'], pal: 'repos' })}</div>` },
+    art: () => `<div class="art-bg offline" style="background:#0F2A1C"><svg class="nonet" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0" fill="none" stroke="#3E7A55" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19" r="1.4" fill="#3E7A55"/><path d="M3 3l18 18" stroke="#3E7A55" stroke-width="2.2" stroke-linecap="round"/></svg>${chick({ acc: ['the'], pal: 'repos' })}</div>` },
 ];
 function drawIdeas() {
   $('ideas').innerHTML = IDEAS.map((d, i) => {
@@ -394,6 +404,6 @@ document.addEventListener('mouseleave', () => look.x = null);
 
 drawGen(); randomGrid(); drawGalToggle(); drawFams(); drawPals(); drawMoods(); drawMinis(); drawIdeas(); refreshFavs();
 </script>
-<script src="nav.js?v=20261030143356"></script>
+<script src="nav.js?v=20261102112212"></script>
 </body>
 </html>

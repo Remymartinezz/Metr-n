@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Metrön">
-<link rel="stylesheet" href="tokens.css?v=20261030143356">
+<link rel="stylesheet" href="tokens.css?v=20261102112212">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -160,6 +160,11 @@
   .nav .nsep { flex: none; width: 1px; height: 22px; background: var(--line); margin: 0 8px; }
   .nav button[aria-current="true"] { background: var(--sl-i); color: var(--sl); border-color: var(--sl-i); }   /* la page ouverte prend sa couleur */
   .viewer iframe { grid-row: 3; }
+  .loading { position: absolute; left: 0; right: 0; bottom: 0; top: var(--lt, 0px); z-index: 2; display: grid; place-content: center; justify-items: center; gap: 14px; background: var(--sl); color: var(--sl-i); font-size: 18px; }
+  .loading[hidden] { display: none; }
+  .loading .lc { width: 110px; animation: bob 1.1s ease-in-out infinite; } .loading .lc svg { width: 100%; height: auto; display: block; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px) rotate(-4deg); } }
+  @media (prefers-reduced-motion: reduce) { .loading .lc { animation: none; } }
 
   /* Sur téléphone : le fichier ouvert prend tout l'écran (expérience complète), un seul petit bouton pour revenir */
   .float { display: none; }
@@ -197,6 +202,7 @@
   <div class="bar" id="bar"></div>
   <nav class="nav" id="nav" aria-label="Changer de fichier"></nav>
   <iframe id="frame" title="Fichier ouvert" allow="fullscreen"></iframe>
+  <div class="loading" id="loading" hidden><span class="lc" id="loading-c" aria-hidden="true"></span><b id="loading-t">Chargement…</b></div>
   <div class="float off" id="float">
     <button class="float-full" id="ffull" aria-pressed="false" aria-label="Plein écran">⤢</button>
     <button class="float-back" data-close id="fback"><i aria-hidden="true"></i>Revenir au centre de contrôle</button>
@@ -222,7 +228,7 @@
   </form>
 </div>
 
-<script src="mascot.js?v=20261030143356"></script>
+<script src="mascot.js?v=20261102112212"></script>
 <script>
 /* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
 const FILES = [
@@ -269,6 +275,7 @@ function peekBack(ms = 2000) {
 }
 $('frame').addEventListener('load', () => {
   themeFrame();
+  setTimeout(() => { $('loading').hidden = true; }, 150);
   try {
     const d = $('frame').contentDocument; let lastY = null;
     const onMove = () => peekBack();
@@ -404,6 +411,8 @@ function open(f, push = true) {
       `<button data-theme-set="${k}" aria-pressed="${(document.documentElement.dataset.theme || 'auto') === k}">${n}</button>`).join('')}</span>`;
   // replace() : changer de fichier n'ajoute pas d'étape à « retour » (seule la tour en ajoute)
   const fr = $('frame'), url = linkOf(f);
+  // Écran d'attente : on ne voit plus l'ancienne page pendant que la nouvelle se charge
+  if (fr.dataset.f !== f) { $('loading-c').innerHTML = pic(x, { look: [0, 0] }); $('loading-t').textContent = x.n; $('loading').setAttribute('style', slStyle(x.sl) + `;--lt:${fr.offsetTop}px`); $('loading').hidden = false; }
   if (fr.dataset.f !== f) { fr.dataset.f = f; try { fr.contentWindow.location.replace(url); } catch (e) { fr.src = url; } }
   v.hidden = false; $('home').hidden = true; document.title = `Metrön · ${x.n}`;
   if (push) try { history.pushState({ f }, '', '#' + f); } catch (e) { location.hash = f; }

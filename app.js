@@ -248,6 +248,7 @@ function render() {
   ui.noAnim = false; ui.animCurve = false;
   drawRadar(measure());
   updateIcon();
+  if (ui.sheet === 'tracker') renderSheet();
 }
 
 /* ---------- Onboarding : trois pages plein écran ---------- */
@@ -263,6 +264,23 @@ const GEN_COLOR = 'var(--ob-gen)';
 const sugKeys = d => d.domains.filter(id => !d.habits.some(k => k.startsWith(id + ':'))).map(id => `${id}:0`).filter(k => !d.touched.includes(k));
 const includedHabits = d => [...new Set([...d.habits, ...sugKeys(d)])].filter(k => d.domains.includes(k.split(':')[0]));
 
+/* ---------- Le poussin de l'accueil : il évolue avec tes réponses ---------- */
+const STATUS_ACC = { etudiant: 'toque', apprenti: 'chantier', actif: 'lunettes' };
+const RHYTHM_LOOK = { calme: { acc: 'the', mood: 'closed', dur: '3.4s' }, normal: { acc: 'none', mood: 'open', dur: '2s' }, charge: { acc: 'livre', mood: 'wide', dur: '.9s' } };
+// Toi en poussin : l'accessoire de ton statut, l'humeur de ton rythme
+function buddyOpts(status, rhythm) {
+  const r = RHYTHM_LOOK[rhythm] || RHYTHM_LOOK.normal;
+  return { acc: status && STATUS_ACC[status] ? [STATUS_ACC[status]] : [], mood: status ? r.mood : 'open' };
+}
+function viewBuddy(d) {
+  const picked = includedHabits(d), doms = [...new Set(picked.map(k => k.split(':')[0]))];
+  // Des badges : un petit poussin par domaine où tu as des habitudes
+  const badges = ui.step >= 5 ? `<span class="ob-badges" aria-hidden="true">${ORDER.filter(id => doms.includes(id)).map(id => `<i title="${esc(CAT[id].name)}">${miniChick({ acc: [DOM_ACC[id]], pal: id })}</i>`).join('')}</span>` : ``;
+  return `<span class="ob-buddy" style="--bd:${(RHYTHM_LOOK[d.rhythm] || RHYTHM_LOOK.normal).dur}" aria-hidden="true"><i>${chick({ ...buddyOpts(d.status, ui.step >= 4 ? d.rhythm : 'normal'), look: [0, 0], deco: true })}</i>${badges}</span>`;
+}
+// Une mascotte dans chaque choix, qui fait son geste
+const pillChick = (o, dur = '2.2s') => `<span class="pm" style="--bd:${dur}" aria-hidden="true">${chick({ look: [0, 0], deco: true, ...o })}</span>`;
+
 function viewOnboarding() {
   const d = ui.draft, i = ui.step;
   const lab = id => (d.status === 'actif' && id === 'etudes') ? WORK.label : CAT[id].name;
@@ -275,7 +293,7 @@ function viewOnboarding() {
     },
     {
       q: `Comment ça marche ?`, sub: `Trois gestes, et c'est tout.`,
-      body: `<ol class="how">
+      body: `<ol class="how"><span class="hop" aria-hidden="true">${chick({ mood: 'happy', look: [0, 0], deco: true })}</span>
         <li><span>1</span><div><b>Tu te racontes en 3 questions</b><small>Ce que tu fais, ce qui compte, tes habitudes actuelles.</small></div></li>
         <li><span>2</span><div><b>Metrön compose ton tracker</b><small>Tes habitudes, rangées par domaine de vie. Tu peux tout modifier.</small></div></li>
         <li><span>3</span><div><b>Tu coches, tu vois ton équilibre</b><small>Pas de score, pas d'échec : seulement si tu es dans ta mesure.</small></div></li>
@@ -285,20 +303,20 @@ function viewOnboarding() {
     {
       q: `Qu'est-ce que tu fais dans la vie ?`, sub: `Pour parler ta langue, pas celle d'un formulaire.`,
       body: `<div class="big">${STATUS.map(([id, n, s]) =>
-        `<button class="pill" data-act="pick-status" data-v="${id}" aria-pressed="${d.status === id}"><b>${n}</b><small>${s}</small></button>`).join('')}</div>`,
+        `<button class="pill with-pm" data-act="pick-status" data-v="${id}" aria-pressed="${d.status === id}"><b>${n}</b><small>${s}</small>${pillChick({ acc: [STATUS_ACC[id]] })}</button>`).join('')}</div>`,
       ok: !!d.status,
     },
     {
       q: `Qu'est-ce qui est important pour toi ?`, sub: `Choisis au moins 3 domaines. Ils formeront ton équilibre.`,
       body: `<div class="big two">${DOMAIN_PICKS.map(([id, n, s]) =>
-        `<button class="pill chk" data-act="pick-domain" data-v="${id}" aria-pressed="${d.domains.includes(id)}"><b>${n}</b></button>`).join('')}</div>`,
+        `<button class="pill chk with-pm" data-act="pick-domain" data-v="${id}" aria-pressed="${d.domains.includes(id)}"><b>${n}</b>${pillChick({ acc: [DOM_ACC[id]], pal: id })}</button>`).join('')}</div>`,
       ok: d.domains.length >= 3,
       count: `${d.domains.length} sélectionné${d.domains.length > 1 ? 's' : ''} sur 6`,
     },
     {
       q: `Et en ce moment ?`, sub: `Examens, rush ou semaine tranquille : ça règle ta mesure. Tu pourras le changer.`,
       body: `<div class="big">${RHYTHMS.map(([id, n, s]) =>
-        `<button class="pill chk" data-act="pick-rhythm" data-v="${id}" aria-pressed="${d.rhythm === id}"><b>${n}</b><small>${s}</small></button>`).join('')}</div>`,
+        `<button class="pill chk with-pm" data-act="pick-rhythm" data-v="${id}" aria-pressed="${d.rhythm === id}"><b>${n}</b><small>${s}</small>${pillChick({ acc: RHYTHM_LOOK[id].acc === 'none' ? [] : [RHYTHM_LOOK[id].acc], mood: RHYTHM_LOOK[id].mood }, RHYTHM_LOOK[id].dur)}</button>`).join('')}</div>`,
       ok: !!d.rhythm,
     },
     {
@@ -318,6 +336,7 @@ function viewOnboarding() {
   <div class="ob">
     <div class="ob-top">
       <button class="back" data-act="back" ${i === 0 ? 'disabled' : ''} aria-label="Retour">‹</button>
+      ${i >= 2 ? viewBuddy(d) : ``}
       <div class="bar"><i style="width:${((i + 1) / STEPS) * 100}%"></i></div>
     </div>
     <div class="ob-body ${ui.dir}">
@@ -335,7 +354,8 @@ function viewOnboarding() {
 
 const GEN_LINES = [`Je lis ce que tu m'as dit…`, `Je range tes habitudes par domaine…`, `Je règle ta juste mesure…`, `Voilà.`];
 function viewGenerating() {
-  return `<div class="gen"><div class="hero-mark breathing">${CHAR}</div><p id="gen-line">${GEN_LINES[0]}</p></div>`;
+  const d = ui.draft;
+  return `<div class="gen"><div class="hero-mark thinking"><span class="bubbles" aria-hidden="true"><i></i><i></i><i></i></span>${chick({ ...buddyOpts(d.status, d.rhythm), mood: 'focus', look: [0, 0], deco: true })}</div><p id="gen-line">${GEN_LINES[0]}</p></div>`;
 }
 let genTimer = 0;
 function startGenerating() {
@@ -630,7 +650,7 @@ function viewDashboard() {
   return `
   <div class="hero">
     <div class="topbar">
-      <div class="brand">${TILE}<span class="wordmark">${WORD}</span></div>
+      <div class="brand"><span class="me-tile" aria-hidden="true">${chick({ ...buddyOpts(S.profile.status, S.rhythm), look: [0, 0], deco: true })}</span><span class="wordmark">${WORD}</span></div>
       <button class="icon-btn set" data-act="open-settings" aria-label="Réglages">${GEAR}</button>
     </div>
     <header class="head">
@@ -651,36 +671,12 @@ function viewDashboard() {
       `<button role="tab" data-act="slide" data-v="${i}" aria-label="${n}" aria-selected="${ui.slide === i}"></button>`).join('')}</div>` : ``}
   </div>
 
-  <section class="blk" id="habits-blk">
-    <div class="blk-head">
-      <h2 class="h2">${esc(dayLabel)} <small>${doneN} / ${inDom.length}</small></h2>
-      <button class="icon-btn filter-btn" data-act="open-filters" aria-label="Filtrer" data-on="${ui.filter !== 'all' || ui.show !== 'all'}">${FILTER}</button>
-    </div>
-    ${ui.filter !== 'all' || ui.show !== 'all' ? `<div class="active-filters">
-      ${ui.filter !== 'all' ? `<button class="afil" data-act="filter" data-v="all"><i class="ddot sh-${ui.filter}" style="background:var(--dom-${ui.filter}-focus)"></i>${esc(dname(ui.filter))} <span>✕</span></button>` : ``}
-      ${ui.show !== 'all' ? `<button class="afil" data-act="show" data-v="all">${SHOW[ui.show]} <span>✕</span></button>` : ``}
-    </div>` : ``}
-
-    <div class="days" role="group" aria-label="Choisir un jour">
-      ${lastDays().map(d => {
-        const dt = new Date(d + 'T12:00'), has = S.logs.some(l => l.day === d), before = d < dayKey(S.start);
-        return `<button data-act="day" data-v="${d}" aria-pressed="${ui.day === d}"><small>${dt.toLocaleDateString('fr-CH', { weekday: 'narrow' })}</small><b>${dt.getDate()}</b><span class="dc${before ? ' off' : ''}" aria-hidden="true">${miniChick({ mood: has ? 'happy' : 'closed' })}</span></button>`;
-      }).join('')}
-    </div>
-
-    <div class="habits">
-      ${list.length ? list.map(h => {
-        const done = doneOn(h.id, ui.day), wk = weekCount(h.id);
-        return `<div class="hrow">
-          <button class="habit ${ui.pop === h.id ? 'pop' : ''}" style="--dc:var(--dom-${h.domain})" data-act="toggle" data-v="${h.id}" aria-pressed="${done}">
-            <span class="tick" aria-hidden="true">${miniChick({ mood: done ? 'wink' : 'open', pal: done ? h.domain : 'original' })}</span>
-            <span class="n"><b>${esc(h.name)}</b><small><i class="ddot sh-${h.domain}" style="background:var(--dom-${h.domain})" aria-hidden="true"></i>${fmtDur(h.h)}<span class="dn">${esc(dname(h.domain))}</span><span class="wk">${wk} cette sem.</span></small></span>
-          </button>
-          <button class="pen" data-act="edit" data-v="${h.id}" aria-label="Modifier ${esc(h.name)}">${PEN}</button>
-        </div>`;
-      }).join('') : `<div class="empty-art">${inDom.length && ui.show === 'todo' ? miniChick({ mood: 'happy', acc: ['confetti'] }) : miniChick({ mood: 'wide', acc: ['boite'] })}<p class="empty">${inDom.length ? (ui.show === 'todo' ? `Tout est fait pour ce jour.` : `Rien de fait pour l'instant.`) : `Aucune habitude ici.`}</p></div>`}
-    </div>
-    <button class="add" data-act="add">+ Ajouter une habitude</button>
+  <section class="blk tracker-entry">
+    <button class="tracker-open" data-act="goto">
+      <span class="to-face" aria-hidden="true">${miniChick({ mood: inDom.length && doneN === inDom.length ? 'happy' : 'open', acc: inDom.length && doneN === inDom.length ? ['confetti'] : [] })}</span>
+      <span class="to-txt"><small>Mon tracker</small><b>${!inDom.length ? `Ajoute ta première habitude` : doneN === inDom.length ? `Tout est fait aujourd'hui` : `${inDom.length - doneN} habitude${plural(inDom.length - doneN)} à cocher aujourd'hui`}</b></span>
+      <span class="to-go">Voir mon tracker ›</span>
+    </button>
   </section>
 
   <section class="blk">
@@ -751,11 +747,62 @@ function drawRadar(m) {
 
 /* ---------- Feuille : modifier une habitude / réglages ---------- */
 
-function openSheet(id) { ui.sheet = id; renderSheet(); }
+// Le tracker : jours, filtres, liste des habitudes. Il s'ouvre en quasi plein écran depuis le tableau de bord.
+function viewTracker() {
+  const doms = ORDER.filter(id => S.habits.some(h => h.domain === id));
+  const inDom = S.habits.filter(h => ui.filter === 'all' || h.domain === ui.filter);
+  const doneN = inDom.filter(h => doneOn(h.id, ui.day)).length;
+  const list = inDom.filter(h => ui.show === 'all' || (ui.show === 'done') === doneOn(h.id, ui.day))
+    .sort((a, b) => doneOn(a.id, ui.day) - doneOn(b.id, ui.day));
+  const dayLabel = ui.day === today() ? `Aujourd'hui` : new Date(ui.day + 'T12:00').toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long' });
+  const SHOW = { all: `Tout`, todo: `À faire`, done: `Fait` };
+  return `<div id="habits-blk">
+    <div class="blk-head">
+      <h2 class="h2">${esc(dayLabel)} <small>${doneN} / ${inDom.length}</small></h2>
+      <button class="icon-btn filter-btn" data-act="open-filters" aria-label="Filtrer" data-on="${ui.filter !== 'all' || ui.show !== 'all'}">${FILTER}</button>
+    </div>
+    ${ui.filter !== 'all' || ui.show !== 'all' ? `<div class="active-filters">
+      ${ui.filter !== 'all' ? `<button class="afil" data-act="filter" data-v="all"><i class="ddot sh-${ui.filter}" style="background:var(--dom-${ui.filter}-focus)"></i>${esc(dname(ui.filter))} <span>✕</span></button>` : ``}
+      ${ui.show !== 'all' ? `<button class="afil" data-act="show" data-v="all">${SHOW[ui.show]} <span>✕</span></button>` : ``}
+    </div>` : ``}
+
+    <div class="days" role="group" aria-label="Choisir un jour">
+      ${lastDays().map(d => {
+        const dt = new Date(d + 'T12:00'), has = S.logs.some(l => l.day === d), before = d < dayKey(S.start);
+        return `<button data-act="day" data-v="${d}" aria-pressed="${ui.day === d}"><small>${dt.toLocaleDateString('fr-CH', { weekday: 'narrow' })}</small><b>${dt.getDate()}</b><span class="dc${before ? ' off' : ''}" aria-hidden="true">${miniChick({ mood: has ? 'happy' : 'closed' })}</span></button>`;
+      }).join('')}
+    </div>
+
+    <div class="habits">
+      ${list.length ? list.map(h => {
+        const done = doneOn(h.id, ui.day), wk = weekCount(h.id);
+        return `<div class="hrow">
+          <button class="habit ${ui.pop === h.id ? 'pop' : ''}" style="--dc:var(--dom-${h.domain})" data-act="toggle" data-v="${h.id}" aria-pressed="${done}">
+            <span class="tick" aria-hidden="true">${miniChick({ mood: done ? 'wink' : 'open', pal: done ? h.domain : 'original' })}</span>
+            <span class="n"><b>${esc(h.name)}</b><small><i class="ddot sh-${h.domain}" style="background:var(--dom-${h.domain})" aria-hidden="true"></i>${fmtDur(h.h)}<span class="dn">${esc(dname(h.domain))}</span><span class="wk">${wk} cette sem.</span></small></span>
+          </button>
+          <button class="pen" data-act="edit" data-v="${h.id}" aria-label="Modifier ${esc(h.name)}">${PEN}</button>
+        </div>`;
+      }).join('') : `<div class="empty-art">${inDom.length && ui.show === 'todo' ? miniChick({ mood: 'happy', acc: ['confetti'] }) : miniChick({ mood: 'wide', acc: ['boite'] })}<p class="empty">${inDom.length ? (ui.show === 'todo' ? `Tout est fait pour ce jour.` : `Rien de fait pour l'instant.`) : `Aucune habitude ici.`}</p></div>`}
+    </div>
+    <button class="add" data-act="add">+ Ajouter une habitude</button>
+</div>
+    <div class="tracker-doms">${doms.length > 1 ? `<span class="lbl">Par domaine</span><div class="chips">
+      <button class="chip" data-act="filter" data-v="all" aria-pressed="${ui.filter === 'all'}">Tout</button>
+      ${doms.map(id => `<button class="chip" data-act="filter" data-v="${id}" aria-pressed="${ui.filter === id}"><i class="ddot sh-${id}" style="background:var(--dom-${id})"></i>${esc(dname(id))}</button>`).join('')}</div>` : ``}</div>`;
+}
+function openSheet(id) { ui.sheetBack = ui.sheet === 'tracker' && id !== 'tracker' ? 'tracker' : null; ui.sheet = id; renderSheet(); }
 function renderSheet() {
   const sh = $('#sheet'), panel = $('#sheet-panel');
   const wasOpen = !sh.hidden;
   const show = html => { sh.hidden = false; if (wasOpen) panel.style.animation = 'none'; panel.innerHTML = html; };
+
+  panel.classList.toggle('tall', ui.sheet === 'tracker');
+  if (ui.sheet === 'tracker') {
+    return show(`<div class="grab"></div>
+      <div class="tracker-top"><h2 class="h2">Mon tracker</h2><button class="icon-btn" data-act="close-sheet" aria-label="Fermer">✕</button></div>
+      ${viewTracker()}`);
+  }
 
   // Filtres : un seul bouton rond sur le tableau de bord, tout se règle ici
   if (ui.sheet === 'filters') {
@@ -857,7 +904,9 @@ function closeSheet() {
   clearInterval(breathT);
   const h = S.habits.find(x => x.id === ui.sheet);
   if (h && !h.name.trim()) S.habits = S.habits.filter(x => x !== h);   // habitude sans nom : on l'oublie
+  const back = ui.sheetBack; ui.sheetBack = null;
   ui.sheet = null; $('#sheet').hidden = true; save(); ui.noAnim = true; render();
+  if (back) openSheet(back);                                                // filtre ou modification ouverts depuis le tracker : on y revient
 }
 
 /* ---------- Toast ---------- */
@@ -945,8 +994,8 @@ document.addEventListener('click', e => {
     case 'all-doms': ui.allDoms = !ui.allDoms; redraw(); break;
     case 'show': ui.show = v; redraw(); if (ui.sheet === 'filters') renderSheet(); break;
     case 'open-filters': openSheet('filters'); break;
-    case 'goto': { const el = $('#habits-blk'); if (el) scrollScreen(topOf(el)); break; }
-    case 'focus': ui.filter = v; ui.show = 'all'; redraw(); { const el = $('#habits-blk'); if (el) scrollScreen(topOf(el)); } break;
+    case 'goto': openSheet('tracker'); break;
+    case 'focus': ui.filter = v; ui.show = 'all'; redraw(); openSheet('tracker'); break;
     case 'slide-name': { const c = $('#carousel'); const k = [...document.querySelectorAll('.sdots button')].findIndex(b => b.getAttribute('aria-label') === v); if (c && k >= 0) { ui.slide = k; goSlide(c, k); document.querySelectorAll('.sdots button').forEach((b, i) => b.setAttribute('aria-selected', i === k)); } break; }
     case 'show-cycle': ui.show = { all: 'todo', todo: 'done', done: 'all' }[ui.show]; redraw(); break;
     case 'slide': { const c = $('#carousel'); ui.slide = +v; if (c) goSlide(c, +v); document.querySelectorAll('.sdots button').forEach((b, i) => b.setAttribute('aria-selected', i === +v)); break; }
@@ -984,7 +1033,7 @@ document.addEventListener('click', e => {
     case 'h-freq': { const h = sheetHabit(); h.w = Math.min(7, Math.max(1, h.w + (+v))); save(); renderSheet(); break; }
     case 'h-del': {
       S.habits = S.habits.filter(x => x !== sheetHabit());
-      ui.sheet = null; $('#sheet').hidden = true; save(); redraw();
+      ui.sheet = null; $('#sheet').hidden = true; save(); redraw(); if (ui.sheetBack) { const b = ui.sheetBack; ui.sheetBack = null; openSheet(b); }
       toast(`Habitude supprimée. Ton historique reste.`); break;
     }
 

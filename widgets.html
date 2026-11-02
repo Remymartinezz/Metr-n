@@ -9,7 +9,7 @@
 <link rel="icon" href="favicon-16.png" type="image/png" sizes="16x16">
 <link rel="alternate icon" href="favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261030143356">
+<link rel="stylesheet" href="tokens.css?v=20261102112212">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,9 +41,13 @@
   .w-name { font-size: 18px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin: 8px 0 0; }
   .w-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
   .w-list li { display: flex; align-items: center; gap: 10px; background: rgb(255 255 255 / .55); border-radius: 14px; padding: 8px 10px; font-weight: 600; font-size: 14px; cursor: pointer; }
-  .w-list .t { width: 22px; height: 22px; border-radius: 50%; border: 2px solid currentColor; display: grid; place-items: center; font-size: 12px; flex: none; opacity: .8; }
-  .w-list li.done .t { background: currentColor; }
-  .w-list li.done .t b { color: var(--sl-today); }
+  .w-list .t { width: 28px; height: 27px; flex: none; display: block; }
+  .w-list .t svg { width: 100%; height: auto; display: block; }
+  .w-chick { position: absolute; right: 8px; top: 8px; width: 40px; } .w-chick svg { width: 100%; height: auto; display: block; }
+  .w-chick.big { top: auto; bottom: -10px; right: -8px; width: 58%; }
+  .w-ring { position: relative; }
+  .ring-chick { position: absolute; left: 50%; top: 46%; width: 40%; transform: translate(-50%, -50%); } .ring-chick svg { width: 100%; height: auto; display: block; }
+  .ring-txt { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-weight: 700; font-size: 11px; }
   .w-list li.done span:last-child { opacity: .55; text-decoration: line-through; }
   .w-eq { background: var(--sl-balance); color: var(--sl-balance-ink); }
   .w-ring { background: var(--sl-regular); color: var(--sl-regular-ink); display: grid; place-items: center; }
@@ -89,6 +93,7 @@
   </div>
 </main>
 
+<script src="mascot.js?v=20261102112212"></script>
 <script>
 /* Lit l'état de l'app (même navigateur, même origine) : habitudes cochées, rythme, historique. */
 const KEY = 'metron.v2', DAY = 864e5;
@@ -106,6 +111,9 @@ function sample() {
 }
 function load() { if (!useSample) { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.habits && s.habits.length) return s; } catch (e) {} } return sample(); }
 const save = () => { if (!useSample) try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const DOM_ACC2 = { etudes: 'lunettes', sport: 'course', sommeil: 'bonnet', social: 'soleil', repos: 'casque', projets: 'chantier' };
+// Un petit poussin du domaine, à la place d'un simple point
+const mini = (dom, o = {}) => chick({ acc: [DOM_ACC2[dom]], pal: dom, look: [0, 0], deco: true, ...o });
 const done = id => S.logs.some(l => l.habit === id && l.day === today());
 const pos = (v, t) => v < t.min ? .4 * (v / t.min) : v <= t.max ? .4 + .3 * (v - t.min) / (t.max - t.min) : Math.min(1, .7 + .3 * (v - t.max) / (t.max * .5));
 
@@ -117,13 +125,14 @@ function measure() {
     return { id, name: CAT[id], p: pos(v, { min: planned * .8, max: planned * 1.2 }) };
   });
 }
+const SHAPE = { etudes: '●', sport: '▲', sommeil: '◆', social: '■', repos: '⬢', projets: '✚' };
 function radarSvg(m, size) {
   const N = m.length, R = 46, c = 60, a = i => -Math.PI / 2 + i * 2 * Math.PI / N, pt = (i, r) => [c + Math.cos(a(i)) * r * R, c + Math.sin(a(i)) * r * R].map(n => n.toFixed(1)).join(',');
   const ring = r => 'M' + m.map((_, i) => pt(i, r).replace(',', ' ')).join('L') + 'Z';
   return `<svg viewBox="0 0 120 120" width="${size}" height="${size}"><polygon points="${m.map((_, i) => pt(i, 1)).join(' ')}" fill="none" stroke="currentColor" stroke-opacity=".25"/>
     <path d="${ring(.7)}${ring(.4)}" fill="var(--band)" fill-rule="evenodd"/>
     <polygon points="${m.map((x, i) => pt(i, x.p)).join(' ')}" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="1.6"/>
-    ${m.map((x, i) => { const [px, py] = pt(i, x.p).split(','); return `<circle cx="${px}" cy="${py}" r="3" fill="var(--dom-${x.id})"/>`; }).join('')}</svg>`;
+    ${m.map((x, i) => { const [px, py] = pt(i, x.p).split(','); return `<text x="${px}" y="${py}" font-size="9" text-anchor="middle" dominant-baseline="central" fill="var(--dom-${x.id})">${SHAPE[x.id]}</text>`; }).join('')}</svg>`;
 }
 
 function render() {
@@ -141,11 +150,13 @@ function render() {
     </div>
 
     <div class="w w-m"><p class="w-title">Aujourd'hui · ${fin} sur ${total}</p>
-      <ul class="w-list">${S.habits.slice(0, 4).map(h => `<li class="${done(h.id) ? 'done' : ''}" data-c="${h.id}"><span class="t"><b>${done(h.id) ? '✓' : ''}</b></span><span>${esc(h.name)}</span></li>`).join('')}</ul></div>
+      <ul class="w-list">${S.habits.slice(0, 4).map(h => `<li class="${done(h.id) ? 'done' : ''}" data-c="${h.id}"><span class="t">${mini(h.domain, { mood: done(h.id) ? 'wink' : 'open' })}</span><span>${esc(h.name)}</span></li>`).join('')}</ul></div>
 
     <div class="two">
-      <div class="w w-ring w-s"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * deg).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/><text x="40" y="46" text-anchor="middle" font-size="20" font-weight="800" fill="currentColor">${fin}/${total}</text></svg></div>
-      <div class="w w-cta w-s"><p class="w-title">À regarder</p><p class="w-name">${inN === m.length ? `Tu es dans ta mesure` : `${m.length - inN} domaine${m.length - inN > 1 ? 's' : ''} à regarder`}</p></div>
+      <div class="w w-ring w-s"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="8"/><circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(C * deg).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 40 40)"/></svg><span class="ring-chick">${chick({ mood: left.length ? 'open' : 'happy', acc: left.length ? [] : ['confetti'], look: [0, 0], deco: true })}</span><small class="ring-txt">${left.length ? `encore ${left.length}` : `tout est fait`}</small></div>
+      <div class="w w-cta w-s"><p class="w-title">À regarder</p>${(() => { const off = m.filter(x => x.p < .4 || x.p > .7).sort((a, b) => Math.abs(b.p - .55) - Math.abs(a.p - .55))[0];
+        return off ? `<p class="w-name">${off.name}</p><small>${off.p < .4 ? 'tu peux y revenir' : 'tu peux lever le pied'}</small><span class="w-chick big">${mini(off.id, { mood: off.p < .4 ? 'closed' : 'wide', flip: off.p > .7 })}</span>`
+                   : `<p class="w-name">Tu es dans ta mesure</p><span class="w-chick big">${chick({ mood: 'happy', look: [0, 0], deco: true })}</span>`; })()}</div>
     </div>
 
     <div class="row"><div class="app"><i></i>Notes</div><div class="app"><i></i>Plans</div><div class="app"><img src="icon.svg" alt=""><span>Metrön</span></div><div class="app"><i></i>Réglages</div></div>`;
@@ -160,6 +171,6 @@ document.addEventListener('click', e => {
 });
 render();
 </script>
-<script src="nav.js?v=20261030143356"></script>
+<script src="nav.js?v=20261102112212"></script>
 </body>
 </html>

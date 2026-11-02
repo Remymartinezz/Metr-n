@@ -931,3 +931,5 @@ html[data-motion="off"] .ob-buddy > i, html[data-motion="off"] .pill .pm, html[d
 .island .isl-dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgb(255 253 242 / .35); position: relative; transition: width 300ms var(--ease), background-color 300ms var(--ease); }
 .island .isl-dots button::after { content: ""; position: absolute; inset: -12px -6px; }
 .island .isl-dots button[aria-selected="true"] { width: 22px; background: var(--brand-yellow); }
+/* Contour gris foncé : l'île reste visible sur un fond sombre comme sur un fond clair */
+.island:not(.isl-off) { box-shadow: 0 0 0 1.5px #4A4540; }

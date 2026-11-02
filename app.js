@@ -273,9 +273,9 @@ function buddyOpts(status, rhythm) {
   return { acc: status && STATUS_ACC[status] ? [STATUS_ACC[status]] : [], mood: status ? r.mood : 'open' };
 }
 function viewBuddy(d) {
-  const picked = includedHabits(d), doms = [...new Set(picked.map(k => k.split(':')[0]))];
-  // Des badges : un petit poussin par domaine où tu as des habitudes
-  const badges = ui.step >= 5 ? `<span class="ob-badges" aria-hidden="true">${ORDER.filter(id => doms.includes(id)).map(id => `<i title="${esc(CAT[id].name)}">${miniChick({ acc: [DOM_ACC[id]], pal: id })}</i>`).join('')}</span>` : ``;
+  // Des badges : un petit poussin par domaine choisi, dès qu'on le touche (aux habitudes : les domaines où il y en a)
+  const doms = ui.step >= 5 ? [...new Set(includedHabits(d).map(k => k.split(':')[0]))] : d.domains;
+  const badges = ui.step >= 3 ? `<span class="ob-badges" aria-hidden="true">${ORDER.filter(id => doms.includes(id)).map(id => `<i title="${esc(CAT[id].name)}">${miniChick({ acc: [DOM_ACC[id]], pal: id })}</i>`).join('')}</span>` : ``;
   return `<span class="ob-buddy" style="--bd:${(RHYTHM_LOOK[d.rhythm] || RHYTHM_LOOK.normal).dur}" aria-hidden="true"><i>${chick({ ...buddyOpts(d.status, ui.step >= 4 ? d.rhythm : 'normal'), look: [0, 0], deco: true })}</i>${badges}</span>`;
 }
 // Une mascotte dans chaque choix, qui fait son geste

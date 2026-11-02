@@ -6,7 +6,7 @@
 
   const PAGES = [
     ['Expérience', [['app.html', 'L’app'], ['widgets.html', 'Widgets'], ['notifications.html', 'Notifications']]],
-    ['Labs', [['mascotte.html', 'Mascotte'], ['identite.html', 'Identité visuelle'], ['lab-themes.html', 'Labo des thèmes'], ['lab-o.html', 'Labo du ö']]],
+    ['Labs', [['mascotte.html', 'Mascotte'], ['identite.html', 'Identité visuelle'], ['lab-themes.html', 'Labo des thèmes'], ['lab-o.html', 'Labo du ö'], ['critique.html', 'Critique · 8 visiteurs']]],
   ];
   const here = location.pathname.split('/').pop() || 'index.html';   // index.html = la tour de contrôle
 

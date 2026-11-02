@@ -205,7 +205,8 @@ function onColor(cssVar) {
   const hex = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return '#FFFDF2';
   const lum = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0);
-  return (1.05 / (lum + .05)) >= ((lum + .05) / .0647) ? '#FFFDF2' : '#2B1D17';   // blanc, ou brun #2B1D17 (luminance ≈ .0147)
+  const white = 1.05 / (lum + .05), brown = (lum + .05) / .0647;          // contraste avec blanc #FFFDF2, avec brun #2B1D17
+  return white >= 4.5 || white >= brown ? '#FFFDF2' : '#2B1D17';        // le blanc s'il est assez lisible, sinon le plus lisible des deux
 }
 
 // Sur un domaine, tout l'écran prend sa couleur : --accent (vive) et --accent-on (texte dessus)
@@ -226,6 +227,7 @@ function render() {
   const screen = $('#screen');
   const phone = $('#phone');
   applyFocusTheme(phone);
+  document.body.classList.toggle('onboarding', !!ui.onboarding);
   renderIsland();
   $('#tabbar').hidden = true;                      // une seule page : le tableau de bord
   if (ui.onboarding) {
@@ -276,7 +278,9 @@ function viewBuddy(d) {
   // Des badges : un petit poussin par domaine choisi, dès qu'on le touche (aux habitudes : les domaines où il y en a)
   const doms = ui.step >= 5 ? [...new Set(includedHabits(d).map(k => k.split(':')[0]))] : d.domains;
   const badges = ui.step >= 3 ? `<span class="ob-badges" aria-hidden="true">${ORDER.filter(id => doms.includes(id)).map(id => `<i title="${esc(CAT[id].name)}">${miniChick({ acc: [DOM_ACC[id]], pal: id })}</i>`).join('')}</span>` : ``;
-  return `<span class="ob-buddy" style="--bd:${(RHYTHM_LOOK[d.rhythm] || RHYTHM_LOOK.normal).dur}" aria-hidden="true"><i>${chick({ ...buddyOpts(d.status, ui.step >= 4 ? d.rhythm : 'normal'), look: [0, 0], deco: true })}</i>${badges}</span>`;
+  const tip = ui.step === 2 && !ui.buddyTipDone ? `<span class="ob-tip" role="note">C’est toi. Il change avec tes réponses.</span>` : ``;
+  if (ui.step > 2) ui.buddyTipDone = true;
+  return `<span class="ob-buddy" style="--bd:${(RHYTHM_LOOK[d.rhythm] || RHYTHM_LOOK.normal).dur}" aria-hidden="true"><i>${chick({ ...buddyOpts(d.status, ui.step >= 4 ? d.rhythm : 'normal'), look: [0, 0], deco: true })}</i>${badges}${tip}</span>`;
 }
 // Une mascotte dans chaque choix, qui fait son geste
 const pillChick = (o, dur = '2.2s') => `<span class="pm" style="--bd:${dur}" aria-hidden="true">${chick({ look: [0, 0], deco: true, ...o })}</span>`;
@@ -723,7 +727,7 @@ function drawRadar(m) {
     ${m.map((x, i) => {
       const hot = x.id === focus, dim = focus && !hot, [a, b] = pt(i, 1), [lx, ly] = pt(i, 1.18);
       return `<line class="axis${hot ? ' hot' : ''}" x1="0" y1="0" x2="${a}" y2="${b}" style="${hot ? `stroke:${col(x.id, 1)}` : ''}"/>
-        <g class="rhit${dim ? ' dim' : ''}${hot ? ' hot' : ''}" data-act="filter" data-v="${hot ? 'all' : x.id}"><circle class="hit" cx="${lx}" cy="${ly}" r="20"/>${radarMini(x.id, lx, ly)}<text x="${lx}" y="${ly}" ${hot ? `style="fill:${col(x.id, 1)}"` : ``}>${esc(x.name)}</text></g>`;
+        <g class="rhit${dim ? ' dim' : ''}${hot ? ' hot' : ''}" data-act="filter" data-v="${hot ? 'all' : x.id}"><circle class="hit" cx="${lx}" cy="${ly}" r="20"/>${radarMini(x.id, lx, ly)}<text x="${lx}" y="${ly}" ${hot ? `style="fill:var(--sl-i, var(--ink));opacity:1"` : ``}>${hot ? '● ' : ''}${esc(x.name)}</text></g>`;
     }).join('')}
     <polygon class="shape${balanced ? ' balanced' : ''}" id="shape"/>
     ${m.map((x, i) => {
@@ -917,8 +921,10 @@ let toastT;
    Quand on coche : elle s'élargit un instant pour fêter. Pas sur iPhone, qui a déjà la sienne.
    ===================================================== */
 const IPHONE = /iPhone|iPod/.test(navigator.userAgent);
+if (window.self !== window.top) document.body.classList.add('in-tour');      // ouverte dans la tour : sa barre suffit pour naviguer
 let islandTimer = 0, islandMsg = null;
 function islandFlash(h) {
+  const live = $('#island-live'); if (live) live.textContent = `C’est fait : ${h.name}`;
   islandMsg = h; ui.islandOpen = false; clearTimeout(islandTimer);
   islandTimer = setTimeout(() => { islandMsg = null; renderIsland(); }, 2200);
 }
@@ -948,6 +954,9 @@ function renderIsland() {
     html = `<button class="isl-hit" data-act="island" aria-label="Ouvrir l’île Metrön"></button>${face}<span class="isl-txt"><b>${nxt ? esc(nxt.name) : 'Tout est fait'}</b></span>${ring}`;
   }
   el.dataset.mode = mode; el.innerHTML = html;
+  // Texte trop long dans l'île repliée : il défile doucement au lieu d'être coupé
+  const b = el.querySelector('.isl-txt b'), box = el.querySelector('.isl-txt');
+  if (mode === 'mini' && b && box && b.scrollWidth > box.clientWidth + 2) { const d = b.scrollWidth - box.clientWidth; b.style.setProperty('--sx', `-${d}px`); b.style.setProperty('--sd', `${Math.max(4, d / 18)}s`); b.classList.add('scroll'); }
 }
 
 function toast(msg, ms = 2400) {

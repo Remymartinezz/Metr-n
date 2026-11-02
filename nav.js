@@ -15,6 +15,7 @@
   .mn-btn i { width: 32px; height: 32px; border-radius: 50%; background: #2D7BB4; overflow: hidden; display: block; flex: none; }
   .mn-btn i svg { width: 100%; height: 100%; display: block; }
   .mn-btn.off { opacity: 0; transform: translateY(16px); pointer-events: none; }
+  body.onboarding .mn-btn { display: none !important; }   /* pas pendant l'accueil : on ne cache pas « Passer » */
   @media (max-width: 640px) { .mn-btn { top: auto; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); } .mn-btn.off { transform: translate(-50%, 16px); } }
   .mn-bg { position: fixed; inset: 0; z-index: 2147483001; background: rgb(0 0 0 / .4); display: flex; justify-content: flex-start; align-items: flex-start; padding: 14px; }
   .mn-bg[hidden] { display: none; }

@@ -933,3 +933,36 @@ html[data-motion="off"] .ob-buddy > i, html[data-motion="off"] .pill .pm, html[d
 .island .isl-dots button[aria-selected="true"] { width: 22px; background: var(--brand-yellow); }
 /* Contour gris foncé : l'île reste visible sur un fond sombre comme sur un fond clair */
 .island:not(.isl-off) { box-shadow: 0 0 0 1.5px #4A4540; }
+
+/* ---------- Critique : corrections ---------- */
+/* Léa : plus de texte pâli par transparence sous le seuil de lisibilité */
+.cta-eyebrow { opacity: .92; }
+.sl .cap-help { opacity: var(--sl-o); }
+.pill small { opacity: var(--obop, 1); }
+.grp { opacity: calc(var(--obop, 1) - .1); }
+/* Yanis : les autres domaines restent lisibles quand l'un est mis en avant ; la carte de domaine éblouit moins dans le noir */
+#radar .rhit.dim, #radar .dot.dim { opacity: .8; }
+/* Tom : zones de toucher plus grandes, sans changer le dessin */
+.info-btn::after { inset: -10px; }
+/* Inès : les cartes grandissent avec le texte en mode accessibilité ; annonce discrète de l'île */
+html[data-text="1"] .slide-card, html[data-text="2"] .slide-card { height: auto; }
+html[data-text="1"] .carousel, html[data-text="2"] .carousel { align-items: start; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* Emma : la bulle « c'est toi » */
+.ob-buddy { position: relative; }
+.ob-tip { position: absolute; left: 0; top: calc(100% + 8px); z-index: 5; width: max-content; max-width: 220px; background: var(--obink, #2B1D17); color: var(--obbg, #fff); font-size: 13px; font-weight: 600; line-height: 1.3; padding: 8px 12px; border-radius: 14px; animation: badge-in 420ms var(--ease) both; }
+.ob-tip::before { content: ""; position: absolute; left: 16px; top: -6px; border: 6px solid transparent; border-top: 0; border-bottom-color: var(--obink, #2B1D17); }
+/* Dubois : dans la tour, pas de navigation en double ; l'île ne cache plus l'heure et son texte défile s'il est long */
+body.in-tour .stage-tools .pages-part { display: none; }
+.island[data-mode="mini"] { max-width: calc(100% - 160px); }
+.island[data-mode="mini"] .isl-txt { overflow: hidden; }
+.island[data-mode="mini"] .isl-txt b { max-width: none; width: max-content; justify-self: start; overflow: visible; text-overflow: clip; display: inline-block; }
+.island .isl-txt b.scroll { animation: isl-scroll var(--sd, 6s) linear infinite; }
+@keyframes isl-scroll { 0%, 15% { transform: none; } 85%, 100% { transform: translateX(var(--sx)); } }
+@media (prefers-reduced-motion: reduce) { .island .isl-txt b.scroll { animation: none; } }
+html[data-motion="off"] .island .isl-txt b.scroll { animation: none !important; }
+/* Carte de domaine (couleur vive) : textes à pleine opacité pour rester lisibles */
+.cta-domain .cta-sub, .cta-domain .cta-eyebrow, .cta-domain .cta-link { opacity: 1; }
+.sl svg text.c-tag { opacity: 1; }
+.sl #radar .rhit text { opacity: 1; }
+.sl #radar .rhit text { fill: currentColor; }        /* noms des domaines : l'encre de la carte, pas le gris */

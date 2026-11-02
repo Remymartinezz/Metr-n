@@ -13,16 +13,17 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Metrön">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261102115204">
+<link rel="stylesheet" href="tokens.css?v=20261102120306">
 <title>Metrön</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261102115204">
+<link rel="stylesheet" href="style.css?v=20261102120306">
 </head>
 <body>
 <div class="phone" id="phone">
-  <div class="island" id="island" role="status" aria-live="polite"></div>
+  <div class="island" id="island"></div>
+  <div class="sr-only" id="island-live" aria-live="polite"></div>
   <div class="statusbar"><span id="clock">9:41</span><span class="sb-right">●●● ▮</span></div>
 
   <div class="screen" id="screen"></div>
@@ -39,15 +40,15 @@
   <button data-act="demo-onboarding">↺ Tout réinitialiser<small>Efface tout et rejoue le questionnaire d'accueil</small></button>
   <button data-act="demo-month">⏩ Après 1 mois<small>Remplit un mois d'historique pour voir la vraie courbe</small></button>
   <button data-act="demo-reset">↺ Tableau de bord vierge<small>Efface tout et revient sur le tracker de départ</small></button>
-  <p>Pages</p>
-  <a class="page-link" href="widgets.html">Widgets<small>Aperçu des widgets d'écran d'accueil</small></a>
-  <a class="page-link" href="mascotte.html">Mascotte<small>Le poussin, ses accessoires et ses humeurs</small></a>
-  <a class="page-link" href="identite.html">Identité visuelle<small>Signe, mot, couleurs, typo</small></a>
-  <a class="page-link" href="lab-o.html">Labo du ö<small>Régler les deux points du ö</small></a>
+  <p class="pages-part">Pages</p>
+  <a class="page-link pages-part" href="widgets.html">Widgets<small>Aperçu des widgets d'écran d'accueil</small></a>
+  <a class="page-link pages-part" href="mascotte.html">Mascotte<small>Le poussin, ses accessoires et ses humeurs</small></a>
+  <a class="page-link pages-part" href="identite.html">Identité visuelle<small>Signe, mot, couleurs, typo</small></a>
+  <a class="page-link pages-part" href="lab-o.html">Labo du ö<small>Régler les deux points du ö</small></a>
 </aside>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
-<script src="mascot.js?v=20261102115204"></script>
-<script src="app.js?v=20261102115204"></script>
-<script src="nav.js?v=20261102115204"></script>
+<script src="mascot.js?v=20261102120306"></script>
+<script src="app.js?v=20261102120306"></script>
+<script src="nav.js?v=20261102120306"></script>
 </body>
 </html>

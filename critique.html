@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Metrön · Critique</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="tokens.css?v=20261102115204">
+<link rel="stylesheet" href="tokens.css?v=20261102120306">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
@@ -47,10 +47,10 @@
     <thead><tr><th>Priorité</th><th>Problème</th><th>Correction proposée</th></tr></thead>
     <tbody id="todo"></tbody>
   </table>
-  <p class="note">Rien n'est encore modifié dans l'app : dis-moi lesquelles tu veux, je les fais et je les teste. Faux positif écarté : la bulle d'aide du radar (cachée tant qu'on ne touche pas « ? ») ressortait à 1:1 dans la mesure automatique.</p>
+  <p class="note">Six visiteurs sur huit sont réglés et vérifiés : après les corrections, le passage automatique ne trouve plus aucun texte sous le seuil de lisibilité sur les 21 écrans, dans les trois thèmes. Noah et Sarah sont laissés de côté (projet étudiant). Faux positif écarté : la bulle d'aide du radar (cachée tant qu'on ne touche pas « ? ») ressortait à 1:1 dans la mesure automatique.</p>
 </main>
 
-<script src="mascot.js?v=20261102115204"></script>
+<script src="mascot.js?v=20261102120306"></script>
 <script>
 const P = [
   { n: 'Léa, 17 ans', w: 'Étudiante, regarde l’app dehors, au soleil', sl: 'start', o: { acc: ['soleil'], pal: 'social' }, prio: 1,
@@ -59,7 +59,7 @@ const P = [
   { n: 'Yanis, 19 ans', w: 'Apprenti, ouvre l’app au lit, en Sombre', sl: 'curve', o: { acc: ['bonnet'], pal: 'sommeil', mood: 'closed' }, prio: 1,
     pb: 'Sur un domaine mis en avant, en Sombre et Ultra-sombre, son nom sur le radar devient presque invisible : « Sommeil » 1,4:1 (bleu nuit sur fond nuit), « Sport » 2,1:1. Les autres noms, volontairement atténués, tombent à 2,5:1. Et la grande carte vermillon éblouit dans le noir.',
     fix: 'Une version « sombre » de chaque couleur vive de domaine (plus claire, moins saturée) ; atténuer les autres domaines à 60 % au lieu de 38 %.' },
-  { n: 'Noah, 22 ans', w: 'Jeune actif, daltonien (rouge-vert)', sl: 'balance', o: { acc: ['lunettes'], pal: 'repos' }, prio: 2,
+  { keep: true, n: 'Noah, 22 ans', w: 'Jeune actif, daltonien (rouge-vert)', sl: 'balance', o: { acc: ['lunettes'], pal: 'repos' }, prio: 2,
     pb: 'Sport (rouge) et Repos (vert) se confondent. Les formes ● ▲ ◆ existent dans les listes, mais pas sur les points du radar ni sur l’anneau de Répartition ; la zone « dans ta mesure » jaune et le « au-dessus » doré se ressemblent aussi.',
     fix: 'Mettre la forme du domaine partout où il y a une couleur (points du radar, segments de l’anneau) ; ajouter un motif rayé au « au-dessus ».' },
   { n: 'Tom, 18 ans', w: 'Étudiant, coche dans le bus, avec le pouce', sl: 'today', o: { acc: ['course'], pal: 'sport', mood: 'happy' }, prio: 1,
@@ -68,7 +68,7 @@ const P = [
   { n: 'Inès, 20 ans', w: 'Malvoyante, texte « très grand » + lecteur d’écran', sl: 'week', o: { acc: ['livre'], pal: 'etudes', mood: 'focus' }, prio: 1,
     pb: 'L’île Metrön est annoncée à voix haute à chaque rafraîchissement de l’écran (elle est « en direct » en permanence) : le lecteur d’écran répète l’habitude sans arrêt. En texte très grand, les cartes du carrousel ont une hauteur fixe et coupent le texte.',
     fix: 'N’annoncer l’île que quand on coche (« C’est fait : … ») ; laisser les cartes grandir avec le texte en mode accessibilité.' },
-  { n: 'Sarah, 21 ans', w: 'Apprentie en période d’examens, stressée', sl: 'focus', o: { acc: ['ampoule'], pal: 'projets', mood: 'wide' }, prio: 2,
+  { keep: true, n: 'Sarah, 21 ans', w: 'Apprentie en période d’examens, stressée', sl: 'focus', o: { acc: ['ampoule'], pal: 'projets', mood: 'wide' }, prio: 2,
     pb: 'Trop d’éléments bougent en même temps : poussins qui sautent, île, carrousel, yeux qui suivent. Pour quelqu’un déjà sous pression, ça agite plus que ça ne calme. L’astuce « reste appuyé pour la durée réelle » n’est écrite nulle part avant d’ouvrir une habitude.',
     fix: 'En rythme « Chargé », calmer l’app (moins d’animations par défaut, pas l’inverse) ; un petit indice « appuie longtemps » la première fois dans le tracker.' },
   { n: 'Emma, 16 ans', w: 'Découvre Metrön, premier lancement', sl: 'share', o: { acc: ['boite'], mood: 'wide' }, prio: 2,
@@ -80,11 +80,11 @@ const P = [
 ];
 document.getElementById('grid').innerHTML = P.map(x => `<article class="p" style="--sl:var(--sl-${x.sl});--sl-i:var(--sl-${x.sl}-ink);--sl-o:var(--sl-${x.sl}-op)">
   <header><span class="av">${chick({ ...x.o, look: [0, 0], deco: true })}</span><div><h3>${x.n}</h3><span class="who">${x.w}</span></div></header>
-  <span class="tag">Priorité ${x.prio}</span>
+  <span class="tag">${x.keep ? 'Laissé tel quel (projet étudiant)' : 'Corrigé ✓'} · priorité ${x.prio}</span>
   <span class="k">Son problème</span><p>${x.pb}</p>
   <div class="fix"><span class="k">Comment le résoudre</span><p>${x.fix}</p></div></article>`).join('');
 document.getElementById('todo').innerHTML = [...P].sort((a, b) => a.prio - b.prio).map(x => `<tr><td class="num">${x.prio} · <b>${x.n.split(',')[0]}</b></td><td>${x.pb}</td><td>${x.fix}</td></tr>`).join('');
 </script>
-<script src="nav.js?v=20261102115204"></script>
+<script src="nav.js?v=20261102120306"></script>
 </body>
 </html>

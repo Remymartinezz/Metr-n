@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105102914">
+<link rel="stylesheet" href="tokens.css?v=20261105103148">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -56,7 +56,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105102914"></script>
+<script src="mascot.js?v=20261105103148"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -94,7 +94,10 @@ const KEY = 'metron.questionnaire', QUEUE = 'metron.questionnaire.queue';
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
 const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
-let st = load(KEY, null) || { id: uid(), step: -1, a: {}, started: Date.now() };   // step -1 : accueil ; Q.length : fin
+const fresh = () => ({ id: uid(), step: -1, a: {}, started: Date.now() });   // step -1 : accueil ; Q.length : fin
+let st = load(KEY, null) || fresh();
+// Déjà répondu et bien envoyé : en rouvrant le lien, on repart sur un questionnaire neuf (autre personne, ou nouveau test)
+if (st.done && !load(QUEUE, []).length) st = fresh();
 const save = () => store(KEY, st);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = s => document.querySelector(s);
@@ -172,7 +175,8 @@ function renderEnd() {
   $('#app').innerHTML = `<div class="body center"><div class="hero">${chick({ mood: 'happy', acc: ['confetti', 'fete'], look: [0, 0], deco: true })}</div>
     <h1>Merci !</h1><p class="sub">Tes réponses nous aident à faire de Metrön une app qui ne met pas la pression.</p>
     <p class="status" role="status">${!pending ? 'Réponses bien enregistrées ✓' : !ENDPOINT ? 'Mode test : réponses gardées sur cet appareil (le tableau n’est pas encore branché).' : 'Envoi en cours… si tu n’as pas de réseau, elles partiront à ta prochaine visite.'}</p>
-    ${pending && ENDPOINT ? `<button class="link" data-go="retry" style="border:0">Réessayer maintenant</button>` : ''}</div>`;
+    ${pending && ENDPOINT ? `<button class="link" data-go="retry" style="border:0">Réessayer maintenant</button>` : ''}
+    <button class="skip" data-go="again">Répondre à nouveau (autre personne)</button></div>`;
 }
 
 document.addEventListener('click', e => {
@@ -181,6 +185,7 @@ document.addEventListener('click', e => {
   if (b.dataset.go === 'start') { st.step = 0; }
   else if (b.dataset.go === 'back') { st.step = Math.max(-1, st.step - 1); }
   else if (b.dataset.go === 'retry') { flush().then(() => render()); return; }
+  else if (b.dataset.go === 'again') { st = fresh(); }                    // les réponses déjà envoyées (ou en attente) ne sont pas touchées
   else if (b.dataset.go === 'next') { if (st.step === vis.length - 1) return submit(); st.step++; }
   else if (b.dataset.opt !== undefined && q) {
     const o = b.dataset.opt;

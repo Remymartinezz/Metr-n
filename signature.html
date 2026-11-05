@@ -38,9 +38,9 @@
 <script>
 /* Une signature « corporate » : tableau et styles en ligne (lisible dans toutes les messageries), un rappel discret de la marque */
 const PEOPLE = [
-  { name: 'L’équipe Metrön', role: 'Rémy Martinez & Florian Cretegny · Co-fondateurs', team: true },
-  { name: 'Rémy Martinez', role: 'Co-fondateur · Design et développement' },
-  { name: 'Florian Cretegny', role: 'Co-fondateur · Design et développement' },
+  { name: 'L’équipe Metrön', role: 'Rémy Martinez & Florian Cretegny · Co-fondateurs', team: true, mail: ['remy.martinez@eduvaud.ch', 'florian.cretegny@eduvaud.ch'] },
+  { name: 'Rémy Martinez', role: 'Co-fondateur · Design et développement', mail: ['remy.martinez@eduvaud.ch'] },
+  { name: 'Florian Cretegny', role: 'Co-fondateur · Design et développement', mail: ['florian.cretegny@eduvaud.ch'] },
 ];
 const F = "'Helvetica Neue',Helvetica,Arial,sans-serif";
 const sig = p => `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${F};color:#1F2430;">
@@ -51,6 +51,7 @@ const sig = p => `<table cellpadding="0" cellspacing="0" border="0" style="borde
       <p style="margin:2px 0 0;font-size:13px;line-height:18px;color:#5B6170;">${p.role}</p>
       <p style="margin:10px 0 0;font-size:13px;line-height:18px;color:#1F2430;">${p.team ? `L'app qui t'aide à trouver ta juste mesure` : `<b style="color:#2D7BB4;">Metrön</b> · L'app qui t'aide à trouver ta juste mesure`}</p>
       <p style="margin:2px 0 0;font-size:13px;line-height:18px;color:#5B6170;">Projet de la filière médiamatique · CPNV</p>
+      <p style="margin:6px 0 0;font-size:13px;line-height:18px;">${p.mail.map(m => `<a href="mailto:${m}" style="color:#2D7BB4;text-decoration:none;font-weight:700;">${m}</a>`).join('<span style="color:#9AA0AC;"> · </span>')}</p>
     </td>
   </tr>
 </table>`;

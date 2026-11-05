@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metrön · Questionnaire</title>
+<meta name="theme-color" content="#2D7BB4">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="tokens.css?v=20261105102025">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--qbg, var(--ob-1)); color: var(--qink, var(--ob-1-ink)); font: 17px/1.45 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; transition: background-color 500ms var(--ease), color 500ms var(--ease); }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+  .wrap { max-width: 560px; min-height: 100%; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; gap: 12px; height: 48px; }
+  .back { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgb(255 255 255 / .55); font-size: 22px; flex: none; }
+  .back[disabled] { visibility: hidden; }
+  .bar { flex: 1; height: 6px; border-radius: 6px; background: rgb(0 0 0 / .1); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: currentColor; border-radius: 6px; transition: width 500ms var(--ease); }
+  .buddy { width: 46px; flex: none; } .buddy svg { width: 100%; height: auto; display: block; }
+  .body { flex: 1; padding-top: 28px; animation: in 450ms var(--ease) both; }
+  @keyframes in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  .num { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; opacity: .8; margin: 0; }
+  h1 { font-size: clamp(26px, 6.5vw, 34px); line-height: 1.12; letter-spacing: -.025em; margin: 8px 0 0; font-weight: 700; }
+  .sub { margin: 10px 0 0; font-size: 16px; }
+  .opts { display: grid; gap: 10px; margin-top: 24px; }
+  .opt { text-align: left; border: 0; border-radius: 20px; padding: 16px 18px; min-height: 56px; background: rgb(255 255 255 / .6); font-weight: 600; display: flex; align-items: center; gap: 12px; transition: background-color 250ms var(--ease), transform 200ms var(--ease); }
+  .opt:active { transform: scale(.98); }
+  .opt .box { width: 24px; height: 24px; flex: none; border-radius: 50%; border: 2.5px solid currentColor; display: grid; place-items: center; font-size: 14px; font-weight: 800; }
+  .opt.multi .box { border-radius: 7px; }
+  .opt[aria-pressed="true"] { background: var(--qink); color: var(--qbg); }
+  .opt[aria-pressed="true"] .box { background: var(--qbg); color: var(--qink); border-color: var(--qbg); }
+  .opt[disabled] { opacity: .45; }
+  .scale { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 6px; margin-top: 28px; }
+  .scale button { border: 0; border-radius: 16px; min-height: 56px; background: rgb(255 255 255 / .6); font-weight: 800; font-size: 18px; }
+  .scale button[aria-pressed="true"] { background: var(--qink); color: var(--qbg); }
+  .scale.nps button { font-size: 15px; min-height: 48px; border-radius: 12px; }
+  .ends { display: flex; justify-content: space-between; gap: 16px; margin-top: 10px; font-size: 14px; font-weight: 600; }
+  .ends span:last-child { text-align: right; }
+  textarea { width: 100%; min-height: 140px; margin-top: 24px; border: 0; border-radius: 20px; padding: 16px; font: inherit; background: rgb(255 255 255 / .7); color: #2B1D17; resize: vertical; }
+  .count { text-align: center; font-size: 14px; font-weight: 600; min-height: 20px; margin: 18px 0 10px; }
+  .cta { width: 100%; border: 0; border-radius: 20px; min-height: 60px; background: var(--qink); color: var(--qbg); font-weight: 750; font-size: 18px; }
+  .cta[disabled] { opacity: .35; }
+  .skip { display: block; margin: 12px auto 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; font-weight: 600; min-height: 44px; }
+  .hero { width: 170px; margin: 30px auto 6px; } .hero svg { width: 100%; height: auto; display: block; }
+  .link { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 18px; border-radius: 16px; background: rgb(255 255 255 / .6); color: inherit; font-weight: 700; text-decoration: none; }
+  .center { text-align: center; }
+  .status { margin-top: 18px; font-size: 15px; font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .body { animation: none; } body { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script src="mascot.js?v=20261105102025"></script>
+<script>
+/* =====================================================
+   Questionnaire Metrön (quantitatif, 30 réponses visées)
+   Les réponses partent dans un Google Sheets (via un petit script Google, voir outils/questionnaire-google-sheets.gs).
+   Elles restent gardées sur l'appareil tant que l'envoi n'est pas confirmé, et repartent toutes seules.
+   ===================================================== */
+const ENDPOINT = '';              // ← l'adresse « /exec » du script Google, une fois déployé
+const VERSION = 'v1';
+const MAQUETTE = 'https://remymartinezz.github.io/Metr-n/app.html';
+const DOMS = ['Études / travail', 'Sommeil', 'Sport', 'Social', 'Repos', 'Projets', 'Écrans'];
+const AGREE = ['Pas du tout d’accord', 'Tout à fait d’accord'];
+
+// Chaque question : id (= colonne du tableau), type, texte, choix. Les couleurs suivent les pages de l'accueil.
+const Q = [
+  { id: 'statut', t: 'one', q: 'Tu es…', o: ['Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre'], c: '3', acc: 'toque' },
+  { id: 'age', t: 'one', q: 'Ton âge', o: ['Moins de 16 ans', '16–18 ans', '19–21 ans', '22–25 ans', 'Plus de 25 ans'], c: '3' },
+  { id: 'maquette_testee', t: 'one', q: 'As-tu essayé la maquette avant de répondre ?', s: 'Pas grave si non, réponds quand même.', o: ['Oui', 'Non'], c: '3', acc: 'loupe' },
+  { id: 'equilibre_actuel', t: 'scale', q: 'En ce moment, ta vie te semble…', ends: ['Très déséquilibrée', 'Très équilibrée'], c: '4' },
+  { id: 'domaines_trop', t: 'multi', q: 'Quels domaines te prennent trop de place ?', s: 'Plusieurs choix possibles.', o: [...DOMS, 'Aucun'], none: 'Aucun', c: '4' },
+  { id: 'domaines_manque', t: 'multi', q: 'Quels domaines manquent de place ?', s: 'Plusieurs choix possibles.', o: [...DOMS, 'Aucun'], none: 'Aucun', c: '4' },
+  { id: 'utile_visualiser', t: 'scale', q: 'Voir ton équilibre entre ces domaines te serait utile.', ends: AGREE, c: 'r', acc: 'lunettes' },
+  { id: 'score_pression', t: 'scale', q: 'Un score ou un graphique d’équilibre me mettrait la pression.', ends: AGREE, c: 'r' },
+  { id: 'domaine_manquant', t: 'one', q: 'Il manque un domaine important. Lequel ?', o: ['Famille', 'Alimentation', 'Santé', 'Argent', 'Trajets', 'Spiritualité', 'Aucun', 'Autre'], c: 'r' },
+  { id: 'fonctions_utiles', t: 'multi', max: 3, q: 'Les 3 fonctions qui te seraient le plus utiles', s: '3 choix maximum.', o: ['Cocher ses habitudes', 'Rappels doux', 'Statistiques', 'Objectifs', 'Journal', 'Exercices de pause / respiration', 'Conseils et contenus', 'Widgets'], c: 'r', acc: 'ampoule' },
+  { id: 'reaction_epuisement', t: 'one', q: 'Si l’app remarquait que tu es souvent épuisé·e ou en grand déséquilibre, tu voudrais qu’elle…', o: ['Ne dise rien', 'Te propose une pause', 'Te propose de parler à quelqu’un de confiance', 'Te donne des contacts d’aide (ligne d’écoute, infirmerie)'], c: '5', acc: 'the' },
+  { id: 'culpabilite', t: 'scale', q: 'Une app comme celle-ci pourrait me faire culpabiliser si je ne coche pas tout.', ends: AGREE, c: '5' },
+  { id: 'maquette_facile', t: 'scale', q: 'La maquette est facile à comprendre.', ends: AGREE, c: '2', if: a => a.maquette_testee === 'Oui' },
+  { id: 'moins_clair', t: 'one', q: 'Ce qui t’a semblé le moins clair', o: ['Le radar Équilibre', 'La « zone jaune » / ma mesure', 'Le questionnaire d’accueil', 'Le tracker', 'La mascotte', 'Rien'], c: '2', if: a => a.maquette_testee === 'Oui' },
+  { id: 'frequence', t: 'one', q: 'À quelle fréquence l’ouvrirais-tu ?', o: ['Plusieurs fois par jour', 'Une fois par jour', 'Quelques fois par semaine', 'Rarement', 'Jamais'], c: '2' },
+  { id: 'recommandation', t: 'nps', q: 'Tu la recommanderais à un·e ami·e ?', ends: ['Pas du tout', 'Sans hésiter'], c: '2', acc: 'coeur' },
+  { id: 'une_chose', t: 'text', q: 'Si tu ne devais changer qu’une chose, ce serait quoi ?', s: 'Facultatif.', c: '2', optional: true },
+];
+
+const KEY = 'metron.questionnaire', QUEUE = 'metron.questionnaire.queue';
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+let st = load(KEY, null) || { id: uid(), step: -1, a: {}, started: Date.now() };   // step -1 : accueil ; Q.length : fin
+const save = () => store(KEY, st);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = s => document.querySelector(s);
+
+const visible = () => Q.filter(q => !q.if || q.if(st.a));
+function setColors(c) {
+  const r = document.documentElement.style;
+  r.setProperty('--qbg', `var(--ob-${c})`); r.setProperty('--qink', `var(--ob-${c}-ink)`);
+}
+const answered = q => { const v = st.a[q.id]; return q.optional || (Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ''); };
+
+function render() {
+  const vis = visible(), app = $('#app');
+  if (st.step < 0) {                                   // accueil
+    setColors('1');
+    app.innerHTML = `<div class="body center"><div class="hero">${chick({ mood: 'happy', look: [0, 0], deco: true })}</div>
+      <h1>Ton avis sur Metrön</h1>
+      <p class="sub">Metrön aide à trouver l’équilibre entre études ou travail, sommeil, sport, social, repos et projets. Prends 2 minutes pour essayer la maquette, puis réponds. C’est anonyme, environ 4 minutes.</p>
+      <a class="link" href="${MAQUETTE}" target="_blank" rel="noopener">Essayer la maquette ↗</a></div>
+      <button class="cta" data-go="start">Commencer</button>`;
+    return;
+  }
+  if (st.done || st.step >= vis.length) return renderEnd();
+  const q = vis[st.step], i = st.step, v = st.a[q.id];
+  setColors(q.c);
+  let body = '';
+  if (q.t === 'one' || q.t === 'multi') {
+    const multi = q.t === 'multi', sel = multi ? (v || []) : v, full = multi && q.max && sel.length >= q.max;
+    body = `<div class="opts">${q.o.map(o => { const on = multi ? sel.includes(o) : sel === o;
+      return `<button class="opt${multi ? ' multi' : ''}" data-opt="${esc(o)}" aria-pressed="${on}" ${full && !on ? 'disabled' : ''}><span class="box" aria-hidden="true">${on ? '✓' : ''}</span>${esc(o)}</button>`; }).join('')}</div>`;
+  } else if (q.t === 'scale' || q.t === 'nps') {
+    const vals = q.t === 'nps' ? [...Array(11).keys()] : [1, 2, 3, 4, 5];
+    body = `<div class="scale${q.t === 'nps' ? ' nps' : ''}" style="--n:${q.t === 'nps' ? 6 : 5}" role="radiogroup">${vals.map(n => `<button role="radio" data-val="${n}" aria-pressed="${v === n}" aria-checked="${v === n}">${n}</button>`).join('')}</div>
+      <div class="ends"><span>${q.t === 'nps' ? '0 · ' : '1 · '}${q.ends[0]}</span><span>${q.ends[1]}${q.t === 'nps' ? ' · 10' : ' · 5'}</span></div>`;
+  } else if (q.t === 'text') {
+    body = `<textarea id="txt" maxlength="600" placeholder="Écris ici…">${esc(v || '')}</textarea>`;
+  }
+  const last = i === vis.length - 1;
+  app.innerHTML = `<div class="top"><button class="back" data-go="back" aria-label="Question précédente">‹</button>
+      <span class="buddy" aria-hidden="true">${chick({ acc: q.acc ? [q.acc] : [], look: [0, 0], deco: true, mood: 'open' })}</span>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${vis.length}" aria-valuenow="${i + 1}"><i style="width:${((i + 1) / vis.length) * 100}%"></i></div></div>
+    <div class="body"><p class="num">Question ${i + 1} sur ${vis.length}</p><h1>${esc(q.q)}</h1>${q.s ? `<p class="sub">${esc(q.s)}</p>` : ''}${body}</div>
+    <p class="count">${q.t === 'multi' ? `${(v || []).length} choisi${(v || []).length > 1 ? 's' : ''}${q.max ? ` sur ${q.max} max.` : ''}` : ''}</p>
+    <button class="cta" data-go="next" ${answered(q) ? '' : 'disabled'}>${last ? 'Envoyer mes réponses' : 'Continuer'}</button>`;
+  const ta = $('#txt'); if (ta) ta.addEventListener('input', () => { st.a[q.id] = ta.value; save(); });
+}
+
+/* ---------- Envoi : jamais de perte. La réponse attend dans une file tant que le tableau ne l'a pas confirmée ---------- */
+function payload() {
+  const row = { id: st.id, version: VERSION, envoye_le: new Date().toISOString(), duree_s: Math.round((Date.now() - st.started) / 1000) };
+  Q.forEach(q => { const v = st.a[q.id]; row[q.id] = Array.isArray(v) ? v.join(' ; ') : (v ?? ''); });
+  return row;
+}
+async function flush() {
+  const queue = load(QUEUE, []); if (!queue.length) return true;
+  if (!ENDPOINT) return false;
+  const left = [];
+  for (const row of queue) {
+    try {
+      const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(row), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) left.push(row);
+    } catch (e) { left.push(row); }
+  }
+  store(QUEUE, left); return left.length === 0;
+}
+async function submit() {
+  const queue = load(QUEUE, []); queue.push(payload()); store(QUEUE, queue);
+  st.done = true; st.step = visible().length; save(); render();
+  const ok = await flush(); st.sent = ok; save(); render();
+}
+function renderEnd() {
+  setColors('gen');
+  const pending = load(QUEUE, []).length;
+  $('#app').innerHTML = `<div class="body center"><div class="hero">${chick({ mood: 'happy', acc: ['confetti', 'fete'], look: [0, 0], deco: true })}</div>
+    <h1>Merci !</h1><p class="sub">Tes réponses nous aident à faire de Metrön une app qui ne met pas la pression.</p>
+    <p class="status" role="status">${!pending ? 'Réponses bien enregistrées ✓' : !ENDPOINT ? 'Mode test : réponses gardées sur cet appareil (le tableau n’est pas encore branché).' : 'Envoi en cours… si tu n’as pas de réseau, elles partiront à ta prochaine visite.'}</p>
+    ${pending && ENDPOINT ? `<button class="link" data-go="retry" style="border:0">Réessayer maintenant</button>` : ''}</div>`;
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const vis = visible(), q = vis[st.step];
+  if (b.dataset.go === 'start') { st.step = 0; }
+  else if (b.dataset.go === 'back') { st.step = Math.max(-1, st.step - 1); }
+  else if (b.dataset.go === 'retry') { flush().then(() => render()); return; }
+  else if (b.dataset.go === 'next') { if (st.step === vis.length - 1) return submit(); st.step++; }
+  else if (b.dataset.opt !== undefined && q) {
+    const o = b.dataset.opt;
+    if (q.t === 'one') { st.a[q.id] = o; save(); render(); setTimeout(() => { if (st.step < visible().length - 1) { st.step++; save(); render(); } }, 260); return; }
+    let sel = st.a[q.id] || [];
+    sel = sel.includes(o) ? sel.filter(x => x !== o) : (o === q.none ? [o] : [...sel.filter(x => x !== q.none), o]);
+    if (q.max) sel = sel.slice(0, q.max);
+    st.a[q.id] = sel;
+  }
+  else if (b.dataset.val !== undefined && q) { st.a[q.id] = +b.dataset.val; save(); render(); setTimeout(() => { if (st.step < visible().length - 1) { st.step++; save(); render(); } }, 260); return; }
+  save(); render(); window.scrollTo(0, 0);
+});
+// Une ancienne réponse en attente ? On la renvoie au chargement et quand le réseau revient.
+flush().then(ok => { if (st.done && ok && !st.sent) { st.sent = true; save(); render(); } });
+addEventListener('online', () => flush().then(() => st.done && render()));
+render();
+</script>
+</body>
+</html>

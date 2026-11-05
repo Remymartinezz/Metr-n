@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105111952">
+<link rel="stylesheet" href="tokens.css?v=20261105112249">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -57,7 +57,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105111952"></script>
+<script src="mascot.js?v=20261105112249"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -144,7 +144,7 @@ function render() {
     setColors('1');
     app.innerHTML = `<div class="body center${enter ? ' enter' : ''}"><div class="hero">${chick({ mood: 'happy', look: [0, 0], deco: true })}</div>
       <h1>Ton avis sur Metrön</h1>
-      <p class="sub">Metrön aide à trouver l’équilibre entre études ou travail, sommeil, sport, social, repos et projets. Prends 2 minutes pour essayer la maquette, puis réponds. C’est anonyme, environ 4 minutes.</p>
+      <p class="sub">Metrön aide à trouver l’équilibre entre études ou travail, sommeil, sport, social, repos et projets. Prends 2 minutes pour essayer la maquette, puis réponds. C’est anonyme : 4 minutes maintenant, pour une app qui t’en fera gagner bien plus.</p>
       <a class="link" href="${MAQUETTE}" target="_blank" rel="noopener">Essayer la maquette ↗</a></div>
       <button class="cta" data-go="start">Commencer</button>`;
     return;

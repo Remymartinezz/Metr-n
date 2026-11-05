@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105103148">
+<link rel="stylesheet" href="tokens.css?v=20261105103934">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -22,7 +22,8 @@
   .bar { flex: 1; height: 6px; border-radius: 6px; background: rgb(0 0 0 / .1); overflow: hidden; }
   .bar i { display: block; height: 100%; background: currentColor; border-radius: 6px; transition: width 500ms var(--ease); }
   .buddy { width: 46px; flex: none; } .buddy svg { width: 100%; height: auto; display: block; }
-  .body { flex: 1; padding-top: 28px; animation: in 450ms var(--ease) both; }
+  .body { flex: 1; padding-top: 28px; }
+  .body.enter { animation: in 450ms var(--ease) both; }
   @keyframes in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
   .num { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; opacity: .8; margin: 0; }
   h1 { font-size: clamp(26px, 6.5vw, 34px); line-height: 1.12; letter-spacing: -.025em; margin: 8px 0 0; font-weight: 700; }
@@ -56,7 +57,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105103148"></script>
+<script src="mascot.js?v=20261105103934"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -109,11 +110,13 @@ function setColors(c) {
 }
 const answered = q => { const v = st.a[q.id]; return q.optional || (Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ''); };
 
+let lastStep = null;
 function render() {
   const vis = visible(), app = $('#app');
+  const enter = lastStep !== st.step; lastStep = st.step;            // nouvelle question : elle glisse ; simple clic : rien ne bouge
   if (st.step < 0) {                                   // accueil
     setColors('1');
-    app.innerHTML = `<div class="body center"><div class="hero">${chick({ mood: 'happy', look: [0, 0], deco: true })}</div>
+    app.innerHTML = `<div class="body center${enter ? ' enter' : ''}"><div class="hero">${chick({ mood: 'happy', look: [0, 0], deco: true })}</div>
       <h1>Ton avis sur Metrön</h1>
       <p class="sub">Metrön aide à trouver l’équilibre entre études ou travail, sommeil, sport, social, repos et projets. Prends 2 minutes pour essayer la maquette, puis réponds. C’est anonyme, environ 4 minutes.</p>
       <a class="link" href="${MAQUETTE}" target="_blank" rel="noopener">Essayer la maquette ↗</a></div>
@@ -139,7 +142,7 @@ function render() {
   app.innerHTML = `<div class="top"><button class="back" data-go="back" aria-label="Question précédente">‹</button>
       <span class="buddy" aria-hidden="true">${chick({ acc: q.acc ? [q.acc] : [], look: [0, 0], deco: true, mood: 'open' })}</span>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${vis.length}" aria-valuenow="${i + 1}"><i style="width:${((i + 1) / vis.length) * 100}%"></i></div></div>
-    <div class="body"><p class="num">Question ${i + 1} sur ${vis.length}</p><h1>${esc(q.q)}</h1>${q.s ? `<p class="sub">${esc(q.s)}</p>` : ''}${body}</div>
+    <div class="body${enter ? ' enter' : ''}"><p class="num">Question ${i + 1} sur ${vis.length}</p><h1>${esc(q.q)}</h1>${q.s ? `<p class="sub">${esc(q.s)}</p>` : ''}${body}</div>
     <p class="count">${q.t === 'multi' ? `${(v || []).length} choisi${(v || []).length > 1 ? 's' : ''}${q.max ? ` sur ${q.max} max.` : ''}` : ''}</p>
     <button class="cta" data-go="next" ${answered(q) ? '' : 'disabled'}>${last ? 'Envoyer mes réponses' : 'Continuer'}</button>`;
   const ta = $('#txt'); if (ta) ta.addEventListener('input', () => { st.a[q.id] = ta.value; save(); });
@@ -189,14 +192,15 @@ document.addEventListener('click', e => {
   else if (b.dataset.go === 'next') { if (st.step === vis.length - 1) return submit(); st.step++; }
   else if (b.dataset.opt !== undefined && q) {
     const o = b.dataset.opt;
-    if (q.t === 'one') { st.a[q.id] = o; save(); render(); setTimeout(() => { if (st.step < visible().length - 1) { st.step++; save(); render(); } }, 260); return; }
+    if (q.t === 'one') { st.a[q.id] = o; save(); render(); return; }
     let sel = st.a[q.id] || [];
     sel = sel.includes(o) ? sel.filter(x => x !== o) : (o === q.none ? [o] : [...sel.filter(x => x !== q.none), o]);
     if (q.max) sel = sel.slice(0, q.max);
     st.a[q.id] = sel;
   }
-  else if (b.dataset.val !== undefined && q) { st.a[q.id] = +b.dataset.val; save(); render(); setTimeout(() => { if (st.step < visible().length - 1) { st.step++; save(); render(); } }, 260); return; }
-  save(); render(); window.scrollTo(0, 0);
+  else if (b.dataset.val !== undefined && q) { st.a[q.id] = +b.dataset.val; save(); render(); return; }
+  else if (b.dataset.opt !== undefined) { return; }
+  const moved = b.dataset.go; save(); render(); if (moved) window.scrollTo(0, 0);   // on remonte en haut seulement en changeant de question
 });
 // Une ancienne réponse en attente ? On la renvoie au chargement et quand le réseau revient.
 flush().then(ok => { if (st.done && ok && !st.sent) { st.sent = true; save(); render(); } });

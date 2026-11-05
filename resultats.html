@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metrön · Résultats</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="tokens.css?v=20261105103934">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  /* Couleurs des graphiques : deux séries validées (lisibles pour les daltoniens), en clair et en sombre */
+  :root { --s1: #2D7BB4; --s2: #C4762B; --neutral: #9A948B; --grid: var(--line); }
+  :root[data-theme="dark"], :root[data-theme="black"] { --s1: #3D8FD6; --s2: #CC7A2A; --neutral: #8C857A; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]) { --s1: #3D8FD6; --s2: #CC7A2A; --neutral: #8C857A; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 16px 90px; }
+  .eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  h1 { margin: 4px 0 0; font-size: clamp(28px, 5vw, 40px); letter-spacing: -.03em; line-height: 1.05; }
+  h2 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 40px 0 12px; font-weight: 700; }
+  .top { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; justify-content: space-between; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 16px; font-weight: 700; font-size: 14px; min-height: 42px; }
+  .btn.dark { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .meta { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+  .demo { display: inline-block; background: var(--sl-focus); color: var(--sl-focus-ink); border-radius: 999px; padding: 3px 10px; font-weight: 800; font-size: 12px; margin-left: 6px; }
+
+  /* Filtres : une rangée au-dessus des graphiques */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 22px; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0; }
+  .filters span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-right: 4px; }
+  .chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 13px; font-weight: 600; font-size: 13.5px; min-height: 36px; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+  /* Tuiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 16px 18px; }
+  .tile small { display: block; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .tile b { display: block; font-size: 34px; letter-spacing: -.03em; line-height: 1.1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .tile i { font-style: normal; color: var(--muted); font-size: 13px; }
+  .goal { grid-column: span 2; display: grid; grid-template-columns: 1fr 86px; align-items: center; background: var(--sl-today); color: var(--sl-today-ink); border: 0; }
+  .goal small, .goal i { color: inherit; opacity: .9; }
+  .goal .mc { width: 86px; } .goal .mc svg { width: 100%; height: auto; display: block; }
+  .meter { height: 10px; border-radius: 10px; background: color-mix(in srgb, currentColor 18%, transparent); margin-top: 10px; overflow: hidden; }
+  .meter span { display: block; height: 100%; border-radius: 10px; background: currentColor; }
+  @media (max-width: 520px) { .goal { grid-column: auto; } }
+
+  /* Cartes de graphiques */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 18px 18px 14px; }
+  .card h3 { margin: 0; font-size: 16px; letter-spacing: -.01em; line-height: 1.3; }
+  .card .n { color: var(--muted); font-size: 13px; margin: 2px 0 12px; }
+  .card.wide { grid-column: 1 / -1; }
+  .bars { display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: minmax(0, 40%) 1fr 64px; gap: 10px; align-items: center; font-size: 13.5px; position: relative; }
+  .row .lab { line-height: 1.25; overflow-wrap: anywhere; }   /* le texte entier, sur deux lignes si besoin */
+  .track { height: 14px; background: color-mix(in srgb, var(--ink) 6%, transparent); border-radius: 4px; position: relative; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s1); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .row .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .row .val b { color: var(--ink); }
+  .row:hover .fill, .row:focus-within .fill { filter: brightness(1.12); }
+  .row[tabindex]:focus-visible { outline-offset: 4px; border-radius: 6px; }
+  .mean { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+  .mean b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .mean small { color: var(--muted); }
+  .stack { display: flex; height: 22px; border-radius: 6px; overflow: hidden; gap: 2px; margin: 10px 0; }
+  .stack span { display: block; height: 100%; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); }
+  .dot.sq { border-radius: 3px; }
+  .quotes { display: grid; gap: 8px; }
+  .quotes p { margin: 0; background: color-mix(in srgb, var(--ink) 5%, transparent); border-radius: 14px; padding: 10px 12px; }
+  .quotes small { color: var(--muted); }
+  .empty { color: var(--muted); }
+  .tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 10px; transform: translate(-50%, calc(-100% - 10px)); white-space: nowrap; }
+  .tip[hidden] { display: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tablewrap { overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; max-height: 70vh; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: nowrap; }
+  th { position: sticky; top: 0; background: var(--surface); color: var(--muted); font-size: 12px; }
+
+  /* Code d'accès */
+  .gate { min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--stage); }
+  .gate form { width: min(380px, 100%); background: var(--surface); border-radius: 26px; padding: 26px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .gate .gm { width: 110px; } .gate .gm svg { width: 100%; height: auto; display: block; }
+  .gate h1 { font-size: 24px; }
+  .gate p { margin: 0; color: var(--muted); }
+  .gate input { width: 100%; font: inherit; font-size: 18px; text-align: center; padding: 12px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink); }
+  .gate .err { color: var(--high); font-weight: 600; min-height: 1.4em; }
+  .gate .btn { width: 100%; }
+  .linkbtn { border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; color: var(--muted); font-weight: 600; min-height: 40px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <form id="gate-form">
+    <span class="gm" id="gate-m" aria-hidden="true"></span>
+    <h1>Résultats Metrön</h1>
+    <p>Les réponses du questionnaire. Entre le code pour les voir.</p>
+    <input id="code" type="password" autocomplete="off" aria-label="Code d'accès">
+    <span class="err" id="err" role="status"></span>
+    <button class="btn dark">Voir les résultats</button>
+    <button type="button" class="linkbtn" id="demo">Voir avec des réponses de démonstration</button>
+  </form>
+</div>
+
+<main id="dash" hidden>
+  <div class="top">
+    <div><p class="eyebrow">Metrön · questionnaire</p><h1>Résultats <span id="demo-tag"></span></h1><p class="meta" id="meta"></p></div>
+    <div class="actions"><button class="btn" id="refresh">↻ Actualiser</button><button class="btn" id="csv">Exporter (CSV)</button><button class="btn" id="table-btn" aria-expanded="false">Voir le tableau</button></div>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="tiles" id="tiles"></div>
+  <div id="sections"></div>
+  <div id="table" hidden></div>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script src="mascot.js?v=20261105103934"></script>
+<script>
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxl3rX8f5ZvGFwAcdPWG3dYz22jmejHHMAe7TM5GdoOUxZTXDhaNVvWcreuCFfcJSDeIQ/exec';
+const GOAL = 30;
+const DOMS = ['Études / travail', 'Sommeil', 'Sport', 'Social', 'Repos', 'Projets', 'Écrans', 'Aucun'];
+// Les questions, dans l'ordre du questionnaire (mêmes id que les colonnes du tableau)
+const Q = [
+  ['statut', 'one', 'Statut', ['Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre']],
+  ['age', 'one', 'Âge', ['Moins de 16 ans', '16–18 ans', '19–21 ans', '22–25 ans', 'Plus de 25 ans']],
+  ['maquette_testee', 'one', 'A essayé la maquette', ['Oui', 'Non']],
+  ['equilibre_actuel', 'scale', 'En ce moment, ta vie te semble… (1 très déséquilibrée → 5 très équilibrée)'],
+  ['domaines_trop', 'multi', 'Domaines qui prennent trop de place', DOMS],
+  ['domaines_manque', 'multi', 'Domaines qui manquent de place', DOMS],
+  ['utile_visualiser', 'scale', 'Voir son équilibre serait utile (1 pas d’accord → 5 tout à fait)'],
+  ['score_pression', 'scale', 'Un score / graphique mettrait la pression (1 → 5)'],
+  ['domaine_manquant', 'one', 'Domaine important qui manque', ['Famille', 'Alimentation', 'Santé', 'Argent', 'Trajets', 'Spiritualité', 'Aucun', 'Autre']],
+  ['fonctions_utiles', 'multi', 'Fonctions les plus utiles (3 max.)', ['Cocher ses habitudes', 'Rappels doux', 'Statistiques', 'Objectifs', 'Journal', 'Exercices de pause / respiration', 'Conseils et contenus', 'Widgets']],
+  ['reaction_epuisement', 'one', 'Si l’app voyait un épuisement, elle devrait…', ['Ne dise rien', 'Te propose une pause', 'Te propose de parler à quelqu’un de confiance', 'Te donne des contacts d’aide (ligne d’écoute, infirmerie)']],
+  ['culpabilite', 'scale', 'L’app pourrait faire culpabiliser (1 → 5)'],
+  ['maquette_facile', 'scale', 'La maquette est facile à comprendre (1 → 5, testeurs)'],
+  ['moins_clair', 'one', 'Le moins clair (testeurs)', ['Le radar Équilibre', 'La « zone jaune » / ma mesure', 'Le questionnaire d’accueil', 'Le tracker', 'La mascotte', 'Rien']],
+  ['frequence', 'one', 'Fréquence d’ouverture', ['Plusieurs fois par jour', 'Une fois par jour', 'Quelques fois par semaine', 'Rarement', 'Jamais']],
+  ['recommandation', 'nps', 'Recommandation à un·e ami·e (0 → 10)'],
+  ['une_chose', 'text', 'Si tu ne devais changer qu’une chose'],
+];
+const SECTIONS = [['Qui a répondu', ['statut', 'age', 'maquette_testee']], ['Leur équilibre aujourd’hui', ['equilibre_actuel', 'domaines_trop', 'domaines_manque']],
+  ['Le concept', ['utile_visualiser', 'score_pression', 'domaine_manquant', 'fonctions_utiles']], ['Sécurité et limites', ['reaction_epuisement', 'culpabilite']],
+  ['La maquette et l’adoption', ['maquette_facile', 'moins_clair', 'frequence', 'recommandation']], ['En leurs mots', ['une_chose']]];
+const byId = Object.fromEntries(Q.map(q => [q[0], q]));
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const fmt = n => (Math.round(n * 10) / 10).toString().replace('.', ',');
+
+let ALL = [], filt = { statut: 'Tous', testeurs: false }, isDemo = false, updated = null;
+
+/* ---------- Données ---------- */
+function toRows(header, rows) { return rows.map(r => Object.fromEntries(header.map((h, i) => [h, r[i]]))); }
+function demoRows() {                                  // 32 réponses inventées, pour voir le tableau de bord avant les vraies
+  let s = 7; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280, pick = a => a[Math.floor(rnd() * a.length)], sc = (m) => Math.max(1, Math.min(5, Math.round(m + (rnd() - .5) * 3)));
+  return Array.from({ length: 32 }, (_, i) => { const t = rnd() < .7 ? 'Oui' : 'Non';
+    return { id: 'demo' + i, envoye_le: new Date(Date.now() - i * 36e5 * 5).toISOString(), duree_s: 150 + Math.round(rnd() * 200),
+      statut: pick(['Étudiant·e', 'Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre']), age: pick(['16–18 ans', '19–21 ans', '19–21 ans', '22–25 ans']), maquette_testee: t,
+      equilibre_actuel: sc(2.8), domaines_trop: [...new Set([pick(DOMS.slice(0, 7)), pick(['Écrans', 'Études / travail'])])].join(' ; '), domaines_manque: [...new Set([pick(['Sport', 'Sommeil', 'Repos', 'Social']), pick(DOMS.slice(0, 7))])].join(' ; '),
+      utile_visualiser: sc(3.9), score_pression: sc(2.6), domaine_manquant: pick(['Famille', 'Alimentation', 'Santé', 'Aucun', 'Argent']),
+      fonctions_utiles: [...new Set([pick(['Rappels doux', 'Cocher ses habitudes']), pick(['Statistiques', 'Widgets', 'Exercices de pause / respiration']), pick(['Objectifs', 'Journal', 'Conseils et contenus'])])].join(' ; '),
+      reaction_epuisement: pick(['Te propose une pause', 'Te propose une pause', 'Te propose de parler à quelqu’un de confiance', 'Ne dise rien', 'Te donne des contacts d’aide (ligne d’écoute, infirmerie)']),
+      culpabilite: sc(2.4), maquette_facile: t === 'Oui' ? sc(4) : '', moins_clair: t === 'Oui' ? pick(['Le radar Équilibre', 'La « zone jaune » / ma mesure', 'Rien', 'Le tracker']) : '',
+      frequence: pick(['Une fois par jour', 'Quelques fois par semaine', 'Rarement', 'Plusieurs fois par jour']), recommandation: Math.max(0, Math.min(10, Math.round(7 + (rnd() - .5) * 7))),
+      une_chose: rnd() < .35 ? pick(['Moins de notifications', 'Plus de couleurs pour le sport', 'Pouvoir ajouter mes propres domaines', 'Un mode sans chiffres', 'J’aime bien le poussin']) : '' }; });
+}
+async function fetchRows(code) {
+  const r = await fetch(`${ENDPOINT}?code=${encodeURIComponent(code)}&t=${Date.now()}`);
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'erreur');
+  return toRows(j.header || [], j.rows || []);
+}
+
+/* ---------- Calculs ---------- */
+const list = (r, id) => String(r[id] ?? '').split(' ; ').map(s => s.trim()).filter(Boolean);
+const nums = (rows, id) => rows.map(r => r[id]).filter(v => v !== '' && v != null && !isNaN(+v)).map(Number);
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : NaN;
+function nps(a) { if (!a.length) return null; const p = a.filter(v => v >= 9).length, d = a.filter(v => v <= 6).length; return { score: Math.round((p - d) / a.length * 100), p, d, n: a.length - p - d, total: a.length }; }
+
+/* ---------- Rendu ---------- */
+function bars(items, denom, unit = 'réponses') {
+  const max = Math.max(1, ...items.map(x => x[1]));
+  return `<div class="bars">${items.map(([lab, n]) => `<div class="row" tabindex="0" data-tip="${esc(lab)} : ${n} ${n > 1 ? unit : unit.replace(/s$/, '')} · ${pct(n, denom)} %">
+    <span class="lab" title="${esc(lab)}">${esc(lab)}</span><span class="track"><span class="fill" style="width:${n / max * 100}%"></span></span><span class="val"><b>${pct(n, denom)} %</b> · ${n}</span></div>`).join('')}</div>`;
+}
+function card(id, rows) {
+  const [, t, title, opts] = byId[id];
+  if (t === 'one' || t === 'multi') {
+    const answered = rows.filter(r => list(r, id).length);
+    const counts = (opts || []).map(o => [o, answered.filter(r => list(r, id).includes(o)).length]);
+    const items = t === 'multi' ? [...counts].sort((a, b) => b[1] - a[1]) : counts;
+    return `<div class="card"><h3>${esc(title)}</h3><p class="n">${answered.length} répondant${answered.length > 1 ? 's' : ''}${t === 'multi' ? ' · plusieurs choix possibles, % des répondants' : ''}</p>${answered.length ? bars(items, answered.length) : '<p class="empty">Pas encore de réponse.</p>'}</div>`;
+  }
+  if (t === 'scale') {
+    const a = nums(rows, id), m = mean(a);
+    const items = [1, 2, 3, 4, 5].map(v => [String(v), a.filter(x => x === v).length]);
+    return `<div class="card"><h3>${esc(title)}</h3><p class="n">${a.length} répondant${a.length > 1 ? 's' : ''}</p>
+      ${a.length ? `<div class="mean"><b>${fmt(m)}</b><small>moyenne sur 5</small></div>${bars(items, a.length)}` : '<p class="empty">Pas encore de réponse.</p>'}</div>`;
+  }
+  if (t === 'nps') {
+    const a = nums(rows, id), s = nps(a);
+    if (!s) return `<div class="card"><h3>${esc(title)}</h3><p class="empty">Pas encore de réponse.</p></div>`;
+    const seg = (n, c, lab) => n ? `<span style="width:${n / s.total * 100}%;background:${c}" tabindex="0" data-tip="${lab} : ${n} · ${pct(n, s.total)} %"></span>` : '';
+    return `<div class="card"><h3>${esc(title)}</h3><p class="n">${s.total} répondant${s.total > 1 ? 's' : ''} · moyenne ${fmt(mean(a))} / 10</p>
+      <div class="mean"><b>${s.score > 0 ? '+' : ''}${s.score}</b><small>score de recommandation (NPS, de −100 à +100)</small></div>
+      <div class="stack" role="img" aria-label="${s.d} détracteurs, ${s.n} passifs, ${s.p} promoteurs">${seg(s.d, 'var(--s2)', 'Détracteurs (0–6)')}${seg(s.n, 'var(--neutral)', 'Passifs (7–8)')}${seg(s.p, 'var(--s1)', 'Promoteurs (9–10)')}</div>
+      <div class="legend"><span><i style="background:var(--s2)"></i>Détracteurs 0–6 : ${s.d}</span><span><i style="background:var(--neutral)"></i>Passifs 7–8 : ${s.n}</span><span><i style="background:var(--s1)"></i>Promoteurs 9–10 : ${s.p}</span></div></div>`;
+  }
+  if (t === 'text') {
+    const a = rows.filter(r => String(r[id] ?? '').trim());
+    return `<div class="card wide"><h3>${esc(title)}</h3><p class="n">${a.length} réponse${a.length > 1 ? 's' : ''} libre${a.length > 1 ? 's' : ''} (facultatif)</p>
+      ${a.length ? `<div class="quotes">${a.map(r => `<p>« ${esc(r[id])} » <small>· ${esc(r.statut || '')}</small></p>`).join('')}</div>` : '<p class="empty">Pas encore de réponse.</p>'}</div>`;
+  }
+  return '';
+}
+// Le croisement clé : utile vs pression vs culpabilité, par statut (moyennes sur 5)
+function cross(rows) {
+  const groups = ['Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre'].map(g => [g, rows.filter(r => r.statut === g)]).filter(([, a]) => a.length);
+  if (!groups.length) return '';
+  const x = v => (v - 1) / 4 * 100;
+  return `<div class="card wide"><h3>Utile, mais sans pression ? Par statut</h3><p class="n">Moyennes sur 5 · le rond = « utile », le carré = « pression »</p>
+    <div class="legend" style="margin-bottom:10px"><span><i style="background:var(--s1);border-radius:50%"></i>Voir son équilibre serait utile</span><span><i style="background:var(--s2)"></i>Un score mettrait la pression</span></div>
+    <div class="bars">${groups.map(([g, a]) => { const u = mean(nums(a, 'utile_visualiser')), p = mean(nums(a, 'score_pression'));
+      return `<div class="row" tabindex="0" data-tip="${esc(g)} (${a.length}) : utile ${fmt(u)} · pression ${fmt(p)}"><span class="lab">${esc(g)} <small style="color:var(--muted)">(${a.length})</small></span>
+        <span class="track" style="background:none;border-top:1px solid var(--grid);height:0;top:0">${isNaN(u) ? '' : `<i class="dot" style="left:${x(u)}%;background:var(--s1)"></i>`}${isNaN(p) ? '' : `<i class="dot sq" style="left:${x(p)}%;background:var(--s2)"></i>`}</span>
+        <span class="val"><b>${isNaN(u) ? '–' : fmt(u)}</b> / ${isNaN(p) ? '–' : fmt(p)}</span></div>`; }).join('')}</div>
+    <div class="legend" style="justify-content:space-between;margin:6px 0 0 calc(40% + 10px);margin-right:74px"><span>1</span><span>3</span><span>5</span></div></div>`;
+}
+
+function render() {
+  const rows = ALL.filter(r => (filt.statut === 'Tous' || r.statut === filt.statut) && (!filt.testeurs || r.maquette_testee === 'Oui'));
+  $('demo-tag').innerHTML = isDemo ? '<span class="demo">Démo</span>' : '';
+  $('meta').textContent = `${ALL.length} réponse${ALL.length > 1 ? 's' : ''} au total${rows.length !== ALL.length ? ` · ${rows.length} avec ce filtre` : ''}${updated ? ` · mis à jour à ${updated.toLocaleTimeString('fr-CH', { hour: '2-digit', minute: '2-digit' })}` : ''}`;
+  $('filters').innerHTML = `<span>Filtrer</span>${['Tous', 'Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre'].map(g => `<button class="chip" data-st="${g}" aria-pressed="${filt.statut === g}">${g}</button>`).join('')}
+    <button class="chip" data-test="1" aria-pressed="${filt.testeurs}">Seulement ceux qui ont testé</button>`;
+  const s = nps(nums(rows, 'recommandation')), dur = nums(rows, 'duree_s').sort((a, b) => a - b);
+  const tile = (lab, val, sub) => `<div class="tile"><small>${lab}</small><b>${val}</b>${sub ? `<i>${sub}</i>` : ''}</div>`;
+  $('tiles').innerHTML = `<div class="tile goal"><div><small>Objectif</small><b>${ALL.length} / ${GOAL}</b><i>${ALL.length >= GOAL ? 'objectif atteint 🎉' : `encore ${GOAL - ALL.length} réponse${GOAL - ALL.length > 1 ? 's' : ''}`}</i>
+      <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="${GOAL}" aria-valuenow="${ALL.length}"><span style="width:${Math.min(100, ALL.length / GOAL * 100)}%"></span></div></div>
+      <span class="mc" aria-hidden="true">${chick({ mood: ALL.length >= GOAL ? 'happy' : 'open', acc: ALL.length >= GOAL ? ['confetti'] : ['loupe'], look: [0, 0], deco: true })}</span></div>
+    ${tile('Utile de voir son équilibre', rows.length ? fmt(mean(nums(rows, 'utile_visualiser'))) : '–', 'moyenne sur 5')}
+    ${tile('Pression d’un score', rows.length ? fmt(mean(nums(rows, 'score_pression'))) : '–', 'moyenne sur 5 (bas = mieux)')}
+    ${tile('Risque de culpabiliser', rows.length ? fmt(mean(nums(rows, 'culpabilite'))) : '–', 'moyenne sur 5 (bas = mieux)')}
+    ${tile('Recommandation (NPS)', s ? (s.score > 0 ? '+' : '') + s.score : '–', 'de −100 à +100')}
+    ${tile('Ont testé la maquette', rows.length ? pct(rows.filter(r => r.maquette_testee === 'Oui').length, rows.length) + ' %' : '–', `durée médiane ${dur.length ? Math.round(dur[Math.floor(dur.length / 2)] / 60 * 10) / 10 : '–'} min`)}`;
+  $('sections').innerHTML = SECTIONS.map(([t, ids]) => `<h2>${t}</h2><div class="grid">${t === 'Le concept' ? cross(rows) : ''}${ids.map(id => card(id, rows)).join('')}</div>`).join('');
+  if (!$('table').hidden) renderTable(rows);
+}
+function renderTable(rows) {
+  const cols = ['envoye_le', 'duree_s', ...Q.map(q => q[0])];
+  $('table').innerHTML = `<h2>Toutes les réponses</h2><div class="tablewrap"><table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${cols.map(c => `<td>${esc(c === 'envoye_le' && r[c] ? new Date(r[c]).toLocaleString('fr-CH') : r[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function exportCsv() {
+  const cols = ['id', 'envoye_le', 'duree_s', ...Q.map(q => q[0])], q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const csv = '﻿' + [cols.join(';'), ...ALL.map(r => cols.map(c => q(r[c])).join(';'))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `metron-reponses-${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- Infobulle au survol ou au clavier ---------- */
+function showTip(el) { const r = el.getBoundingClientRect(), t = $('tip'); t.textContent = el.dataset.tip; t.style.left = (r.left + r.width / 2) + 'px'; t.style.top = r.top + 'px'; t.hidden = false; }
+document.addEventListener('pointerover', e => { const el = e.target.closest('[data-tip]'); el ? showTip(el) : ($('tip').hidden = true); });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); el ? showTip(el) : ($('tip').hidden = true); });
+addEventListener('scroll', () => { $('tip').hidden = true; }, { passive: true });
+
+/* ---------- Code d'accès (vérifié par le script Google, il n'est pas écrit dans cette page) ---------- */
+const CODE_KEY = 'metron.resultats.code';
+async function open(code) {
+  $('err').textContent = 'Chargement…';
+  try { ALL = await fetchRows(code); isDemo = false; updated = new Date(); try { sessionStorage.setItem(CODE_KEY, code); } catch (e) {} show(); }
+  catch (e) { $('err').textContent = e.message === 'bad-code' ? 'Ce n’est pas le bon code.' : e.message === 'no-code-set' ? 'Le code n’est pas encore réglé dans le script Google.' : 'Impossible de joindre le tableau. Réessaie.'; }
+}
+function show() { $('gate').hidden = true; $('dash').hidden = false; render(); }
+$('gate-m').innerHTML = chick({ acc: ['loupe'], look: [0, 0], deco: true });
+$('gate-form').addEventListener('submit', e => { e.preventDefault(); open($('code').value.trim()); });
+$('demo').addEventListener('click', () => { ALL = demoRows(); isDemo = true; updated = null; show(); });
+$('refresh').addEventListener('click', () => { if (isDemo) return; let c = ''; try { c = sessionStorage.getItem(CODE_KEY) || ''; } catch (e) {} if (c) fetchRows(c).then(r => { ALL = r; updated = new Date(); render(); }).catch(() => {}); });
+$('csv').addEventListener('click', exportCsv);
+$('table-btn').addEventListener('click', e => { const t = $('table'); t.hidden = !t.hidden; e.target.setAttribute('aria-expanded', !t.hidden); e.target.textContent = t.hidden ? 'Voir le tableau' : 'Cacher le tableau'; render(); if (!t.hidden) t.scrollIntoView({ behavior: 'smooth' }); });
+document.addEventListener('click', e => { const c = e.target.closest('.chip'); if (!c) return; if (c.dataset.st) filt.statut = c.dataset.st; if (c.dataset.test) filt.testeurs = !filt.testeurs; render(); });
+try { const c = sessionStorage.getItem(CODE_KEY); if (c) open(c); } catch (e) {}
+</script>
+</body>
+</html>

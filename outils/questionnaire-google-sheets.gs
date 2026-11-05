@@ -8,6 +8,9 @@
  *    Exécuter en tant que : Moi. Qui a accès : Tout le monde. → Déployer, puis autoriser.
  * 4. Copie l'adresse qui finit par /exec et donne-la à Claude (elle va dans questionnaire.html, ENDPOINT).
  *
+ * 5. Pour le tableau de bord : Paramètres du projet → Propriétés du script → DASH_CODE = ton code secret
+ *    (puis Déployer → Gérer les déploiements → crayon → Nouvelle version, pour garder la même adresse).
+ *
  * Chaque réponse = une ligne ; une colonne par question (créée toute seule à la première réponse).
  * Une même réponse envoyée deux fois (réseau qui coupe) n'est enregistrée qu'une fois, grâce à son id.
  */
@@ -38,10 +41,20 @@ function doPost(e) {
   }
 }
 
-// Le nombre de réponses (pour un compteur « 12 / 30 »)
-function doGet() {
+// Sans code : seulement le nombre de réponses (pour un compteur « 12 / 30 »).
+// Avec ?code=… : toutes les réponses, pour le tableau de bord Metrön.
+// Le code n'est PAS écrit ici (ce fichier est public sur GitHub) : il est rangé dans les propriétés du script.
+//   Paramètres du projet (roue dentée à gauche) → Propriétés du script → Ajouter : DASH_CODE = ton code secret
+function doGet(e) {
   const sh = sheet_();
-  return json_({ ok: true, total: Math.max(0, sh.getLastRow() - 1) });
+  const total = Math.max(0, sh.getLastRow() - 1);
+  const code = e && e.parameter && e.parameter.code;
+  if (!code) return json_({ ok: true, total: total });
+  const expected = PropertiesService.getScriptProperties().getProperty('DASH_CODE');
+  if (!expected) return json_({ ok: false, error: 'no-code-set' });
+  if (code.trim().toLowerCase().normalize('NFC') !== expected.trim().toLowerCase().normalize('NFC')) return json_({ ok: false, error: 'bad-code' });
+  const values = total ? sh.getRange(1, 1, total + 1, sh.getLastColumn()).getValues() : [[]];
+  return json_({ ok: true, total: total, header: values[0], rows: values.slice(1) });
 }
 
 function json_(o) {

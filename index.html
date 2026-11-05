@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Metrön">
-<link rel="stylesheet" href="tokens.css?v=20261105112614">
+<link rel="stylesheet" href="tokens.css?v=20261105112658">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -47,6 +47,28 @@
   .theme button { border: 0; background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; min-height: 40px; }
   .theme button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
   @media (max-width: 640px) { .top { flex-wrap: wrap; } .tools { margin-left: 0; order: 3; justify-content: flex-start; } }
+
+  /* Branding : la tour sur le bleu Metrön, chaque partie sur une couleur des pages d'accueil de l'app (en clair) */
+  :root { --tour-bg: var(--brand-blue); --tour-ink: #FFFFFF; --tour-muted: rgb(255 255 255 / .85);
+    --band-exp: var(--ob-1); --band-exp-ink: var(--ob-1-ink); --band-labs: var(--ob-3); --band-labs-ink: var(--ob-3-ink); --band-code: var(--ob-4); --band-code-ink: #1D4A68; }
+  :root[data-theme="dark"], :root[data-theme="black"] { --tour-bg: var(--stage); --tour-ink: var(--ink); --tour-muted: var(--muted);
+    --band-exp: var(--surface); --band-exp-ink: var(--ink); --band-labs: var(--surface); --band-labs-ink: var(--ink); --band-code: var(--surface); --band-code-ink: var(--ink); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]) { --tour-bg: var(--stage); --tour-ink: var(--ink); --tour-muted: var(--muted);
+    --band-exp: var(--surface); --band-exp-ink: var(--ink); --band-labs: var(--surface); --band-labs-ink: var(--ink); --band-code: var(--surface); --band-code-ink: var(--ink); } }
+  body:has(#home:not([hidden])) { background: var(--tour-bg); }
+  .home .top, .home .lead, .home .eyebrow, .home h1 { color: var(--tour-ink); }
+  .home .lead, .home .eyebrow { opacity: .92; }
+  .home .uml::before, .home .uml::after { background: var(--brand-yellow); }
+  .home .top .av { box-shadow: 0 0 0 3px rgb(255 255 255 / .55); }   /* le logo bleu reste visible sur le fond bleu */
+  .band { border-radius: 32px; padding: 26px 24px 30px; margin-top: 26px; }
+  .band h2 { margin: 0 0 16px; color: inherit; opacity: .9; }
+  .band-exp { background: var(--band-exp); color: var(--band-exp-ink); }
+  .band-labs { background: var(--band-labs); color: var(--band-labs-ink); }
+  .band-code { background: var(--band-code); color: var(--band-code-ink); }
+  .band .fic { color: inherit; } .band .fic small { color: inherit; opacity: .85; }
+  .band .fic:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+  .band .edots button { background: color-mix(in srgb, currentColor 30%, transparent); } .band .edots button[aria-selected="true"] { background: currentColor; }
+  @media (max-width: 760px) { .band { padding: 22px 16px 24px; border-radius: 26px; } .band .exp { margin: 0 -16px; padding: 0 16px 4px; } }
 
   /* Accueil de la tour */
   .home { max-width: 1100px; margin: 0 auto; padding: max(36px, calc(env(safe-area-inset-top) + 16px)) 16px 80px; }
@@ -228,7 +250,7 @@
   </form>
 </div>
 
-<script src="mascot.js?v=20261105112614"></script>
+<script src="mascot.js?v=20261105112658"></script>
 <script>
 /* Chaque fichier : sa carte (couleurs du carrousel --sl-*) et son poussin (accessoire + palette) */
 const FILES = [
@@ -385,11 +407,12 @@ const fileIcon = x => `<button class="fic" style="${slStyle(x.sl)}" data-open="$
      <b>${x.f}</b><small>${esc(x.n)}</small></button>`;
 const drawTiles = () => {
   const of = g => FILES.filter(x => x.g === g);
-  $('groups').innerHTML = `<h2>${GROUP_NAMES.Exp}</h2>
+  // Chaque partie est une « page » aux couleurs de l'accueil de l'app (lilas, abricot, bleu gris)
+  $('groups').innerHTML = `<section class="band band-exp"><h2>${GROUP_NAMES.Exp}</h2>
     <div class="exp" id="exp">${of('Exp').map(tile).join('')}</div>
-    <div class="edots" role="tablist" aria-label="Choisir une carte">${of('Exp').map((x, i) => `<button role="tab" data-slide="${i}" aria-label="${esc(x.n)}" aria-selected="${i === 0}"></button>`).join('')}</div>
-    <h2>${GROUP_NAMES.Labs}</h2><div class="list">${of('Labs').map(row).join('')}</div>
-    <h2>${GROUP_NAMES.Code}</h2><div class="files">${of('Code').map(fileIcon).join('')}</div>`;
+    <div class="edots" role="tablist" aria-label="Choisir une carte">${of('Exp').map((x, i) => `<button role="tab" data-slide="${i}" aria-label="${esc(x.n)}" aria-selected="${i === 0}"></button>`).join('')}</div></section>
+    <section class="band band-labs"><h2>${GROUP_NAMES.Labs}</h2><div class="list">${of('Labs').map(row).join('')}</div></section>
+    <section class="band band-code"><h2>${GROUP_NAMES.Code}</h2><div class="files">${of('Code').map(fileIcon).join('')}</div></section>`;
   const ex = $('exp');
   ex.addEventListener('scroll', () => { const i = Math.round(ex.scrollLeft / (ex.firstElementChild.offsetWidth + 12)); document.querySelectorAll('.edots button').forEach((b, k) => b.setAttribute('aria-selected', k === i)); }, { passive: true });
 };

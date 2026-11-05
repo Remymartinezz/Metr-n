@@ -24,7 +24,7 @@
 <body>
 <main>
   <h1>Signatures e-mail</h1>
-  <p class="lead">Une signature sobre pour chacun. Clique sur « Copier », puis colle-la dans les réglages de signature de ta messagerie.</p>
+  <p class="lead">Une signature sobre pour chacun, et une pour l’équipe. Clique sur « Copier », puis colle-la dans les réglages de signature de ta messagerie.</p>
   <div id="list"></div>
   <div class="box">
     <h2>Dans Outlook</h2>
@@ -38,6 +38,7 @@
 <script>
 /* Une signature « corporate » : tableau et styles en ligne (lisible dans toutes les messageries), un rappel discret de la marque */
 const PEOPLE = [
+  { name: 'L’équipe Metrön', role: 'Rémy Martinez & Florian Cretegny · Co-fondateurs', team: true },
   { name: 'Rémy Martinez', role: 'Co-fondateur · Design et développement' },
   { name: 'Florian Cretegny', role: 'Co-fondateur · Design et développement' },
 ];
@@ -46,11 +47,10 @@ const sig = p => `<table cellpadding="0" cellspacing="0" border="0" style="borde
   <tr>
     <td valign="top" style="padding:0 16px 0 0;"><img src="https://remymartinezz.github.io/Metr-n/icon-180.png" width="52" height="52" alt="Metrön" style="display:block;border-radius:12px;border:0;"></td>
     <td valign="top" style="border-left:2px solid #2D7BB4;padding:0 0 0 16px;">
-      <p style="margin:0;font-size:16px;line-height:20px;font-weight:700;color:#1F2430;">${p.name}</p>
+      <p style="margin:0;font-size:16px;line-height:20px;font-weight:700;color:${p.team ? '#2D7BB4' : '#1F2430'};">${p.name}</p>
       <p style="margin:2px 0 0;font-size:13px;line-height:18px;color:#5B6170;">${p.role}</p>
-      <p style="margin:10px 0 0;font-size:13px;line-height:18px;color:#1F2430;"><b style="color:#2D7BB4;">Metrön</b> · L'app qui t'aide à trouver ta juste mesure</p>
+      <p style="margin:10px 0 0;font-size:13px;line-height:18px;color:#1F2430;">${p.team ? `L'app qui t'aide à trouver ta juste mesure` : `<b style="color:#2D7BB4;">Metrön</b> · L'app qui t'aide à trouver ta juste mesure`}</p>
       <p style="margin:2px 0 0;font-size:13px;line-height:18px;color:#5B6170;">Projet de la filière médiamatique · CPNV</p>
-      <p style="margin:6px 0 0;font-size:13px;line-height:18px;"><a href="https://remymartinezz.github.io/Metr-n/" style="color:#2D7BB4;text-decoration:none;font-weight:700;">remymartinezz.github.io/Metr-n</a></p>
     </td>
   </tr>
 </table>`;

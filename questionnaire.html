@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105110550">
+<link rel="stylesheet" href="tokens.css?v=20261105110937">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,7 +21,7 @@
   .back[disabled] { visibility: hidden; }
   .bar { flex: 1; height: 6px; border-radius: 6px; background: rgb(0 0 0 / .1); overflow: hidden; }
   .bar i { display: block; height: 100%; background: currentColor; border-radius: 6px; transition: width 500ms var(--ease); }
-  .buddy { width: 46px; flex: none; } .buddy svg { width: 100%; height: auto; display: block; }
+  .buddy { width: 52px; flex: none; transition: transform 300ms var(--ease); } .buddy svg { width: 100%; height: auto; display: block; }
   .body { flex: 1; padding-top: 28px; }
   .body.enter { animation: in 450ms var(--ease) both; }
   @keyframes in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
@@ -57,7 +57,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105110550"></script>
+<script src="mascot.js?v=20261105110937"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -103,6 +103,32 @@ const save = () => store(KEY, st);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = s => document.querySelector(s);
 
+/* ---------- Ton poussin : il se construit avec tes réponses ---------- */
+const STATUS_ACC = { 'Étudiant·e': 'toque', 'Apprenti·e': 'chantier', 'Jeune actif·ve': 'lunettes' };
+const DOM_PAL = { 'Études / travail': 'etudes', 'Sommeil': 'sommeil', 'Sport': 'sport', 'Social': 'social', 'Repos': 'repos', 'Projets': 'projets' };
+function buddy(a = st.a) {
+  const acc = STATUS_ACC[a.statut] ? [STATUS_ACC[a.statut]] : [];
+  const eq = +a.equilibre_actuel || 0, press = +a.score_pression || 0;
+  // L'humeur suit ton équilibre (fatigué → paisible, ça va → normal, équilibré → content) ; la pression le fait sursauter
+  let mood = !eq ? 'open' : eq <= 2 ? 'closed' : eq === 3 ? 'open' : 'happy';
+  if (press >= 4) mood = 'wide';
+  // Sa couleur : le premier domaine qui te manque
+  const miss = String(Array.isArray(a.domaines_manque) ? a.domaines_manque[0] : '');
+  const pal = DOM_PAL[miss] || 'original';
+  // Tout à la fin : fête si tu recommanderais Metrön
+  if (+a.recommandation >= 9) acc.push('confetti');
+  return { acc, mood, pal };
+}
+function buddyLine(a = st.a) {
+  const bits = [];
+  if (a.statut && a.statut !== 'Autre') bits.push(a.statut.toLowerCase());
+  const eq = +a.equilibre_actuel;
+  if (eq) bits.push(eq <= 2 ? 'un peu débordé·e en ce moment' : eq === 3 ? 'entre deux' : 'plutôt bien équilibré·e');
+  const miss = (a.domaines_manque || []).filter(d => d !== 'Aucun')[0];
+  if (miss) bits.push(`qui aimerait plus de place pour « ${miss.toLowerCase()} »`);
+  return bits.length ? `Ton poussin : ${bits.join(', ')}.` : '';
+}
+
 const visible = () => Q.filter(q => !q.if || q.if(st.a));
 function setColors(c) {
   const r = document.documentElement.style;
@@ -140,7 +166,7 @@ function render() {
   }
   const last = i === vis.length - 1;
   app.innerHTML = `<div class="top"><button class="back" data-go="back" aria-label="Question précédente">‹</button>
-      <span class="buddy" aria-hidden="true">${chick({ acc: q.acc ? [q.acc] : [], look: [0, 0], deco: true, mood: 'open' })}</span>
+      <span class="buddy" aria-hidden="true">${chick({ ...buddy(), look: [0, 0], deco: true })}</span>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${vis.length}" aria-valuenow="${i + 1}"><i style="width:${((i + 1) / vis.length) * 100}%"></i></div></div>
     <div class="body${enter ? ' enter' : ''}"><p class="num">Question ${i + 1} sur ${vis.length}</p><h1>${esc(q.q)}</h1>${q.s ? `<p class="sub">${esc(q.s)}</p>` : ''}${body}</div>
     <p class="count">${q.t === 'multi' ? `${(v || []).length} choisi${(v || []).length > 1 ? 's' : ''}${q.max ? ` sur ${q.max} max.` : ''}` : ''}</p>
@@ -175,8 +201,10 @@ async function submit() {
 function renderEnd() {
   setColors('gen');
   const pending = load(QUEUE, []).length;
-  $('#app').innerHTML = `<div class="body center"><div class="hero">${chick({ mood: 'happy', acc: ['confetti', 'fete'], look: [0, 0], deco: true })}</div>
+  const b = buddy(st.a.statut ? st.a : (load(KEY, {}).a || {}));
+  $('#app').innerHTML = `<div class="body center"><div class="hero">${chick({ ...b, mood: 'happy', acc: [...new Set([...b.acc, 'confetti'])], look: [0, 0], deco: true })}</div>
     <h1>Merci !</h1><p class="sub">Tes réponses nous aident à faire de Metrön une app qui ne met pas la pression.</p>
+    ${buddyLine() ? `<p class="sub" style="font-weight:700">${esc(buddyLine())}</p>` : ''}
     <p class="status" role="status">${!pending ? 'Réponses bien enregistrées ✓' : !ENDPOINT ? 'Mode test : réponses gardées sur cet appareil (le tableau n’est pas encore branché).' : 'Envoi en cours… si tu n’as pas de réseau, elles partiront à ta prochaine visite.'}</p>
     ${pending && ENDPOINT ? `<button class="link" data-go="retry" style="border:0">Réessayer maintenant</button>` : ''}
     <button class="skip" data-go="again">Répondre à nouveau (autre personne)</button></div>`;

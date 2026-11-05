@@ -6,7 +6,7 @@
 <title>Metrön · Résultats</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="tokens.css?v=20261105103934">
+<link rel="stylesheet" href="tokens.css?v=20261105104058">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
@@ -100,7 +100,7 @@
   <form id="gate-form">
     <span class="gm" id="gate-m" aria-hidden="true"></span>
     <h1>Résultats Metrön</h1>
-    <p>Les réponses du questionnaire. Entre le code pour les voir.</p>
+    <p>Les réponses du questionnaire. Entre le code (le même que la tour) pour les voir.</p>
     <input id="code" type="password" autocomplete="off" aria-label="Code d'accès">
     <span class="err" id="err" role="status"></span>
     <button class="btn dark">Voir les résultats</button>
@@ -120,7 +120,7 @@
 </main>
 <div class="tip" id="tip" hidden></div>
 
-<script src="mascot.js?v=20261105103934"></script>
+<script src="mascot.js?v=20261105104058"></script>
 <script>
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxl3rX8f5ZvGFwAcdPWG3dYz22jmejHHMAe7TM5GdoOUxZTXDhaNVvWcreuCFfcJSDeIQ/exec';
 const GOAL = 30;
@@ -276,7 +276,7 @@ const CODE_KEY = 'metron.resultats.code';
 async function open(code) {
   $('err').textContent = 'Chargement…';
   try { ALL = await fetchRows(code); isDemo = false; updated = new Date(); try { sessionStorage.setItem(CODE_KEY, code); } catch (e) {} show(); }
-  catch (e) { $('err').textContent = e.message === 'bad-code' ? 'Ce n’est pas le bon code.' : e.message === 'no-code-set' ? 'Le code n’est pas encore réglé dans le script Google.' : 'Impossible de joindre le tableau. Réessaie.'; }
+  catch (e) { $('err').textContent = e.message === 'bad-code' ? 'Ce n’est pas le bon code.' : e.message === 'no-code-set' ? 'Le script Google n’est pas à jour : colle la nouvelle version du code et redéploie.' : 'Impossible de joindre le tableau. Réessaie.'; }
 }
 function show() { $('gate').hidden = true; $('dash').hidden = false; render(); }
 $('gate-m').innerHTML = chick({ acc: ['loupe'], look: [0, 0], deco: true });

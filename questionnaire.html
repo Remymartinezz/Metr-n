@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105111135">
+<link rel="stylesheet" href="tokens.css?v=20261105111852">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -57,7 +57,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105111135"></script>
+<script src="mascot.js?v=20261105111852"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -73,7 +73,7 @@ const AGREE = ['Pas du tout d’accord', 'Tout à fait d’accord'];
 // Chaque question : id (= colonne du tableau), type, texte, choix. Les couleurs suivent les pages de l'accueil.
 const Q = [
   { id: 'statut', t: 'one', q: 'Tu es…', o: ['Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre'], c: '3', acc: 'toque' },
-  { id: 'age', t: 'one', q: 'Ton âge', o: ['Moins de 16 ans', '16–18 ans', '19–21 ans', '22–25 ans', 'Plus de 25 ans'], c: '3' },
+  { id: 'age', t: 'one', q: 'Ton âge', o: ['Moins de 16 ans', '16 à 18 ans', '19 à 21 ans', '22 à 25 ans', 'Plus de 25 ans'], c: '3' },
   { id: 'maquette_testee', t: 'one', q: 'As-tu essayé la maquette avant de répondre ?', s: 'Pas grave si non, réponds quand même.', o: ['Oui', 'Non'], c: '3', acc: 'loupe' },
   { id: 'equilibre_actuel', t: 'scale', q: 'En ce moment, ta vie te semble…', ends: ['Très déséquilibrée', 'Très équilibrée'], c: '4' },
   { id: 'domaines_trop', t: 'multi', q: 'Quels domaines te prennent trop de place ?', s: 'Plusieurs choix possibles.', o: [...DOMS, 'Aucun'], none: 'Aucun', c: '4' },

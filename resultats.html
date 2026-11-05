@@ -6,7 +6,7 @@
 <title>Metrön · Résultats</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="tokens.css?v=20261105111135">
+<link rel="stylesheet" href="tokens.css?v=20261105111852">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
@@ -120,7 +120,7 @@
 </main>
 <div class="tip" id="tip" hidden></div>
 
-<script src="mascot.js?v=20261105111135"></script>
+<script src="mascot.js?v=20261105111852"></script>
 <script>
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyb360U5WAyfpJkOzYbfAtK6DatwvCKQrYd7Q9ZSfI0LITxFYOd-P2x0bXlxZ5JTX3ZYQ/exec';
 const GOAL = 30;
@@ -128,7 +128,7 @@ const DOMS = ['Études / travail', 'Sommeil', 'Sport', 'Social', 'Repos', 'Proje
 // Les questions, dans l'ordre du questionnaire (mêmes id que les colonnes du tableau)
 const Q = [
   ['statut', 'one', 'Statut', ['Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre']],
-  ['age', 'one', 'Âge', ['Moins de 16 ans', '16–18 ans', '19–21 ans', '22–25 ans', 'Plus de 25 ans']],
+  ['age', 'one', 'Âge', ['Moins de 16 ans', '16 à 18 ans', '19 à 21 ans', '22 à 25 ans', 'Plus de 25 ans']],
   ['maquette_testee', 'one', 'A essayé la maquette', ['Oui', 'Non']],
   ['equilibre_actuel', 'scale', 'En ce moment, ta vie te semble… (1 très déséquilibrée → 5 très équilibrée)'],
   ['domaines_trop', 'multi', 'Domaines qui prennent trop de place', DOMS],
@@ -162,7 +162,7 @@ function demoRows() {                                  // 32 réponses inventée
   let s = 7; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280, pick = a => a[Math.floor(rnd() * a.length)], sc = (m) => Math.max(1, Math.min(5, Math.round(m + (rnd() - .5) * 3)));
   return Array.from({ length: 32 }, (_, i) => { const t = rnd() < .7 ? 'Oui' : 'Non';
     return { id: 'demo' + i, envoye_le: new Date(Date.now() - i * 36e5 * 5).toISOString(), duree_s: 150 + Math.round(rnd() * 200),
-      statut: pick(['Étudiant·e', 'Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre']), age: pick(['16–18 ans', '19–21 ans', '19–21 ans', '22–25 ans']), maquette_testee: t,
+      statut: pick(['Étudiant·e', 'Étudiant·e', 'Apprenti·e', 'Jeune actif·ve', 'Autre']), age: pick(['16 à 18 ans', '19 à 21 ans', '19 à 21 ans', '22 à 25 ans']), maquette_testee: t,
       equilibre_actuel: sc(2.8), domaines_trop: [...new Set([pick(DOMS.slice(0, 7)), pick(['Écrans', 'Études / travail'])])].join(' ; '), domaines_manque: [...new Set([pick(['Sport', 'Sommeil', 'Repos', 'Social']), pick(DOMS.slice(0, 7))])].join(' ; '),
       utile_visualiser: sc(3.9), score_pression: sc(2.6), domaine_manquant: pick(['Famille', 'Alimentation', 'Santé', 'Aucun', 'Argent']),
       fonctions_utiles: [...new Set([pick(['Rappels doux', 'Cocher ses habitudes']), pick(['Statistiques', 'Widgets', 'Exercices de pause / respiration']), pick(['Objectifs', 'Journal', 'Conseils et contenus'])])].join(' ; '),
@@ -210,8 +210,8 @@ function card(id, rows) {
     const seg = (n, c, lab) => n ? `<span style="width:${n / s.total * 100}%;background:${c}" tabindex="0" data-tip="${lab} : ${n} · ${pct(n, s.total)} %"></span>` : '';
     return `<div class="card"><h3>${esc(title)}</h3><p class="n">${s.total} répondant${s.total > 1 ? 's' : ''} · moyenne ${fmt(mean(a))} / 10</p>
       <div class="mean"><b>${s.score > 0 ? '+' : ''}${s.score}</b><small>score de recommandation (NPS, de −100 à +100)</small></div>
-      <div class="stack" role="img" aria-label="${s.d} détracteurs, ${s.n} passifs, ${s.p} promoteurs">${seg(s.d, 'var(--s2)', 'Détracteurs (0–6)')}${seg(s.n, 'var(--neutral)', 'Passifs (7–8)')}${seg(s.p, 'var(--s1)', 'Promoteurs (9–10)')}</div>
-      <div class="legend"><span><i style="background:var(--s2)"></i>Détracteurs 0–6 : ${s.d}</span><span><i style="background:var(--neutral)"></i>Passifs 7–8 : ${s.n}</span><span><i style="background:var(--s1)"></i>Promoteurs 9–10 : ${s.p}</span></div></div>`;
+      <div class="stack" role="img" aria-label="${s.d} détracteurs, ${s.n} passifs, ${s.p} promoteurs">${seg(s.d, 'var(--s2)', 'Détracteurs (0 à 6)')}${seg(s.n, 'var(--neutral)', 'Passifs (7 et 8)')}${seg(s.p, 'var(--s1)', 'Promoteurs (9 et 10)')}</div>
+      <div class="legend"><span><i style="background:var(--s2)"></i>Détracteurs 0 à 6 : ${s.d}</span><span><i style="background:var(--neutral)"></i>Passifs 7 et 8 : ${s.n}</span><span><i style="background:var(--s1)"></i>Promoteurs 9 et 10 : ${s.p}</span></div></div>`;
   }
   if (t === 'text') {
     const a = rows.filter(r => String(r[id] ?? '').trim());
@@ -230,7 +230,7 @@ function cross(rows) {
     <div class="bars">${groups.map(([g, a]) => { const u = mean(nums(a, 'utile_visualiser')), p = mean(nums(a, 'score_pression'));
       return `<div class="row" tabindex="0" data-tip="${esc(g)} (${a.length}) : utile ${fmt(u)} · pression ${fmt(p)}"><span class="lab">${esc(g)} <small style="color:var(--muted)">(${a.length})</small></span>
         <span class="track" style="background:none;border-top:1px solid var(--grid);height:0;top:0">${isNaN(u) ? '' : `<i class="dot" style="left:${x(u)}%;background:var(--s1)"></i>`}${isNaN(p) ? '' : `<i class="dot sq" style="left:${x(p)}%;background:var(--s2)"></i>`}</span>
-        <span class="val"><b>${isNaN(u) ? '–' : fmt(u)}</b> / ${isNaN(p) ? '–' : fmt(p)}</span></div>`; }).join('')}</div>
+        <span class="val"><b>${isNaN(u) ? '…' : fmt(u)}</b> / ${isNaN(p) ? '…' : fmt(p)}</span></div>`; }).join('')}</div>
     <div class="legend" style="justify-content:space-between;margin:6px 0 0 calc(40% + 10px);margin-right:74px"><span>1</span><span>3</span><span>5</span></div></div>`;
 }
 
@@ -245,11 +245,11 @@ function render() {
   $('tiles').innerHTML = `<div class="tile goal"><div><small>Objectif</small><b>${ALL.length} / ${GOAL}</b><i>${ALL.length >= GOAL ? 'objectif atteint 🎉' : `encore ${GOAL - ALL.length} réponse${GOAL - ALL.length > 1 ? 's' : ''}`}</i>
       <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="${GOAL}" aria-valuenow="${ALL.length}"><span style="width:${Math.min(100, ALL.length / GOAL * 100)}%"></span></div></div>
       <span class="mc" aria-hidden="true">${chick({ mood: ALL.length >= GOAL ? 'happy' : 'open', acc: ALL.length >= GOAL ? ['confetti'] : ['loupe'], look: [0, 0], deco: true })}</span></div>
-    ${tile('Utile de voir son équilibre', rows.length ? fmt(mean(nums(rows, 'utile_visualiser'))) : '–', 'moyenne sur 5')}
-    ${tile('Pression d’un score', rows.length ? fmt(mean(nums(rows, 'score_pression'))) : '–', 'moyenne sur 5 (bas = mieux)')}
-    ${tile('Risque de culpabiliser', rows.length ? fmt(mean(nums(rows, 'culpabilite'))) : '–', 'moyenne sur 5 (bas = mieux)')}
-    ${tile('Recommandation (NPS)', s ? (s.score > 0 ? '+' : '') + s.score : '–', 'de −100 à +100')}
-    ${tile('Ont testé la maquette', rows.length ? pct(rows.filter(r => r.maquette_testee === 'Oui').length, rows.length) + ' %' : '–', `durée médiane ${dur.length ? Math.round(dur[Math.floor(dur.length / 2)] / 60 * 10) / 10 : '–'} min`)}`;
+    ${tile('Utile de voir son équilibre', rows.length ? fmt(mean(nums(rows, 'utile_visualiser'))) : '…', 'moyenne sur 5')}
+    ${tile('Pression d’un score', rows.length ? fmt(mean(nums(rows, 'score_pression'))) : '…', 'moyenne sur 5 (bas = mieux)')}
+    ${tile('Risque de culpabiliser', rows.length ? fmt(mean(nums(rows, 'culpabilite'))) : '…', 'moyenne sur 5 (bas = mieux)')}
+    ${tile('Recommandation (NPS)', s ? (s.score > 0 ? '+' : '') + s.score : '…', 'de −100 à +100')}
+    ${tile('Ont testé la maquette', rows.length ? pct(rows.filter(r => r.maquette_testee === 'Oui').length, rows.length) + ' %' : '…', `durée médiane ${dur.length ? Math.round(dur[Math.floor(dur.length / 2)] / 60 * 10) / 10 : '…'} min`)}`;
   $('sections').innerHTML = SECTIONS.map(([t, ids]) => `<h2>${t}</h2><div class="grid">${t === 'Le concept' ? cross(rows) : ''}${ids.map(id => card(id, rows)).join('')}</div>`).join('');
   if (!$('table').hidden) renderTable(rows);
 }

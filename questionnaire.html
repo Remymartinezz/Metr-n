@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105112658">
+<link rel="stylesheet" href="tokens.css?v=20261105120954">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -57,7 +57,7 @@
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105112658"></script>
+<script src="mascot.js?v=20261105120954"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
@@ -80,7 +80,7 @@ const Q = [
   { id: 'domaines_manque', t: 'multi', q: 'Quels domaines manquent de place ?', s: 'Plusieurs choix possibles.', o: [...DOMS, 'Aucun'], none: 'Aucun', c: '4' },
   { id: 'utile_visualiser', t: 'scale', q: 'Voir ton équilibre entre ces domaines te serait utile.', ends: AGREE, c: 'r', acc: 'lunettes' },
   { id: 'score_pression', t: 'scale', q: 'Un score ou un graphique d’équilibre me mettrait la pression.', ends: AGREE, c: 'r' },
-  { id: 'domaine_manquant', t: 'one', q: 'Il manque un domaine important. Lequel ?', o: ['Famille', 'Alimentation', 'Santé', 'Argent', 'Trajets', 'Spiritualité', 'Aucun', 'Autre'], c: 'r' },
+  { id: 'domaine_manquant', t: 'one', q: 'Manque-t-il un domaine important ?', s: 'Si oui, lequel ?', o: ['Non, rien ne manque', 'Famille', 'Alimentation', 'Santé', 'Argent', 'Trajets', 'Spiritualité', 'Autre'], c: 'r' },
   { id: 'fonctions_utiles', t: 'multi', max: 3, q: 'Les 3 fonctions qui te seraient le plus utiles', s: '3 choix maximum.', o: ['Cocher ses habitudes', 'Rappels doux', 'Statistiques', 'Objectifs', 'Journal', 'Exercices de pause / respiration', 'Conseils et contenus', 'Widgets'], c: 'r', acc: 'ampoule' },
   { id: 'reaction_epuisement', t: 'one', q: 'Si l’app remarquait que tu es souvent épuisé·e ou en grand déséquilibre, tu voudrais qu’elle…', o: ['Ne dise rien', 'Te propose une pause', 'Te propose de parler à quelqu’un de confiance', 'Te donne des contacts d’aide (ligne d’écoute, infirmerie)'], c: '5', acc: 'the' },
   { id: 'culpabilite', t: 'scale', q: 'Une app comme celle-ci pourrait me faire culpabiliser si je ne coche pas tout.', ends: AGREE, c: '5' },

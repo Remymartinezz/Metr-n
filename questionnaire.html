@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2D7BB4">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="tokens.css?v=20261105124448">
+<link rel="stylesheet" href="tokens.css?v=20261105122952">
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -52,19 +52,34 @@
   .center { text-align: center; }
   .status { margin-top: 18px; font-size: 15px; font-weight: 600; }
   @media (prefers-reduced-motion: reduce) { .body { animation: none; } body { transition: none; } }
+
+  /* Le granita : le poussin boit son Granit Ice (une seule fois, pas en boucle), puis il est content */
+  .gi { width: min(240px, 70%); margin: 4px auto 0; } .gi svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .gi-chick { animation: gi-sip 900ms ease-in-out 400ms 3; }
+  .gi-slush { transform-box: fill-box; transform-origin: 50% 100%; animation: gi-drink 2700ms ease-in-out 400ms forwards; }
+  .gi-sip { stroke-dasharray: 46 400; stroke-dashoffset: 46; animation: gi-flow 900ms linear 400ms 3; }
+  .gi.done .gi-chick, .gi.done .gi-sip { animation: none; } .gi.done .gi-sip { opacity: 0; }
+  @keyframes gi-sip { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+  @keyframes gi-drink { to { transform: scaleY(.18); } }
+  @keyframes gi-flow { to { stroke-dashoffset: -230; } }
+  @media (prefers-reduced-motion: reduce) { .gi-chick, .gi-slush, .gi-sip { animation: none; } .gi-sip { opacity: 0; } }
+  .lbl { display: block; font-weight: 700; font-size: 15px; margin-top: 20px; }
+  .lbl + textarea, .lbl + input { margin-top: 8px; }
+  .ct { width: 100%; min-height: 56px; border: 0; border-radius: 20px; padding: 16px; font: inherit; background: rgb(255 255 255 / .7); color: #2B1D17; }
+  .why-mini { font-size: 14px; margin: 8px 0 0; opacity: .9; }
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 
-<script src="mascot.js?v=20261105124448"></script>
+<script src="mascot.js?v=20261105122952"></script>
 <script>
 /* =====================================================
    Questionnaire Metrön (quantitatif, 30 réponses visées)
    Les réponses partent dans un Google Sheets (via un petit script Google, voir outils/questionnaire-google-sheets.gs).
    Elles restent gardées sur l'appareil tant que l'envoi n'est pas confirmé, et repartent toutes seules.
    ===================================================== */
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyb360U5WAyfpJkOzYbfAtK6DatwvCKQrYd7Q9ZSfI0LITxFYOd-P2x0bXlxZ5JTX3ZYQ/exec';   // le script Google qui écrit dans le Google Sheets
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzqJy0bEOavz9kTBkbUFNTHJ3Qnr0ci4wetfjOBbE8PW4-9lrmTzLP7EHZT6XIIsgbIew/exec';   // le script Google qui écrit dans le Google Sheets
 const VERSION = 'v1';
 const MAQUETTE = 'https://remymartinezz.github.io/Metr-n/app.html';
 const DOMS = ['Études / travail', 'Sommeil', 'Sport', 'Social', 'Repos', 'Projets', 'Écrans'];
@@ -89,7 +104,11 @@ const Q = [
   { id: 'frequence', t: 'one', q: 'À quelle fréquence l’ouvrirais-tu ?', o: ['Plusieurs fois par jour', 'Une fois par jour', 'Quelques fois par semaine', 'Rarement', 'Jamais'], c: '2' },
   { id: 'recommandation', t: 'nps', q: 'Tu la recommanderais à un·e ami·e ?', ends: ['Pas du tout', 'Sans hésiter'], c: '2', acc: 'coeur' },
   { id: 'une_chose', t: 'text', q: 'Si tu ne devais changer qu’une chose, ce serait quoi ?', s: 'Facultatif.', c: '2', optional: true },
+  // Le concours : 3 granitas Granit Ice aux portes ouvertes 2026, pour les 3 réponses qui le méritent le plus
+  { id: 'granita_pourquoi', t: 'granita', q: 'Pourquoi toi, tu mérites le granita ?', s: '3 granitas Granit Ice à gagner aux portes ouvertes 2026. Les 3 réponses qui nous plaisent le plus gagnent.', c: '4', optional: true },
 ];
+// Le contact du concours n'est pas une question à part : il est demandé sur la même page que « pourquoi toi »
+const CONTACT = 'granita_contact';
 
 const KEY = 'metron.questionnaire', QUEUE = 'metron.questionnaire.queue';
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
@@ -134,7 +153,24 @@ function setColors(c) {
   const r = document.documentElement.style;
   r.setProperty('--qbg', `var(--ob-${c})`); r.setProperty('--qink', `var(--ob-${c}-ink)`);
 }
-const answered = q => { const v = st.a[q.id]; return q.optional || (Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ''); };
+// Le poussin qui boit un granita Granit Ice : son dessin, plus un gobelet avec paille par-dessus
+const granitaSvg = (mood = 'closed', empty = false) => `<svg viewBox="-80 -150 860 810" role="img" aria-label="Le poussin boit un granita Granit Ice">
+  <defs><linearGradient id="gi-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E5384F"/><stop offset=".55" stop-color="#E5384F"/><stop offset=".56" stop-color="#2D7BB4"/><stop offset="1" stop-color="#2D7BB4"/></linearGradient></defs>
+  <g class="gi-chick">${chickInner({ mood, look: [-.35, .25], deco: true })}</g>
+  <g transform="translate(595 650) scale(1.3) translate(-595 -650)">
+  <path d="M500 430 L690 430 L660 650 L530 650 Z" fill="#FFFFFF" fill-opacity=".72"/>
+  <path class="gi-slush" d="M510 446 L680 446 L656 638 L534 638 Z" fill="url(#gi-g)"${empty ? ' style="transform:scaleY(.18);transform-box:fill-box;transform-origin:50% 100%;animation:none"' : ''}/>
+  <rect x="512" y="540" width="166" height="44" rx="10" fill="#FFFFFF"/>
+  <text x="595" y="571" text-anchor="middle" font-family="Hanken Grotesk, Arial, sans-serif" font-weight="800" font-size="27" fill="#2D7BB4">Granit Ice</text>
+  <path d="M488 432 Q595 340 702 432 Z" fill="#FFFFFF" fill-opacity=".85"/>
+  <rect x="484" y="420" width="222" height="22" rx="11" fill="#FFFFFF"/>
+  </g>
+  <path d="M620 398 L452 292" stroke="#FFD43B" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <path class="gi-sip" d="M620 398 L452 292" stroke="#E5384F" stroke-width="13" stroke-linecap="round" fill="none"/>
+</svg>`;
+const answered = q => { const v = st.a[q.id];
+  if (q.t === 'granita') return !String(v || '').trim() || !!String(st.a[CONTACT] || '').trim();   // pour participer, il faut un contact
+  return q.optional ||(Array.isArray(v) ? v.length > 0 : v !== undefined && v !== ''); };
 
 let lastStep = null;
 function render() {
@@ -145,6 +181,7 @@ function render() {
     app.innerHTML = `<div class="body center${enter ? ' enter' : ''}"><div class="hero">${chick({ mood: 'happy', look: [0, 0], deco: true })}</div>
       <h1>Ton avis sur Metrön</h1>
       <p class="sub">Metrön aide à trouver l’équilibre entre études ou travail, sommeil, sport, social, repos et projets. Prends 2 minutes pour essayer la maquette, puis réponds. C’est anonyme : 4 minutes maintenant, pour une app qui t’en fera gagner bien plus.</p>
+      <p class="sub" style="font-weight:700">À la fin : 3 granitas Granit Ice à gagner aux portes ouvertes 2026.</p>
       <a class="link" href="${MAQUETTE}" target="_blank" rel="noopener">Essayer la maquette ↗</a></div>
       <button class="cta" data-go="start">Commencer</button>`;
     return;
@@ -163,21 +200,39 @@ function render() {
       <div class="ends"><span>${q.t === 'nps' ? '0 · ' : '1 · '}${q.ends[0]}</span><span>${q.ends[1]}${q.t === 'nps' ? ' · 10' : ' · 5'}</span></div>`;
   } else if (q.t === 'text') {
     body = `<textarea id="txt" maxlength="600" placeholder="Écris ici…">${esc(v || '')}</textarea>`;
+  } else if (q.t === 'granita') {
+    body = `<div class="gi${enter ? '' : ' done'}" id="gi">${granitaSvg(enter ? 'closed' : 'happy', !enter)}</div>
+      <label class="lbl" for="txt">Ta réponse</label><textarea id="txt" maxlength="600" placeholder="Convaincs-nous en une ou deux phrases…">${esc(v || '')}</textarea>
+      <label class="lbl" for="ct">Ton e-mail ou ton numéro</label><input class="ct" id="ct" maxlength="120" autocomplete="email" inputmode="email" value="${esc(st.a[CONTACT] || '')}">
+      <p class="why-mini">Il sert seulement à te prévenir si tu gagnes. Tu ne veux pas participer ? Laisse vide et envoie.</p>`;
   }
   const last = i === vis.length - 1;
+  const ctaTxt = q.t === 'granita' ? (String(v || '').trim() ? 'Envoyer et participer' : 'Envoyer sans participer') : last ? 'Envoyer mes réponses' : 'Continuer';
   app.innerHTML = `<div class="top"><button class="back" data-go="back" aria-label="Question précédente">‹</button>
       <span class="buddy" aria-hidden="true">${chick({ ...buddy(), look: [0, 0], deco: true })}</span>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${vis.length}" aria-valuenow="${i + 1}"><i style="width:${((i + 1) / vis.length) * 100}%"></i></div></div>
     <div class="body${enter ? ' enter' : ''}"><p class="num">Question ${i + 1} sur ${vis.length}</p><h1>${esc(q.q)}</h1>${q.s ? `<p class="sub">${esc(q.s)}</p>` : ''}${body}</div>
     <p class="count">${q.t === 'multi' ? `${(v || []).length} choisi${(v || []).length > 1 ? 's' : ''}${q.max ? ` sur ${q.max} max.` : ''}` : ''}</p>
-    <button class="cta" data-go="next" ${answered(q) ? '' : 'disabled'}>${last ? 'Envoyer mes réponses' : 'Continuer'}</button>`;
-  const ta = $('#txt'); if (ta) ta.addEventListener('input', () => { st.a[q.id] = ta.value; save(); });
+    <button class="cta" data-go="next" ${answered(q) ? '' : 'disabled'}>${ctaTxt}</button>`;
+  const ta = $('#txt'); if (ta) ta.addEventListener('input', () => { st.a[q.id] = ta.value; save(); if (q.t === 'granita') granitaCta(q); });
+  const ct = $('#ct'); if (ct) ct.addEventListener('input', () => { st.a[CONTACT] = ct.value; save(); granitaCta(q); });
+  // Le poussin finit son granita, puis il sourit (on ne le refait pas à chaque lettre tapée)
+  if (q.t === 'granita' && enter) setTimeout(() => { const g = $('#gi'); if (g && !g.classList.contains('done')) { g.classList.add('done'); g.innerHTML = granitaSvg('happy', true); } }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 3300);
+}
+
+// Sur la page du granita : le bouton dit si tu participes, et attend un contact si tu as écrit une réponse
+function granitaCta(q) {
+  const b = document.querySelector('.cta[data-go="next"]'); if (!b) return;
+  b.disabled = !answered(q);
+  b.textContent = String(st.a[q.id] || '').trim() ? 'Envoyer et participer' : 'Envoyer sans participer';
+  $('.count').textContent = b.disabled ? 'Ajoute ton e-mail ou ton numéro pour participer.' : '';
 }
 
 /* ---------- Envoi : jamais de perte. La réponse attend dans une file tant que le tableau ne l'a pas confirmée ---------- */
 function payload() {
   const row = { id: st.id, version: VERSION, envoye_le: new Date().toISOString(), duree_s: Math.round((Date.now() - st.started) / 1000) };
   Q.forEach(q => { const v = st.a[q.id]; row[q.id] = Array.isArray(v) ? v.join(' ; ') : (v ?? ''); });
+  row[CONTACT] = String(st.a.granita_pourquoi || '').trim() ? String(st.a[CONTACT] || '').trim() : '';   // pas de contact gardé sans participation
   return row;
 }
 async function flush() {
@@ -205,6 +260,7 @@ function renderEnd() {
   $('#app').innerHTML = `<div class="body center"><div class="hero">${chick({ ...b, mood: 'happy', acc: [...new Set([...b.acc, 'confetti'])], look: [0, 0], deco: true })}</div>
     <h1>Merci !</h1><p class="sub">Tes réponses nous aident à faire de Metrön une app qui ne met pas la pression.</p>
     ${buddyLine() ? `<p class="sub" style="font-weight:700">${esc(buddyLine())}</p>` : ''}
+    ${String(st.a.granita_pourquoi || '').trim() ? `<p class="sub">Tu participes pour le granita. Les 3 gagnant·es sont prévenu·es avant les portes ouvertes 2026.</p>` : ''}
     <p class="status" role="status">${!pending ? 'Réponses bien enregistrées ✓' : !ENDPOINT ? 'Mode test : réponses gardées sur cet appareil (le tableau n’est pas encore branché).' : 'Envoi en cours… si tu n’as pas de réseau, elles partiront à ta prochaine visite.'}</p>
     ${pending && ENDPOINT ? `<button class="link" data-go="retry" style="border:0">Réessayer maintenant</button>` : ''}
     <button class="skip" data-go="again">Répondre à nouveau (autre personne)</button></div>`;
